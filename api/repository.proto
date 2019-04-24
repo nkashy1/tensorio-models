@@ -1,0 +1,54 @@
+syntax = "proto3";
+package api;
+
+import "google/api/annotations.proto";
+
+message Model {
+    string modelId = 1;
+    string description = 2;
+    string canonicalHyperParameters=3;
+}
+
+message GetModelsRequest {
+
+}
+
+message GetModelsResponse {
+    repeated string modelIds = 1;
+}
+
+message CreateModelRequest {
+    Model model = 1;
+}
+
+message CreateModelResponse {
+    string resourcePath = 1;
+}
+
+message GetModelRequest {
+    string modelId = 1;
+}
+
+message GetModelResponse {
+    Model model = 1;
+}
+
+
+service Repository {
+    rpc GetModels(GetModelsRequest) returns (GetModelsResponse) {
+        option (google.api.http) = {
+            get: "/v1/repository/models"
+        };
+    };
+    rpc CreateModel(CreateModelRequest) returns (CreateModelResponse) {
+        option (google.api.http) = {
+            post: "/v1/repository/models"
+            body: "*"
+        };
+    };
+    rpc GetModel(GetModelRequest) returns (GetModelResponse) {
+        option (google.api.http) = {
+            get: "/v1/repository/models/{modelId}"
+        };
+    }
+}

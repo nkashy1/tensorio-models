@@ -1,0 +1,134 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "repository.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/repository/models": {
+      "get": {
+        "operationId": "GetModels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetModelsResponse"
+            }
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "CreateModel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateModelResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateModelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/models/{modelId}": {
+      "get": {
+        "operationId": "GetModel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetModelResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiCreateModelRequest": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/apiModel"
+        }
+      }
+    },
+    "apiCreateModelResponse": {
+      "type": "object",
+      "properties": {
+        "resourcePath": {
+          "type": "string"
+        }
+      }
+    },
+    "apiGetModelResponse": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/apiModel"
+        }
+      }
+    },
+    "apiGetModelsResponse": {
+      "type": "object",
+      "properties": {
+        "modelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiModel": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "canonicalHyperParameters": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
