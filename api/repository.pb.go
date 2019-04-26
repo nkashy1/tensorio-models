@@ -9,6 +9,8 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -79,6 +81,8 @@ func (m *Model) GetCanonicalHyperParameters() string {
 }
 
 type GetModelsRequest struct {
+	Marker               string   `protobuf:"bytes,1,opt,name=marker,proto3" json:"marker,omitempty"`
+	MaxItems             int32    `protobuf:"varint,2,opt,name=maxItems,proto3" json:"maxItems,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -108,6 +112,20 @@ func (m *GetModelsRequest) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_GetModelsRequest proto.InternalMessageInfo
+
+func (m *GetModelsRequest) GetMarker() string {
+	if m != nil {
+		return m.Marker
+	}
+	return ""
+}
+
+func (m *GetModelsRequest) GetMaxItems() int32 {
+	if m != nil {
+		return m.MaxItems
+	}
+	return 0
+}
 
 type GetModelsResponse struct {
 	ModelIds             []string `protobuf:"bytes,1,rep,name=modelIds,proto3" json:"modelIds,omitempty"`
@@ -304,6 +322,862 @@ func (m *GetModelResponse) GetModel() *Model {
 	return nil
 }
 
+type UpdateModelRequest struct {
+	ModelId              string   `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	Model                *Model   `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateModelRequest) Reset()         { *m = UpdateModelRequest{} }
+func (m *UpdateModelRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateModelRequest) ProtoMessage()    {}
+func (*UpdateModelRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{7}
+}
+
+func (m *UpdateModelRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateModelRequest.Unmarshal(m, b)
+}
+func (m *UpdateModelRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateModelRequest.Marshal(b, m, deterministic)
+}
+func (m *UpdateModelRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateModelRequest.Merge(m, src)
+}
+func (m *UpdateModelRequest) XXX_Size() int {
+	return xxx_messageInfo_UpdateModelRequest.Size(m)
+}
+func (m *UpdateModelRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateModelRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateModelRequest proto.InternalMessageInfo
+
+func (m *UpdateModelRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *UpdateModelRequest) GetModel() *Model {
+	if m != nil {
+		return m.Model
+	}
+	return nil
+}
+
+type UpdateModelResponse struct {
+	Model                *Model   `protobuf:"bytes,1,opt,name=model,proto3" json:"model,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateModelResponse) Reset()         { *m = UpdateModelResponse{} }
+func (m *UpdateModelResponse) String() string { return proto.CompactTextString(m) }
+func (*UpdateModelResponse) ProtoMessage()    {}
+func (*UpdateModelResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{8}
+}
+
+func (m *UpdateModelResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateModelResponse.Unmarshal(m, b)
+}
+func (m *UpdateModelResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateModelResponse.Marshal(b, m, deterministic)
+}
+func (m *UpdateModelResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateModelResponse.Merge(m, src)
+}
+func (m *UpdateModelResponse) XXX_Size() int {
+	return xxx_messageInfo_UpdateModelResponse.Size(m)
+}
+func (m *UpdateModelResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateModelResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateModelResponse proto.InternalMessageInfo
+
+func (m *UpdateModelResponse) GetModel() *Model {
+	if m != nil {
+		return m.Model
+	}
+	return nil
+}
+
+type ListHyperParametersRequest struct {
+	ModelId              string   `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	Marker               string   `protobuf:"bytes,2,opt,name=marker,proto3" json:"marker,omitempty"`
+	MaxItems             int32    `protobuf:"varint,3,opt,name=maxItems,proto3" json:"maxItems,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ListHyperParametersRequest) Reset()         { *m = ListHyperParametersRequest{} }
+func (m *ListHyperParametersRequest) String() string { return proto.CompactTextString(m) }
+func (*ListHyperParametersRequest) ProtoMessage()    {}
+func (*ListHyperParametersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{9}
+}
+
+func (m *ListHyperParametersRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListHyperParametersRequest.Unmarshal(m, b)
+}
+func (m *ListHyperParametersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListHyperParametersRequest.Marshal(b, m, deterministic)
+}
+func (m *ListHyperParametersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListHyperParametersRequest.Merge(m, src)
+}
+func (m *ListHyperParametersRequest) XXX_Size() int {
+	return xxx_messageInfo_ListHyperParametersRequest.Size(m)
+}
+func (m *ListHyperParametersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListHyperParametersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListHyperParametersRequest proto.InternalMessageInfo
+
+func (m *ListHyperParametersRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *ListHyperParametersRequest) GetMarker() string {
+	if m != nil {
+		return m.Marker
+	}
+	return ""
+}
+
+func (m *ListHyperParametersRequest) GetMaxItems() int32 {
+	if m != nil {
+		return m.MaxItems
+	}
+	return 0
+}
+
+type ListHyperParametersResponse struct {
+	HyperParametersIds   []string `protobuf:"bytes,1,rep,name=hyperParametersIds,proto3" json:"hyperParametersIds,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ListHyperParametersResponse) Reset()         { *m = ListHyperParametersResponse{} }
+func (m *ListHyperParametersResponse) String() string { return proto.CompactTextString(m) }
+func (*ListHyperParametersResponse) ProtoMessage()    {}
+func (*ListHyperParametersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{10}
+}
+
+func (m *ListHyperParametersResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListHyperParametersResponse.Unmarshal(m, b)
+}
+func (m *ListHyperParametersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListHyperParametersResponse.Marshal(b, m, deterministic)
+}
+func (m *ListHyperParametersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListHyperParametersResponse.Merge(m, src)
+}
+func (m *ListHyperParametersResponse) XXX_Size() int {
+	return xxx_messageInfo_ListHyperParametersResponse.Size(m)
+}
+func (m *ListHyperParametersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListHyperParametersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListHyperParametersResponse proto.InternalMessageInfo
+
+func (m *ListHyperParametersResponse) GetHyperParametersIds() []string {
+	if m != nil {
+		return m.HyperParametersIds
+	}
+	return nil
+}
+
+type CreateHyperParametersRequest struct {
+	ModelId              string            `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParameterId     string            `protobuf:"bytes,2,opt,name=hyperParameterId,proto3" json:"hyperParameterId,omitempty"`
+	CanonicalCheckpoint  string            `protobuf:"bytes,3,opt,name=canonicalCheckpoint,proto3" json:"canonicalCheckpoint,omitempty"`
+	HyperParameters      map[string]string `protobuf:"bytes,4,rep,name=hyperParameters,proto3" json:"hyperParameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *CreateHyperParametersRequest) Reset()         { *m = CreateHyperParametersRequest{} }
+func (m *CreateHyperParametersRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateHyperParametersRequest) ProtoMessage()    {}
+func (*CreateHyperParametersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{11}
+}
+
+func (m *CreateHyperParametersRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateHyperParametersRequest.Unmarshal(m, b)
+}
+func (m *CreateHyperParametersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateHyperParametersRequest.Marshal(b, m, deterministic)
+}
+func (m *CreateHyperParametersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateHyperParametersRequest.Merge(m, src)
+}
+func (m *CreateHyperParametersRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateHyperParametersRequest.Size(m)
+}
+func (m *CreateHyperParametersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateHyperParametersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateHyperParametersRequest proto.InternalMessageInfo
+
+func (m *CreateHyperParametersRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *CreateHyperParametersRequest) GetHyperParameterId() string {
+	if m != nil {
+		return m.HyperParameterId
+	}
+	return ""
+}
+
+func (m *CreateHyperParametersRequest) GetCanonicalCheckpoint() string {
+	if m != nil {
+		return m.CanonicalCheckpoint
+	}
+	return ""
+}
+
+func (m *CreateHyperParametersRequest) GetHyperParameters() map[string]string {
+	if m != nil {
+		return m.HyperParameters
+	}
+	return nil
+}
+
+type CreateHyperParametersResponse struct {
+	ResourcePath         string   `protobuf:"bytes,1,opt,name=resourcePath,proto3" json:"resourcePath,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreateHyperParametersResponse) Reset()         { *m = CreateHyperParametersResponse{} }
+func (m *CreateHyperParametersResponse) String() string { return proto.CompactTextString(m) }
+func (*CreateHyperParametersResponse) ProtoMessage()    {}
+func (*CreateHyperParametersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{12}
+}
+
+func (m *CreateHyperParametersResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateHyperParametersResponse.Unmarshal(m, b)
+}
+func (m *CreateHyperParametersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateHyperParametersResponse.Marshal(b, m, deterministic)
+}
+func (m *CreateHyperParametersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateHyperParametersResponse.Merge(m, src)
+}
+func (m *CreateHyperParametersResponse) XXX_Size() int {
+	return xxx_messageInfo_CreateHyperParametersResponse.Size(m)
+}
+func (m *CreateHyperParametersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateHyperParametersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateHyperParametersResponse proto.InternalMessageInfo
+
+func (m *CreateHyperParametersResponse) GetResourcePath() string {
+	if m != nil {
+		return m.ResourcePath
+	}
+	return ""
+}
+
+type GetHyperParametersRequest struct {
+	ModelId              string   `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParametersId    string   `protobuf:"bytes,2,opt,name=hyperParametersId,proto3" json:"hyperParametersId,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetHyperParametersRequest) Reset()         { *m = GetHyperParametersRequest{} }
+func (m *GetHyperParametersRequest) String() string { return proto.CompactTextString(m) }
+func (*GetHyperParametersRequest) ProtoMessage()    {}
+func (*GetHyperParametersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{13}
+}
+
+func (m *GetHyperParametersRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetHyperParametersRequest.Unmarshal(m, b)
+}
+func (m *GetHyperParametersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetHyperParametersRequest.Marshal(b, m, deterministic)
+}
+func (m *GetHyperParametersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetHyperParametersRequest.Merge(m, src)
+}
+func (m *GetHyperParametersRequest) XXX_Size() int {
+	return xxx_messageInfo_GetHyperParametersRequest.Size(m)
+}
+func (m *GetHyperParametersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetHyperParametersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetHyperParametersRequest proto.InternalMessageInfo
+
+func (m *GetHyperParametersRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *GetHyperParametersRequest) GetHyperParametersId() string {
+	if m != nil {
+		return m.HyperParametersId
+	}
+	return ""
+}
+
+type GetHyperParametersResponse struct {
+	ModelId              string            `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParametersId    string            `protobuf:"bytes,2,opt,name=hyperParametersId,proto3" json:"hyperParametersId,omitempty"`
+	UpgradeTo            string            `protobuf:"bytes,3,opt,name=upgradeTo,proto3" json:"upgradeTo,omitempty"`
+	CanonicalCheckpoint  string            `protobuf:"bytes,4,opt,name=canonicalCheckpoint,proto3" json:"canonicalCheckpoint,omitempty"`
+	HyperParameters      map[string]string `protobuf:"bytes,5,rep,name=hyperParameters,proto3" json:"hyperParameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *GetHyperParametersResponse) Reset()         { *m = GetHyperParametersResponse{} }
+func (m *GetHyperParametersResponse) String() string { return proto.CompactTextString(m) }
+func (*GetHyperParametersResponse) ProtoMessage()    {}
+func (*GetHyperParametersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{14}
+}
+
+func (m *GetHyperParametersResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetHyperParametersResponse.Unmarshal(m, b)
+}
+func (m *GetHyperParametersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetHyperParametersResponse.Marshal(b, m, deterministic)
+}
+func (m *GetHyperParametersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetHyperParametersResponse.Merge(m, src)
+}
+func (m *GetHyperParametersResponse) XXX_Size() int {
+	return xxx_messageInfo_GetHyperParametersResponse.Size(m)
+}
+func (m *GetHyperParametersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetHyperParametersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetHyperParametersResponse proto.InternalMessageInfo
+
+func (m *GetHyperParametersResponse) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *GetHyperParametersResponse) GetHyperParametersId() string {
+	if m != nil {
+		return m.HyperParametersId
+	}
+	return ""
+}
+
+func (m *GetHyperParametersResponse) GetUpgradeTo() string {
+	if m != nil {
+		return m.UpgradeTo
+	}
+	return ""
+}
+
+func (m *GetHyperParametersResponse) GetCanonicalCheckpoint() string {
+	if m != nil {
+		return m.CanonicalCheckpoint
+	}
+	return ""
+}
+
+func (m *GetHyperParametersResponse) GetHyperParameters() map[string]string {
+	if m != nil {
+		return m.HyperParameters
+	}
+	return nil
+}
+
+type UpdateHyperParametersRequest struct {
+	ModelId              string            `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParametersId    string            `protobuf:"bytes,2,opt,name=hyperParametersId,proto3" json:"hyperParametersId,omitempty"`
+	UpgradeTo            string            `protobuf:"bytes,3,opt,name=upgradeTo,proto3" json:"upgradeTo,omitempty"`
+	HyperParameters      map[string]string `protobuf:"bytes,4,rep,name=hyperParameters,proto3" json:"hyperParameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *UpdateHyperParametersRequest) Reset()         { *m = UpdateHyperParametersRequest{} }
+func (m *UpdateHyperParametersRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateHyperParametersRequest) ProtoMessage()    {}
+func (*UpdateHyperParametersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{15}
+}
+
+func (m *UpdateHyperParametersRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateHyperParametersRequest.Unmarshal(m, b)
+}
+func (m *UpdateHyperParametersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateHyperParametersRequest.Marshal(b, m, deterministic)
+}
+func (m *UpdateHyperParametersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateHyperParametersRequest.Merge(m, src)
+}
+func (m *UpdateHyperParametersRequest) XXX_Size() int {
+	return xxx_messageInfo_UpdateHyperParametersRequest.Size(m)
+}
+func (m *UpdateHyperParametersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateHyperParametersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateHyperParametersRequest proto.InternalMessageInfo
+
+func (m *UpdateHyperParametersRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *UpdateHyperParametersRequest) GetHyperParametersId() string {
+	if m != nil {
+		return m.HyperParametersId
+	}
+	return ""
+}
+
+func (m *UpdateHyperParametersRequest) GetUpgradeTo() string {
+	if m != nil {
+		return m.UpgradeTo
+	}
+	return ""
+}
+
+func (m *UpdateHyperParametersRequest) GetHyperParameters() map[string]string {
+	if m != nil {
+		return m.HyperParameters
+	}
+	return nil
+}
+
+type UpdateHyperParametersResponse struct {
+	ModelId              string            `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParametersId    string            `protobuf:"bytes,2,opt,name=hyperParametersId,proto3" json:"hyperParametersId,omitempty"`
+	UpgradeTo            string            `protobuf:"bytes,3,opt,name=upgradeTo,proto3" json:"upgradeTo,omitempty"`
+	CanonicalCheckpoint  string            `protobuf:"bytes,4,opt,name=canonicalCheckpoint,proto3" json:"canonicalCheckpoint,omitempty"`
+	HyperParameters      map[string]string `protobuf:"bytes,5,rep,name=hyperParameters,proto3" json:"hyperParameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *UpdateHyperParametersResponse) Reset()         { *m = UpdateHyperParametersResponse{} }
+func (m *UpdateHyperParametersResponse) String() string { return proto.CompactTextString(m) }
+func (*UpdateHyperParametersResponse) ProtoMessage()    {}
+func (*UpdateHyperParametersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{16}
+}
+
+func (m *UpdateHyperParametersResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateHyperParametersResponse.Unmarshal(m, b)
+}
+func (m *UpdateHyperParametersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateHyperParametersResponse.Marshal(b, m, deterministic)
+}
+func (m *UpdateHyperParametersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateHyperParametersResponse.Merge(m, src)
+}
+func (m *UpdateHyperParametersResponse) XXX_Size() int {
+	return xxx_messageInfo_UpdateHyperParametersResponse.Size(m)
+}
+func (m *UpdateHyperParametersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateHyperParametersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateHyperParametersResponse proto.InternalMessageInfo
+
+func (m *UpdateHyperParametersResponse) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *UpdateHyperParametersResponse) GetHyperParametersId() string {
+	if m != nil {
+		return m.HyperParametersId
+	}
+	return ""
+}
+
+func (m *UpdateHyperParametersResponse) GetUpgradeTo() string {
+	if m != nil {
+		return m.UpgradeTo
+	}
+	return ""
+}
+
+func (m *UpdateHyperParametersResponse) GetCanonicalCheckpoint() string {
+	if m != nil {
+		return m.CanonicalCheckpoint
+	}
+	return ""
+}
+
+func (m *UpdateHyperParametersResponse) GetHyperParameters() map[string]string {
+	if m != nil {
+		return m.HyperParameters
+	}
+	return nil
+}
+
+type ListCheckpointsRequest struct {
+	ModelId              string   `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParametersId    string   `protobuf:"bytes,2,opt,name=hyperParametersId,proto3" json:"hyperParametersId,omitempty"`
+	Marker               string   `protobuf:"bytes,3,opt,name=marker,proto3" json:"marker,omitempty"`
+	MaxItems             int32    `protobuf:"varint,4,opt,name=maxItems,proto3" json:"maxItems,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ListCheckpointsRequest) Reset()         { *m = ListCheckpointsRequest{} }
+func (m *ListCheckpointsRequest) String() string { return proto.CompactTextString(m) }
+func (*ListCheckpointsRequest) ProtoMessage()    {}
+func (*ListCheckpointsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{17}
+}
+
+func (m *ListCheckpointsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListCheckpointsRequest.Unmarshal(m, b)
+}
+func (m *ListCheckpointsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListCheckpointsRequest.Marshal(b, m, deterministic)
+}
+func (m *ListCheckpointsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListCheckpointsRequest.Merge(m, src)
+}
+func (m *ListCheckpointsRequest) XXX_Size() int {
+	return xxx_messageInfo_ListCheckpointsRequest.Size(m)
+}
+func (m *ListCheckpointsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListCheckpointsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListCheckpointsRequest proto.InternalMessageInfo
+
+func (m *ListCheckpointsRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *ListCheckpointsRequest) GetHyperParametersId() string {
+	if m != nil {
+		return m.HyperParametersId
+	}
+	return ""
+}
+
+func (m *ListCheckpointsRequest) GetMarker() string {
+	if m != nil {
+		return m.Marker
+	}
+	return ""
+}
+
+func (m *ListCheckpointsRequest) GetMaxItems() int32 {
+	if m != nil {
+		return m.MaxItems
+	}
+	return 0
+}
+
+type ListCheckpointsResponse struct {
+	CheckpointIds        []string `protobuf:"bytes,1,rep,name=checkpointIds,proto3" json:"checkpointIds,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ListCheckpointsResponse) Reset()         { *m = ListCheckpointsResponse{} }
+func (m *ListCheckpointsResponse) String() string { return proto.CompactTextString(m) }
+func (*ListCheckpointsResponse) ProtoMessage()    {}
+func (*ListCheckpointsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{18}
+}
+
+func (m *ListCheckpointsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListCheckpointsResponse.Unmarshal(m, b)
+}
+func (m *ListCheckpointsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListCheckpointsResponse.Marshal(b, m, deterministic)
+}
+func (m *ListCheckpointsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListCheckpointsResponse.Merge(m, src)
+}
+func (m *ListCheckpointsResponse) XXX_Size() int {
+	return xxx_messageInfo_ListCheckpointsResponse.Size(m)
+}
+func (m *ListCheckpointsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListCheckpointsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListCheckpointsResponse proto.InternalMessageInfo
+
+func (m *ListCheckpointsResponse) GetCheckpointIds() []string {
+	if m != nil {
+		return m.CheckpointIds
+	}
+	return nil
+}
+
+type CreateCheckpointRequest struct {
+	ModelId              string            `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParametersId    string            `protobuf:"bytes,2,opt,name=hyperParametersId,proto3" json:"hyperParametersId,omitempty"`
+	CheckpointId         string            `protobuf:"bytes,3,opt,name=checkpointId,proto3" json:"checkpointId,omitempty"`
+	Link                 string            `protobuf:"bytes,4,opt,name=link,proto3" json:"link,omitempty"`
+	Info                 map[string]string `protobuf:"bytes,5,rep,name=info,proto3" json:"info,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *CreateCheckpointRequest) Reset()         { *m = CreateCheckpointRequest{} }
+func (m *CreateCheckpointRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateCheckpointRequest) ProtoMessage()    {}
+func (*CreateCheckpointRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{19}
+}
+
+func (m *CreateCheckpointRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateCheckpointRequest.Unmarshal(m, b)
+}
+func (m *CreateCheckpointRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateCheckpointRequest.Marshal(b, m, deterministic)
+}
+func (m *CreateCheckpointRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateCheckpointRequest.Merge(m, src)
+}
+func (m *CreateCheckpointRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateCheckpointRequest.Size(m)
+}
+func (m *CreateCheckpointRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateCheckpointRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateCheckpointRequest proto.InternalMessageInfo
+
+func (m *CreateCheckpointRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *CreateCheckpointRequest) GetHyperParametersId() string {
+	if m != nil {
+		return m.HyperParametersId
+	}
+	return ""
+}
+
+func (m *CreateCheckpointRequest) GetCheckpointId() string {
+	if m != nil {
+		return m.CheckpointId
+	}
+	return ""
+}
+
+func (m *CreateCheckpointRequest) GetLink() string {
+	if m != nil {
+		return m.Link
+	}
+	return ""
+}
+
+func (m *CreateCheckpointRequest) GetInfo() map[string]string {
+	if m != nil {
+		return m.Info
+	}
+	return nil
+}
+
+type CreateCheckpointResponse struct {
+	ResourcePath         string   `protobuf:"bytes,1,opt,name=resourcePath,proto3" json:"resourcePath,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreateCheckpointResponse) Reset()         { *m = CreateCheckpointResponse{} }
+func (m *CreateCheckpointResponse) String() string { return proto.CompactTextString(m) }
+func (*CreateCheckpointResponse) ProtoMessage()    {}
+func (*CreateCheckpointResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{20}
+}
+
+func (m *CreateCheckpointResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateCheckpointResponse.Unmarshal(m, b)
+}
+func (m *CreateCheckpointResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateCheckpointResponse.Marshal(b, m, deterministic)
+}
+func (m *CreateCheckpointResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateCheckpointResponse.Merge(m, src)
+}
+func (m *CreateCheckpointResponse) XXX_Size() int {
+	return xxx_messageInfo_CreateCheckpointResponse.Size(m)
+}
+func (m *CreateCheckpointResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateCheckpointResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateCheckpointResponse proto.InternalMessageInfo
+
+func (m *CreateCheckpointResponse) GetResourcePath() string {
+	if m != nil {
+		return m.ResourcePath
+	}
+	return ""
+}
+
+type GetCheckpointRequest struct {
+	ModelId              string   `protobuf:"bytes,1,opt,name=modelId,proto3" json:"modelId,omitempty"`
+	HyperParametersId    string   `protobuf:"bytes,2,opt,name=hyperParametersId,proto3" json:"hyperParametersId,omitempty"`
+	CheckpointId         string   `protobuf:"bytes,3,opt,name=checkpointId,proto3" json:"checkpointId,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetCheckpointRequest) Reset()         { *m = GetCheckpointRequest{} }
+func (m *GetCheckpointRequest) String() string { return proto.CompactTextString(m) }
+func (*GetCheckpointRequest) ProtoMessage()    {}
+func (*GetCheckpointRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{21}
+}
+
+func (m *GetCheckpointRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCheckpointRequest.Unmarshal(m, b)
+}
+func (m *GetCheckpointRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCheckpointRequest.Marshal(b, m, deterministic)
+}
+func (m *GetCheckpointRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCheckpointRequest.Merge(m, src)
+}
+func (m *GetCheckpointRequest) XXX_Size() int {
+	return xxx_messageInfo_GetCheckpointRequest.Size(m)
+}
+func (m *GetCheckpointRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCheckpointRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCheckpointRequest proto.InternalMessageInfo
+
+func (m *GetCheckpointRequest) GetModelId() string {
+	if m != nil {
+		return m.ModelId
+	}
+	return ""
+}
+
+func (m *GetCheckpointRequest) GetHyperParametersId() string {
+	if m != nil {
+		return m.HyperParametersId
+	}
+	return ""
+}
+
+func (m *GetCheckpointRequest) GetCheckpointId() string {
+	if m != nil {
+		return m.CheckpointId
+	}
+	return ""
+}
+
+type GetCheckpointResponse struct {
+	ResourcePath         string            `protobuf:"bytes,1,opt,name=resourcePath,proto3" json:"resourcePath,omitempty"`
+	Link                 string            `protobuf:"bytes,2,opt,name=link,proto3" json:"link,omitempty"`
+	Info                 map[string]string `protobuf:"bytes,3,rep,name=info,proto3" json:"info,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *GetCheckpointResponse) Reset()         { *m = GetCheckpointResponse{} }
+func (m *GetCheckpointResponse) String() string { return proto.CompactTextString(m) }
+func (*GetCheckpointResponse) ProtoMessage()    {}
+func (*GetCheckpointResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_10d86afa5a89ec9d, []int{22}
+}
+
+func (m *GetCheckpointResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCheckpointResponse.Unmarshal(m, b)
+}
+func (m *GetCheckpointResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCheckpointResponse.Marshal(b, m, deterministic)
+}
+func (m *GetCheckpointResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCheckpointResponse.Merge(m, src)
+}
+func (m *GetCheckpointResponse) XXX_Size() int {
+	return xxx_messageInfo_GetCheckpointResponse.Size(m)
+}
+func (m *GetCheckpointResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCheckpointResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCheckpointResponse proto.InternalMessageInfo
+
+func (m *GetCheckpointResponse) GetResourcePath() string {
+	if m != nil {
+		return m.ResourcePath
+	}
+	return ""
+}
+
+func (m *GetCheckpointResponse) GetLink() string {
+	if m != nil {
+		return m.Link
+	}
+	return ""
+}
+
+func (m *GetCheckpointResponse) GetInfo() map[string]string {
+	if m != nil {
+		return m.Info
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Model)(nil), "api.Model")
 	proto.RegisterType((*GetModelsRequest)(nil), "api.GetModelsRequest")
@@ -312,36 +1186,101 @@ func init() {
 	proto.RegisterType((*CreateModelResponse)(nil), "api.CreateModelResponse")
 	proto.RegisterType((*GetModelRequest)(nil), "api.GetModelRequest")
 	proto.RegisterType((*GetModelResponse)(nil), "api.GetModelResponse")
+	proto.RegisterType((*UpdateModelRequest)(nil), "api.UpdateModelRequest")
+	proto.RegisterType((*UpdateModelResponse)(nil), "api.UpdateModelResponse")
+	proto.RegisterType((*ListHyperParametersRequest)(nil), "api.ListHyperParametersRequest")
+	proto.RegisterType((*ListHyperParametersResponse)(nil), "api.ListHyperParametersResponse")
+	proto.RegisterType((*CreateHyperParametersRequest)(nil), "api.CreateHyperParametersRequest")
+	proto.RegisterMapType((map[string]string)(nil), "api.CreateHyperParametersRequest.HyperParametersEntry")
+	proto.RegisterType((*CreateHyperParametersResponse)(nil), "api.CreateHyperParametersResponse")
+	proto.RegisterType((*GetHyperParametersRequest)(nil), "api.GetHyperParametersRequest")
+	proto.RegisterType((*GetHyperParametersResponse)(nil), "api.GetHyperParametersResponse")
+	proto.RegisterMapType((map[string]string)(nil), "api.GetHyperParametersResponse.HyperParametersEntry")
+	proto.RegisterType((*UpdateHyperParametersRequest)(nil), "api.UpdateHyperParametersRequest")
+	proto.RegisterMapType((map[string]string)(nil), "api.UpdateHyperParametersRequest.HyperParametersEntry")
+	proto.RegisterType((*UpdateHyperParametersResponse)(nil), "api.UpdateHyperParametersResponse")
+	proto.RegisterMapType((map[string]string)(nil), "api.UpdateHyperParametersResponse.HyperParametersEntry")
+	proto.RegisterType((*ListCheckpointsRequest)(nil), "api.ListCheckpointsRequest")
+	proto.RegisterType((*ListCheckpointsResponse)(nil), "api.ListCheckpointsResponse")
+	proto.RegisterType((*CreateCheckpointRequest)(nil), "api.CreateCheckpointRequest")
+	proto.RegisterMapType((map[string]string)(nil), "api.CreateCheckpointRequest.InfoEntry")
+	proto.RegisterType((*CreateCheckpointResponse)(nil), "api.CreateCheckpointResponse")
+	proto.RegisterType((*GetCheckpointRequest)(nil), "api.GetCheckpointRequest")
+	proto.RegisterType((*GetCheckpointResponse)(nil), "api.GetCheckpointResponse")
+	proto.RegisterMapType((map[string]string)(nil), "api.GetCheckpointResponse.InfoEntry")
 }
 
 func init() { proto.RegisterFile("repository.proto", fileDescriptor_10d86afa5a89ec9d) }
 
 var fileDescriptor_10d86afa5a89ec9d = []byte{
-	// 380 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x52, 0xcb, 0x4a, 0x23, 0x41,
-	0x14, 0xa5, 0x13, 0x32, 0x93, 0xdc, 0x0c, 0x4c, 0xe6, 0xce, 0x64, 0xd2, 0x34, 0x33, 0x4c, 0x4f,
-	0x6d, 0x0c, 0x0a, 0x69, 0x8c, 0x22, 0x98, 0xad, 0x0b, 0x75, 0x21, 0x84, 0xde, 0xb9, 0xb3, 0xd2,
-	0xb9, 0xc4, 0x86, 0xa4, 0xab, 0xac, 0xaa, 0x08, 0x41, 0x44, 0xf0, 0x17, 0xfc, 0x0e, 0xbf, 0xc6,
-	0x5f, 0xf0, 0x43, 0x24, 0xd5, 0x8f, 0xbc, 0x71, 0xd7, 0x75, 0xee, 0xb9, 0xe7, 0x9c, 0x3a, 0x5d,
-	0xd0, 0x50, 0x24, 0x85, 0x8e, 0x8d, 0x50, 0xb3, 0x8e, 0x54, 0xc2, 0x08, 0x2c, 0x73, 0x19, 0x7b,
-	0x7f, 0x46, 0x42, 0x8c, 0xc6, 0x14, 0x70, 0x19, 0x07, 0x3c, 0x49, 0x84, 0xe1, 0x26, 0x16, 0x89,
-	0x4e, 0x29, 0xec, 0x09, 0x2a, 0x57, 0x62, 0x48, 0x63, 0x74, 0xe1, 0xeb, 0x64, 0xfe, 0x71, 0x39,
-	0x74, 0x1d, 0xdf, 0x69, 0xd7, 0xc2, 0xfc, 0x88, 0x3e, 0xd4, 0x87, 0xa4, 0x23, 0x15, 0xcb, 0xf9,
-	0xa2, 0x5b, 0xb2, 0xd3, 0x65, 0x08, 0x7b, 0xe0, 0x46, 0x3c, 0x11, 0x49, 0x1c, 0xf1, 0xf1, 0xc5,
-	0x4c, 0x92, 0xea, 0x73, 0xc5, 0x27, 0x64, 0x48, 0x69, 0xb7, 0x6c, 0xe9, 0x3b, 0xe7, 0x0c, 0xa1,
-	0x71, 0x4e, 0xc6, 0x66, 0xd0, 0x21, 0xdd, 0x4d, 0x49, 0x1b, 0x16, 0xc0, 0x8f, 0x25, 0x4c, 0x4b,
-	0x91, 0x68, 0x42, 0x0f, 0xaa, 0x59, 0x22, 0xed, 0x3a, 0x7e, 0xb9, 0x5d, 0x0b, 0x8b, 0x33, 0x3b,
-	0x01, 0x3c, 0x53, 0xc4, 0x0d, 0xd9, 0x9d, 0x4c, 0x06, 0x7d, 0xa8, 0x58, 0x86, 0xbd, 0x50, 0xbd,
-	0x0b, 0x1d, 0x2e, 0xe3, 0x4e, 0xca, 0x48, 0x07, 0xec, 0x14, 0x7e, 0xae, 0xec, 0x65, 0x56, 0x0c,
-	0xbe, 0x29, 0xd2, 0x62, 0xaa, 0x22, 0xea, 0x73, 0x73, 0x9b, 0x15, 0xb2, 0x82, 0xb1, 0x03, 0xf8,
-	0x9e, 0x67, 0xcc, 0xfd, 0x76, 0x56, 0xc8, 0x8e, 0x17, 0x97, 0x2c, 0x4c, 0x3e, 0x4d, 0xd7, 0x7d,
-	0x2d, 0x01, 0x84, 0xc5, 0x3f, 0xc5, 0x6b, 0xa8, 0x15, 0xad, 0x60, 0xd3, 0xd2, 0xd7, 0x9b, 0xf3,
-	0x7e, 0xaf, 0xc3, 0xa9, 0x19, 0xfb, 0xfb, 0xfc, 0xf6, 0xfe, 0x52, 0x6a, 0x61, 0x33, 0xb8, 0x3f,
-	0x0c, 0x16, 0xef, 0x24, 0x98, 0xa4, 0x6a, 0x03, 0xa8, 0x2f, 0xf5, 0x80, 0x2d, 0xab, 0xb2, 0xd9,
-	0xa8, 0xe7, 0x6e, 0x0e, 0x32, 0x03, 0xdf, 0x1a, 0x78, 0x6c, 0xbb, 0x41, 0xcf, 0xd9, 0xc7, 0x1b,
-	0xa8, 0xe6, 0xb9, 0xf0, 0xd7, 0x4a, 0xcc, 0x5c, 0xbd, 0xb9, 0x86, 0x66, 0xd2, 0x7b, 0x56, 0xfa,
-	0x3f, 0xfe, 0xdb, 0x2a, 0x1d, 0x3c, 0x64, 0x25, 0x3f, 0x0e, 0xbe, 0xd8, 0x27, 0x7d, 0xf4, 0x11,
-	0x00, 0x00, 0xff, 0xff, 0xcd, 0x94, 0x6d, 0xbb, 0x09, 0x03, 0x00, 0x00,
+	// 1057 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x98, 0x5f, 0x6f, 0xdb, 0x54,
+	0x14, 0xc0, 0x65, 0x27, 0x19, 0xcb, 0x49, 0xa7, 0x66, 0xa7, 0x4d, 0xeb, 0x79, 0x29, 0xcd, 0xae,
+	0x2a, 0xa8, 0x0a, 0x8a, 0x59, 0xa9, 0xd6, 0x91, 0x07, 0x90, 0xa8, 0x46, 0x57, 0xc1, 0xa0, 0x44,
+	0x43, 0x08, 0x1e, 0xa6, 0x7a, 0xc9, 0x6d, 0x6b, 0x9a, 0xf8, 0x1a, 0xdb, 0x9d, 0xa8, 0xaa, 0x0a,
+	0x69, 0x1f, 0x00, 0x09, 0xc1, 0x13, 0x8f, 0x48, 0x3c, 0x00, 0xd2, 0x3e, 0x01, 0x4f, 0x7c, 0x05,
+	0x5e, 0x78, 0xe2, 0x89, 0x0f, 0x82, 0x72, 0x7d, 0xe3, 0xff, 0x37, 0x69, 0x24, 0x53, 0x78, 0xb3,
+	0xcf, 0xb9, 0x3e, 0xe7, 0x77, 0xfe, 0xd8, 0xe7, 0x24, 0x50, 0x77, 0xa9, 0xc3, 0x3c, 0xcb, 0x67,
+	0xee, 0x59, 0xdb, 0x71, 0x99, 0xcf, 0xb0, 0x64, 0x3a, 0x96, 0xde, 0x3c, 0x62, 0xec, 0x68, 0x40,
+	0x0d, 0xd3, 0xb1, 0x0c, 0xd3, 0xb6, 0x99, 0x6f, 0xfa, 0x16, 0xb3, 0xbd, 0xe0, 0x08, 0xf9, 0x1a,
+	0x2a, 0x8f, 0x58, 0x9f, 0x0e, 0x50, 0x83, 0x97, 0x86, 0xa3, 0x8b, 0xbd, 0xbe, 0xa6, 0xb4, 0x94,
+	0xf5, 0x6a, 0x77, 0x7c, 0x8b, 0x2d, 0xa8, 0xf5, 0xa9, 0xd7, 0x73, 0x2d, 0x67, 0xf4, 0xa0, 0xa6,
+	0x72, 0x6d, 0x5c, 0x84, 0x1d, 0xd0, 0x7a, 0xa6, 0xcd, 0x6c, 0xab, 0x67, 0x0e, 0x1e, 0x9e, 0x39,
+	0xd4, 0xdd, 0x37, 0x5d, 0x73, 0x48, 0x7d, 0xea, 0x7a, 0x5a, 0x89, 0x1f, 0x97, 0xea, 0xc9, 0x7b,
+	0x50, 0xdf, 0xa5, 0x3e, 0x67, 0xf0, 0xba, 0xf4, 0xcb, 0x53, 0xea, 0xf9, 0xb8, 0x04, 0xd7, 0x86,
+	0xa6, 0x7b, 0x42, 0x5d, 0x81, 0x22, 0xee, 0x50, 0x87, 0xeb, 0x43, 0xf3, 0xab, 0x3d, 0x9f, 0x0e,
+	0x3d, 0x8e, 0x51, 0xe9, 0x86, 0xf7, 0xc4, 0x80, 0x9b, 0x31, 0x3b, 0x9e, 0xc3, 0x6c, 0x8f, 0xf2,
+	0x07, 0x82, 0x28, 0x3c, 0x4d, 0x69, 0x95, 0xd6, 0xab, 0xdd, 0xf0, 0x9e, 0xdc, 0x03, 0xdc, 0x71,
+	0xa9, 0xe9, 0x53, 0xfe, 0xcc, 0xd8, 0x75, 0x0b, 0x2a, 0xfc, 0x04, 0xf7, 0x5c, 0xdb, 0x84, 0xb6,
+	0xe9, 0x58, 0xed, 0xe0, 0x44, 0xa0, 0x20, 0x6f, 0xc1, 0x42, 0xe2, 0x39, 0xe1, 0x8a, 0xc0, 0x9c,
+	0x4b, 0x3d, 0x76, 0xea, 0xf6, 0xe8, 0xbe, 0xe9, 0x1f, 0x0b, 0xf2, 0x84, 0x8c, 0xbc, 0x06, 0xf3,
+	0x63, 0xc6, 0xb1, 0x3f, 0x69, 0xda, 0xc9, 0x56, 0x94, 0x98, 0xd0, 0xc9, 0x74, 0xba, 0x7d, 0xc0,
+	0x4f, 0x9c, 0x7e, 0x3a, 0xaa, 0x49, 0xc5, 0x15, 0x16, 0x55, 0x99, 0xc5, 0x6d, 0x58, 0x48, 0x58,
+	0xbc, 0x34, 0xca, 0x17, 0xa0, 0x7f, 0x60, 0x79, 0x7e, 0xaa, 0xe0, 0xd3, 0x91, 0xa2, 0xea, 0xab,
+	0xd2, 0xea, 0x97, 0x52, 0xd5, 0x7f, 0x04, 0xb7, 0x73, 0x7d, 0x09, 0xd8, 0x36, 0xe0, 0x71, 0x52,
+	0x15, 0x75, 0x44, 0x8e, 0x86, 0xfc, 0xa6, 0x42, 0x33, 0x28, 0xf2, 0xcc, 0xf4, 0x1b, 0x50, 0x4f,
+	0x1a, 0xdc, 0xeb, 0x8b, 0x38, 0x32, 0x72, 0x7c, 0x03, 0x16, 0xc2, 0xf7, 0x62, 0xe7, 0x98, 0xf6,
+	0x4e, 0x1c, 0x66, 0xd9, 0xbe, 0x78, 0x65, 0xf2, 0x54, 0x78, 0x00, 0xf3, 0x29, 0x5c, 0xad, 0xdc,
+	0x2a, 0xad, 0xd7, 0x36, 0xef, 0xf1, 0xfc, 0x4f, 0x62, 0x6e, 0xa7, 0xc4, 0x0f, 0x6c, 0xdf, 0x3d,
+	0xeb, 0xa6, 0xcd, 0xe9, 0xef, 0xc2, 0x62, 0xde, 0x41, 0xac, 0x43, 0xe9, 0x84, 0x9e, 0x89, 0x68,
+	0x47, 0x97, 0xb8, 0x08, 0x95, 0x67, 0xe6, 0xe0, 0x94, 0x8a, 0xf0, 0x82, 0x9b, 0x8e, 0x7a, 0x5f,
+	0x21, 0x3b, 0xb0, 0x22, 0x21, 0x99, 0xe1, 0x65, 0xe9, 0xc1, 0xad, 0x5d, 0x3a, 0x7b, 0xf7, 0xbc,
+	0x0e, 0x37, 0x33, 0x05, 0x15, 0x84, 0x59, 0x05, 0xf9, 0x53, 0x05, 0x3d, 0xcf, 0x8b, 0xe0, 0x2c,
+	0xc8, 0x0d, 0x36, 0xa1, 0x7a, 0xea, 0x1c, 0xb9, 0x66, 0x9f, 0x3e, 0x66, 0xa2, 0xbc, 0x91, 0x40,
+	0xd6, 0x06, 0x65, 0x79, 0x1b, 0x3c, 0xc9, 0xb6, 0x41, 0x85, 0xb7, 0xc1, 0x16, 0x6f, 0x03, 0x79,
+	0x44, 0x57, 0xd8, 0x04, 0xbf, 0xa8, 0xd0, 0x0c, 0x3e, 0x1c, 0xff, 0x6e, 0x0d, 0xa7, 0x24, 0x77,
+	0xca, 0x1b, 0x33, 0x89, 0xf0, 0x0a, 0x93, 0xf5, 0x97, 0x0a, 0x2b, 0x12, 0x94, 0xff, 0x79, 0x2b,
+	0x9a, 0xb2, 0x56, 0xdc, 0x9e, 0x94, 0xdf, 0x2b, 0xef, 0xc6, 0xef, 0x15, 0x58, 0x1a, 0x4d, 0x88,
+	0x88, 0xbc, 0xf0, 0x3e, 0x8c, 0xe6, 0x56, 0x49, 0x3a, 0xb7, 0xca, 0xa9, 0xb9, 0xf5, 0x0e, 0x2c,
+	0x67, 0xa8, 0x44, 0xc1, 0xd7, 0xe0, 0x46, 0x2f, 0x14, 0x47, 0xe3, 0x2a, 0x29, 0x24, 0xdf, 0xa8,
+	0xb0, 0x1c, 0x7c, 0x6b, 0x23, 0x1b, 0x45, 0x07, 0x46, 0x60, 0x2e, 0xee, 0x54, 0x84, 0x97, 0x90,
+	0x21, 0x42, 0x79, 0x60, 0xd9, 0x27, 0xa2, 0x53, 0xf8, 0x35, 0x76, 0xa0, 0x6c, 0xd9, 0x87, 0x4c,
+	0xf4, 0xc3, 0x2b, 0xb1, 0x09, 0x95, 0x61, 0x6d, 0xef, 0xd9, 0x87, 0x2c, 0x28, 0x3f, 0x7f, 0x46,
+	0xdf, 0x86, 0x6a, 0x28, 0x9a, 0xa9, 0xd0, 0x6f, 0x83, 0x96, 0xf5, 0x31, 0xc3, 0xd8, 0x79, 0xae,
+	0xc0, 0xe2, 0x2e, 0xf5, 0xff, 0xd3, 0x6c, 0x92, 0xdf, 0x15, 0x68, 0xa4, 0x20, 0x2e, 0x1f, 0x42,
+	0x58, 0x0b, 0x35, 0x56, 0x8b, 0xfb, 0xa2, 0x16, 0x25, 0x5e, 0x8b, 0xb5, 0xf1, 0x98, 0xc8, 0x7a,
+	0x28, 0xac, 0x12, 0x9b, 0x3f, 0xcf, 0x01, 0x74, 0xc3, 0x9f, 0x24, 0xf8, 0x19, 0x54, 0xc3, 0x05,
+	0x1d, 0x1b, 0x63, 0x80, 0xc4, 0xe2, 0xaf, 0x2f, 0xa5, 0xc5, 0x01, 0x13, 0x59, 0x79, 0xfe, 0xc7,
+	0xdf, 0xdf, 0xa9, 0xcb, 0xd8, 0x30, 0x9e, 0xdd, 0x35, 0xa2, 0x9f, 0x39, 0xc6, 0x30, 0xb0, 0xf6,
+	0x14, 0x6a, 0xb1, 0x95, 0x1c, 0x97, 0x63, 0x9d, 0x16, 0x5f, 0x83, 0x75, 0x2d, 0xab, 0x10, 0x0e,
+	0x5a, 0xdc, 0x81, 0x4e, 0xf2, 0x1d, 0x74, 0x94, 0x0d, 0x3c, 0x80, 0xeb, 0x63, 0x2e, 0x5c, 0x4c,
+	0x60, 0x8e, 0xad, 0x37, 0x52, 0x52, 0x61, 0xfa, 0x55, 0x6e, 0xfa, 0x0e, 0xae, 0xe6, 0x9a, 0x36,
+	0xce, 0x45, 0x17, 0x5d, 0xe0, 0x00, 0x6a, 0xb1, 0x45, 0x5b, 0x44, 0x91, 0x5d, 0xe6, 0x45, 0x14,
+	0x39, 0x3b, 0x39, 0xd9, 0xe0, 0xae, 0xd6, 0xf4, 0x69, 0xae, 0x46, 0xf1, 0x7c, 0xab, 0xc0, 0x42,
+	0xce, 0xca, 0x8c, 0xab, 0xdc, 0xba, 0x7c, 0x71, 0xd7, 0x5b, 0xf2, 0x03, 0x02, 0x63, 0x9b, 0x63,
+	0xdc, 0x45, 0x63, 0x0a, 0x86, 0xc1, 0x5f, 0x0e, 0x27, 0xf2, 0xfd, 0x83, 0x02, 0x8d, 0xdc, 0xc5,
+	0x11, 0xef, 0x4c, 0x5d, 0x6f, 0x75, 0x32, 0xe9, 0x88, 0x20, 0xeb, 0x70, 0xb2, 0x2d, 0x32, 0x2b,
+	0xd9, 0x28, 0x61, 0x3f, 0x2a, 0x80, 0xd9, 0xc5, 0x0a, 0x5f, 0x96, 0x6e, 0x5c, 0x01, 0xd6, 0xea,
+	0x94, 0x8d, 0x8c, 0xbc, 0xcf, 0x99, 0x1e, 0xe0, 0xce, 0x8c, 0x4c, 0xc6, 0x79, 0xe6, 0xdb, 0x72,
+	0x81, 0x2f, 0x14, 0x68, 0xe4, 0x8e, 0x5c, 0x91, 0xc1, 0x49, 0xeb, 0x8e, 0xc8, 0xe0, 0xc4, 0x89,
+	0x4d, 0x3e, 0xe4, 0xb4, 0x0f, 0xf5, 0x22, 0x68, 0x47, 0x59, 0xfd, 0x49, 0x81, 0xf9, 0xd4, 0x04,
+	0xc4, 0xdb, 0x61, 0x87, 0x65, 0xa7, 0xb5, 0xde, 0xcc, 0x57, 0x0a, 0xbc, 0x4f, 0x39, 0xde, 0xc7,
+	0xf8, 0x51, 0x01, 0x78, 0x46, 0x2f, 0xc6, 0xf4, 0xab, 0x02, 0xf5, 0xf4, 0x5c, 0xc1, 0xe6, 0xa4,
+	0x91, 0xa6, 0xaf, 0x48, 0xb4, 0x02, 0xf5, 0x73, 0x8e, 0xfa, 0x98, 0x14, 0x8d, 0x3a, 0xca, 0xea,
+	0x0b, 0x05, 0x6e, 0x24, 0xbe, 0xee, 0x78, 0x2b, 0xef, 0x8b, 0x1f, 0x70, 0xea, 0xf2, 0x61, 0x40,
+	0x0e, 0x39, 0xe4, 0x01, 0x3e, 0x29, 0x18, 0xd2, 0x38, 0x8f, 0xcf, 0xbb, 0x8b, 0xa7, 0xd7, 0xf8,
+	0xbf, 0x51, 0x6f, 0xfe, 0x13, 0x00, 0x00, 0xff, 0xff, 0x23, 0xb1, 0x78, 0xd7, 0xc4, 0x12, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -359,6 +1298,14 @@ type RepositoryClient interface {
 	GetModels(ctx context.Context, in *GetModelsRequest, opts ...grpc.CallOption) (*GetModelsResponse, error)
 	CreateModel(ctx context.Context, in *CreateModelRequest, opts ...grpc.CallOption) (*CreateModelResponse, error)
 	GetModel(ctx context.Context, in *GetModelRequest, opts ...grpc.CallOption) (*GetModelResponse, error)
+	UpdateModel(ctx context.Context, in *UpdateModelRequest, opts ...grpc.CallOption) (*UpdateModelResponse, error)
+	ListHyperParameters(ctx context.Context, in *ListHyperParametersRequest, opts ...grpc.CallOption) (*ListHyperParametersResponse, error)
+	CreateHyperParameters(ctx context.Context, in *CreateHyperParametersRequest, opts ...grpc.CallOption) (*CreateHyperParametersResponse, error)
+	GetHyperParameters(ctx context.Context, in *GetHyperParametersRequest, opts ...grpc.CallOption) (*GetHyperParametersResponse, error)
+	UpdateHyperParameters(ctx context.Context, in *UpdateHyperParametersRequest, opts ...grpc.CallOption) (*UpdateHyperParametersResponse, error)
+	ListCheckpoints(ctx context.Context, in *ListCheckpointsRequest, opts ...grpc.CallOption) (*ListCheckpointsResponse, error)
+	CreateCheckpoint(ctx context.Context, in *CreateCheckpointRequest, opts ...grpc.CallOption) (*CreateCheckpointResponse, error)
+	GetCheckpoint(ctx context.Context, in *GetCheckpointRequest, opts ...grpc.CallOption) (*GetCheckpointResponse, error)
 }
 
 type repositoryClient struct {
@@ -396,11 +1343,129 @@ func (c *repositoryClient) GetModel(ctx context.Context, in *GetModelRequest, op
 	return out, nil
 }
 
+func (c *repositoryClient) UpdateModel(ctx context.Context, in *UpdateModelRequest, opts ...grpc.CallOption) (*UpdateModelResponse, error) {
+	out := new(UpdateModelResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/UpdateModel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repositoryClient) ListHyperParameters(ctx context.Context, in *ListHyperParametersRequest, opts ...grpc.CallOption) (*ListHyperParametersResponse, error) {
+	out := new(ListHyperParametersResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/ListHyperParameters", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repositoryClient) CreateHyperParameters(ctx context.Context, in *CreateHyperParametersRequest, opts ...grpc.CallOption) (*CreateHyperParametersResponse, error) {
+	out := new(CreateHyperParametersResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/CreateHyperParameters", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repositoryClient) GetHyperParameters(ctx context.Context, in *GetHyperParametersRequest, opts ...grpc.CallOption) (*GetHyperParametersResponse, error) {
+	out := new(GetHyperParametersResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/GetHyperParameters", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repositoryClient) UpdateHyperParameters(ctx context.Context, in *UpdateHyperParametersRequest, opts ...grpc.CallOption) (*UpdateHyperParametersResponse, error) {
+	out := new(UpdateHyperParametersResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/UpdateHyperParameters", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repositoryClient) ListCheckpoints(ctx context.Context, in *ListCheckpointsRequest, opts ...grpc.CallOption) (*ListCheckpointsResponse, error) {
+	out := new(ListCheckpointsResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/ListCheckpoints", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repositoryClient) CreateCheckpoint(ctx context.Context, in *CreateCheckpointRequest, opts ...grpc.CallOption) (*CreateCheckpointResponse, error) {
+	out := new(CreateCheckpointResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/CreateCheckpoint", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repositoryClient) GetCheckpoint(ctx context.Context, in *GetCheckpointRequest, opts ...grpc.CallOption) (*GetCheckpointResponse, error) {
+	out := new(GetCheckpointResponse)
+	err := c.cc.Invoke(ctx, "/api.Repository/GetCheckpoint", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RepositoryServer is the server API for Repository service.
 type RepositoryServer interface {
 	GetModels(context.Context, *GetModelsRequest) (*GetModelsResponse, error)
 	CreateModel(context.Context, *CreateModelRequest) (*CreateModelResponse, error)
 	GetModel(context.Context, *GetModelRequest) (*GetModelResponse, error)
+	UpdateModel(context.Context, *UpdateModelRequest) (*UpdateModelResponse, error)
+	ListHyperParameters(context.Context, *ListHyperParametersRequest) (*ListHyperParametersResponse, error)
+	CreateHyperParameters(context.Context, *CreateHyperParametersRequest) (*CreateHyperParametersResponse, error)
+	GetHyperParameters(context.Context, *GetHyperParametersRequest) (*GetHyperParametersResponse, error)
+	UpdateHyperParameters(context.Context, *UpdateHyperParametersRequest) (*UpdateHyperParametersResponse, error)
+	ListCheckpoints(context.Context, *ListCheckpointsRequest) (*ListCheckpointsResponse, error)
+	CreateCheckpoint(context.Context, *CreateCheckpointRequest) (*CreateCheckpointResponse, error)
+	GetCheckpoint(context.Context, *GetCheckpointRequest) (*GetCheckpointResponse, error)
+}
+
+// UnimplementedRepositoryServer can be embedded to have forward compatible implementations.
+type UnimplementedRepositoryServer struct {
+}
+
+func (*UnimplementedRepositoryServer) GetModels(ctx context.Context, req *GetModelsRequest) (*GetModelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetModels not implemented")
+}
+func (*UnimplementedRepositoryServer) CreateModel(ctx context.Context, req *CreateModelRequest) (*CreateModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateModel not implemented")
+}
+func (*UnimplementedRepositoryServer) GetModel(ctx context.Context, req *GetModelRequest) (*GetModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetModel not implemented")
+}
+func (*UnimplementedRepositoryServer) UpdateModel(ctx context.Context, req *UpdateModelRequest) (*UpdateModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateModel not implemented")
+}
+func (*UnimplementedRepositoryServer) ListHyperParameters(ctx context.Context, req *ListHyperParametersRequest) (*ListHyperParametersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListHyperParameters not implemented")
+}
+func (*UnimplementedRepositoryServer) CreateHyperParameters(ctx context.Context, req *CreateHyperParametersRequest) (*CreateHyperParametersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateHyperParameters not implemented")
+}
+func (*UnimplementedRepositoryServer) GetHyperParameters(ctx context.Context, req *GetHyperParametersRequest) (*GetHyperParametersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHyperParameters not implemented")
+}
+func (*UnimplementedRepositoryServer) UpdateHyperParameters(ctx context.Context, req *UpdateHyperParametersRequest) (*UpdateHyperParametersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateHyperParameters not implemented")
+}
+func (*UnimplementedRepositoryServer) ListCheckpoints(ctx context.Context, req *ListCheckpointsRequest) (*ListCheckpointsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCheckpoints not implemented")
+}
+func (*UnimplementedRepositoryServer) CreateCheckpoint(ctx context.Context, req *CreateCheckpointRequest) (*CreateCheckpointResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCheckpoint not implemented")
+}
+func (*UnimplementedRepositoryServer) GetCheckpoint(ctx context.Context, req *GetCheckpointRequest) (*GetCheckpointResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCheckpoint not implemented")
 }
 
 func RegisterRepositoryServer(s *grpc.Server, srv RepositoryServer) {
@@ -461,6 +1526,150 @@ func _Repository_GetModel_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Repository_UpdateModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateModelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).UpdateModel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/UpdateModel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).UpdateModel(ctx, req.(*UpdateModelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repository_ListHyperParameters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListHyperParametersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).ListHyperParameters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/ListHyperParameters",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).ListHyperParameters(ctx, req.(*ListHyperParametersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repository_CreateHyperParameters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateHyperParametersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).CreateHyperParameters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/CreateHyperParameters",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).CreateHyperParameters(ctx, req.(*CreateHyperParametersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repository_GetHyperParameters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetHyperParametersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).GetHyperParameters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/GetHyperParameters",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).GetHyperParameters(ctx, req.(*GetHyperParametersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repository_UpdateHyperParameters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateHyperParametersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).UpdateHyperParameters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/UpdateHyperParameters",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).UpdateHyperParameters(ctx, req.(*UpdateHyperParametersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repository_ListCheckpoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCheckpointsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).ListCheckpoints(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/ListCheckpoints",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).ListCheckpoints(ctx, req.(*ListCheckpointsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repository_CreateCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCheckpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).CreateCheckpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/CreateCheckpoint",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).CreateCheckpoint(ctx, req.(*CreateCheckpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repository_GetCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCheckpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepositoryServer).GetCheckpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Repository/GetCheckpoint",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositoryServer).GetCheckpoint(ctx, req.(*GetCheckpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Repository_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "api.Repository",
 	HandlerType: (*RepositoryServer)(nil),
@@ -476,6 +1685,38 @@ var _Repository_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetModel",
 			Handler:    _Repository_GetModel_Handler,
+		},
+		{
+			MethodName: "UpdateModel",
+			Handler:    _Repository_UpdateModel_Handler,
+		},
+		{
+			MethodName: "ListHyperParameters",
+			Handler:    _Repository_ListHyperParameters_Handler,
+		},
+		{
+			MethodName: "CreateHyperParameters",
+			Handler:    _Repository_CreateHyperParameters_Handler,
+		},
+		{
+			MethodName: "GetHyperParameters",
+			Handler:    _Repository_GetHyperParameters_Handler,
+		},
+		{
+			MethodName: "UpdateHyperParameters",
+			Handler:    _Repository_UpdateHyperParameters_Handler,
+		},
+		{
+			MethodName: "ListCheckpoints",
+			Handler:    _Repository_ListCheckpoints_Handler,
+		},
+		{
+			MethodName: "CreateCheckpoint",
+			Handler:    _Repository_CreateCheckpoint_Handler,
+		},
+		{
+			MethodName: "GetCheckpoint",
+			Handler:    _Repository_GetCheckpoint_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

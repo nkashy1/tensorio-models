@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"net/http"
 	"time"
@@ -50,7 +50,6 @@ func startProxyServer() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println("over")
 }
 
 func main() {
