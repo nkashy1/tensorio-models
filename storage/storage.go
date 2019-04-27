@@ -2,13 +2,23 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
+var ModelDoesNotExistError = errors.New("Model does not exist")
+var ModelExistsError = errors.New("Model already exists")
+
+var HyperParametersDoesNotExistError = errors.New("HyperParameters does not exist")
+var HyperParametersExistsError = errors.New("HyperParameters already exists")
+
+var CheckpointDoesNotExistError = errors.New("Checkpoint does not exist")
+var CheckpointExistsError = errors.New("Checkpoint already exists")
+
 type Model struct {
-	modelId                  string
-	description              string
-	canonicalHyperParameters string
+	ModelId                  string
+	Description              string
+	CanonicalHyperParameters string
 }
 
 type HyperParameters struct {
@@ -50,5 +60,4 @@ type RepositoryStorage interface {
 	GetCheckpoint(ctx context.Context, modelId, hyperParametersId, checkpointId string) (Checkpoint, error)
 
 	AddCheckpoint(ctx context.Context, checkpoint Checkpoint) error
-	UpdateCheckpoint(ctx context.Context, checkpoint Checkpoint) (Checkpoint, error)
 }
