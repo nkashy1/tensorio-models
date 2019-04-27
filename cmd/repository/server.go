@@ -136,4 +136,3 @@ func getCheckpointResourcePath(modelId, hyperParametersId, checkpointId string) 
 	resourcePath := fmt.Sprintf("models/%s/hyperparameters/%s/checkpoints/%s", modelId, hyperParametersId, checkpointId)
 	return resourcePath
 }
-
