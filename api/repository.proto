@@ -3,6 +3,21 @@ package api;
 
 import "google/api/annotations.proto";
 
+// Health checks follow the conventions here:
+// https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+message HealthCheckRequest {
+    string service = 1;
+}
+
+message HealthCheckResponse {
+    enum ServingStatus {
+        UNKNOWN = 0;
+        SERVING = 1;
+        NOT_SERVING = 2;
+    }
+    ServingStatus status = 1;
+}
+
 message Model {
     string modelId = 1;
     string description = 2;
@@ -128,6 +143,11 @@ message GetCheckpointResponse {
 }
 
 service Repository {
+    rpc Healthz(HealthCheckRequest) returns (HealthCheckResponse) {
+        option (google.api.http) = {
+            get: "/v1/repository/healthz"
+        };
+    };
     rpc GetModels(GetModelsRequest) returns (GetModelsResponse) {
         option (google.api.http) = {
             get: "/v1/repository/models"

@@ -15,6 +15,30 @@
     "application/json"
   ],
   "paths": {
+    "/v1/repository/healthz": {
+      "get": {
+        "operationId": "Healthz",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHealthCheckResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
     "/v1/repository/models": {
       "get": {
         "operationId": "GetModels",
@@ -374,6 +398,15 @@
     }
   },
   "definitions": {
+    "HealthCheckResponseServingStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SERVING",
+        "NOT_SERVING"
+      ],
+      "default": "UNKNOWN"
+    },
     "apiCreateCheckpointRequest": {
       "type": "object",
       "properties": {
@@ -505,6 +538,14 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "apiHealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/HealthCheckResponseServingStatus"
         }
       }
     },

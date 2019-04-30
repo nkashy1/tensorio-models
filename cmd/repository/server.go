@@ -12,6 +12,14 @@ import (
 type server struct {
 }
 
+func (srv *server) Healthz(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
+	log.Println(req)
+	resp := &api.HealthCheckResponse{
+		Status: 1,
+	}
+	return resp, nil
+}
+
 func (srv *server) GetModels(ctx context.Context, msg *api.GetModelsRequest) (*api.GetModelsResponse, error) {
 	log.Println(msg.Marker)
 	resp := &api.GetModelsResponse{
