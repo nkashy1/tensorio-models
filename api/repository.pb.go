@@ -52,8 +52,9 @@ func (HealthCheckResponse_ServingStatus) EnumDescriptor() ([]byte, []int) {
 }
 
 //*
-// Health checks follow the conventions here:
+// Health checks inspired by the conventions here:
 // https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+// (although they do not follow that protocol exactly)
 //
 // Exposed using the Healthz method on the Repository service.
 type HealthCheckRequest struct {
