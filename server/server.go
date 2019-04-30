@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/storage"
 	log "github.com/sirupsen/logrus"
@@ -15,7 +16,9 @@ type server struct {
 }
 
 func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
-	return &server{}
+	return &server{
+		storage: storage,
+	}
 }
 
 func (srv *server) ListModels(ctx context.Context, req *api.ListModelsRequest) (*api.ListModelsResponse, error) {
