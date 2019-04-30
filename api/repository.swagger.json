@@ -17,12 +17,12 @@
   "paths": {
     "/v1/repository/models": {
       "get": {
-        "operationId": "GetModels",
+        "operationId": "ListModels",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetModelsResponse"
+              "$ref": "#/definitions/apiListModelsResponse"
             }
           }
         },
@@ -497,17 +497,6 @@
         }
       }
     },
-    "apiGetModelsResponse": {
-      "type": "object",
-      "properties": {
-        "modelIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "apiListCheckpointsResponse": {
       "type": "object",
       "properties": {
@@ -523,6 +512,17 @@
       "type": "object",
       "properties": {
         "hyperParametersIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiListModelsResponse": {
+      "type": "object",
+      "properties": {
+        "modelIds": {
           "type": "array",
           "items": {
             "type": "string"
