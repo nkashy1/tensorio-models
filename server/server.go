@@ -20,12 +20,8 @@ func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
 
 func (srv *server) ListModels(ctx context.Context, req *api.ListModelsRequest) (*api.ListModelsResponse, error) {
 	log.Println(req.Marker)
-	models, err := srv.storage.ListModels(ctx, req.Marker, int(req.MaxItems))
-	if err != nil {
-		log.Error(err)
-	}
 	res := &api.ListModelsResponse{
-		ModelIds: models,
+		ModelIds: []string{"HappyFace", "PhenomenalFace"},
 	}
 	return res, nil
 }
