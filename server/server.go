@@ -1,23 +1,33 @@
-package main
+package server
 
 import (
 	"context"
 	"fmt"
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/storage"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 )
 
 type server struct {
+	storage storage.RepositoryStorage
 }
 
-func (srv *server) GetModels(ctx context.Context, msg *api.GetModelsRequest) (*api.GetModelsResponse, error) {
-	log.Println(msg.Marker)
-	resp := &api.GetModelsResponse{
-		ModelIds: []string{"HappyFace", "PhenomenalFace"},
+func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
+	return &server{}
+}
+
+func (srv *server) ListModels(ctx context.Context, req *api.ListModelsRequest) (*api.ListModelsResponse, error) {
+	log.Println(req.Marker)
+	models, err := srv.storage.ListModels(ctx, req.Marker, int(req.MaxItems))
+	if err != nil {
+		log.Error(err)
 	}
-	return resp, nil
+	res := &api.ListModelsResponse{
+		ModelIds: models,
+	}
+	return res, nil
 }
 
 func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api.GetModelResponse, error) {
