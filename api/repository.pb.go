@@ -51,8 +51,11 @@ func (HealthCheckResponse_ServingStatus) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_10d86afa5a89ec9d, []int{1, 0}
 }
 
+//*
 // Health checks follow the conventions here:
 // https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+//
+// Exposed using the Healthz method on the Repository service.
 type HealthCheckRequest struct {
 	Service              string   `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`

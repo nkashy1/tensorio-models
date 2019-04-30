@@ -3,8 +3,12 @@ package api;
 
 import "google/api/annotations.proto";
 
-// Health checks follow the conventions here:
-// https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+/**
+ * Health checks follow the conventions here:
+ * https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+ *
+ * Exposed using the Healthz method on the Repository service.
+ */
 message HealthCheckRequest {
     string service = 1;
 }
