@@ -6,9 +6,11 @@ import (
 	"github.com/doc-ai/tensorio-models/storage"
 	"sort"
 	"strings"
+	"sync"
 )
 
 type memory struct {
+	lock      *sync.RWMutex
 	modelList []string
 	models    map[string]storage.Model
 
@@ -21,6 +23,8 @@ type memory struct {
 
 func NewMemoryRepositoryStorage() storage.RepositoryStorage {
 	store := &memory{
+		lock: &sync.RWMutex{},
+
 		modelList: make([]string, 0),
 		models:    make(map[string]storage.Model),
 
@@ -34,6 +38,8 @@ func NewMemoryRepositoryStorage() storage.RepositoryStorage {
 }
 
 func (s *memory) ListModels(ctx context.Context, marker string, maxItems int) ([]string, error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	firstIndex := sort.SearchStrings(s.modelList, marker)
 	lastIndex := firstIndex + maxItems
 	if lastIndex > len(s.modelList) {
@@ -48,6 +54,8 @@ func (s *memory) ListModels(ctx context.Context, marker string, maxItems int) ([
 }
 
 func (s *memory) GetModel(ctx context.Context, modelId string) (storage.Model, error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	model, ok := s.models[modelId]
 	if ok {
 		return model, nil
@@ -60,6 +68,8 @@ func (s *memory) AddModel(ctx context.Context, model storage.Model) error {
 		return storage.ModelExistsError
 	}
 
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	s.modelList = insert(s.modelList, model.ModelId)
 	s.models[model.ModelId] = model
 
@@ -72,6 +82,9 @@ func (s *memory) UpdateModel(ctx context.Context, model storage.Model) (storage.
 	if currentModel, err = s.GetModel(ctx, model.ModelId); err != nil {
 		return storage.Model{}, err
 	}
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
 	if strings.TrimSpace(model.Description) != "" {
 		currentModel.Description = model.Description
@@ -89,6 +102,9 @@ func (s *memory) ListHyperParameters(ctx context.Context, modelId, marker string
 	if _, err := s.GetModel(ctx, modelId); err != nil {
 		return nil, err
 	}
+
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
 	qualifiedMarker := fmt.Sprintf("%s:%s", modelId, marker)
 
@@ -111,6 +127,9 @@ func (s *memory) ListHyperParameters(ctx context.Context, modelId, marker string
 }
 
 func (s *memory) GetHyperparameters(ctx context.Context, modelId string, hyperParametersId string) (storage.HyperParameters, error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
 	key := fmt.Sprintf("%s:%s", modelId, hyperParametersId)
 	if hyperParameters, ok := s.hyperParameters[key]; ok {
 		return hyperParameters, nil
@@ -128,6 +147,9 @@ func (s *memory) AddHyperParameters(ctx context.Context, hyperParameters storage
 		return storage.HyperParametersExistsError
 	}
 
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	key := fmt.Sprintf("%s:%s", hyperParameters.ModelId, hyperParameters.HyperParametersId)
 
 	s.hyperParametersList = insert(s.hyperParametersList, key)
@@ -144,6 +166,9 @@ func (s *memory) UpdateHyperParameters(ctx context.Context, hyperParameters stor
 	if _, err := s.GetHyperparameters(ctx, hyperParameters.ModelId, hyperParameters.HyperParametersId); err != nil {
 		return storage.HyperParameters{}, err
 	}
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
 	key := fmt.Sprintf("%s:%s", hyperParameters.ModelId, hyperParameters.HyperParametersId)
 
@@ -174,6 +199,9 @@ func (s *memory) ListCheckpoints(ctx context.Context, modelId, hyperParametersId
 		return nil, err
 	}
 
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
 	qualifiedMarker := fmt.Sprintf("%s:%s:%s", modelId, hyperParametersId, marker)
 
 	firstIndex := sort.SearchStrings(s.checkpointsList, qualifiedMarker)
@@ -203,6 +231,9 @@ func (s *memory) GetCheckpoint(ctx context.Context, modelId, hyperParametersId, 
 		return storage.Checkpoint{}, err
 	}
 
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
 	key := fmt.Sprintf("%s:%s:%s", modelId, hyperParametersId, checkpointId)
 
 	if checkpoint, ok := s.checkpoints[key]; ok {
@@ -224,6 +255,9 @@ func (s *memory) AddCheckpoint(ctx context.Context, checkpoint storage.Checkpoin
 	if _, err := s.GetCheckpoint(ctx, checkpoint.ModelId, checkpoint.HyperParametersId, checkpoint.CheckpointId); err == nil {
 		return storage.CheckpointExistsError
 	}
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
 	key := fmt.Sprintf("%s:%s:%s", checkpoint.ModelId, checkpoint.HyperParametersId, checkpoint.CheckpointId)
 

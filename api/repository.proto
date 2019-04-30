@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 package api;
 
 import "google/api/annotations.proto";
@@ -29,12 +30,12 @@ message Model {
     string canonicalHyperParameters=3;
 }
 
-message GetModelsRequest {
+message ListModelsRequest {
     string marker = 1;
     int32 maxItems = 2;
 }
 
-message GetModelsResponse {
+message ListModelsResponse {
     repeated string modelIds = 1;
 }
 
@@ -153,23 +154,23 @@ service Repository {
             get: "/v1/repository/healthz"
         };
     };
-    rpc GetModels(GetModelsRequest) returns (GetModelsResponse) {
+    rpc ListModels (ListModelsRequest) returns (ListModelsResponse) {
         option (google.api.http) = {
             get: "/v1/repository/models"
         };
     };
-    rpc CreateModel(CreateModelRequest) returns (CreateModelResponse) {
+    rpc CreateModel (CreateModelRequest) returns (CreateModelResponse) {
         option (google.api.http) = {
             post: "/v1/repository/models"
             body: "*"
         };
     };
-    rpc GetModel(GetModelRequest) returns (GetModelResponse) {
+    rpc GetModel (GetModelRequest) returns (GetModelResponse) {
         option (google.api.http) = {
             get: "/v1/repository/models/{modelId}"
         };
     }
-    rpc UpdateModel(UpdateModelRequest) returns (UpdateModelResponse) {
+    rpc UpdateModel (UpdateModelRequest) returns (UpdateModelResponse) {
         option (google.api.http) = {
             put: "/v1/repository/models/{modelId}"
             body: "*"

@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/server"
+	"github.com/doc-ai/tensorio-models/storage/memory"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -15,7 +17,7 @@ func startGrpcServer() {
 	serverAddress := ":8080"
 	log.Println("Starting grpc on:", serverAddress)
 	var srv api.RepositoryServer
-	srv = &server{}
+	srv = server.NewServer(memory.NewMemoryRepositoryStorage())
 
 	grpcServer := grpc.NewServer()
 	lis, err := net.Listen("tcp", serverAddress)

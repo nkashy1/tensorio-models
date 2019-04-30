@@ -1,6 +1,5 @@
 #!/bin/sh +e
 GRPC_GATEWAY_PROTO_DIR="$(go list -m -f "{{.Dir}}" github.com/grpc-ecosystem/grpc-gateway)/third_party/googleapis"
-
 GOPATH="$(go env GOPATH)"
 
 protoc -I . repository.proto --go_out=plugins=grpc:. --proto_path=$GOPATH/src --proto_path=$GOPATH/pkg/mod --proto_path=$GRPC_GATEWAY_PROTO_DIR

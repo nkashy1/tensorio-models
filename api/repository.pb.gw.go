@@ -46,18 +46,18 @@ func request_Repository_Healthz_0(ctx context.Context, marshaler runtime.Marshal
 }
 
 var (
-	filter_Repository_GetModels_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+	filter_Repository_ListModels_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_Repository_GetModels_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetModelsRequest
+func request_Repository_ListModels_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListModelsRequest
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Repository_GetModels_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Repository_ListModels_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.GetModels(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListModels(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
@@ -494,7 +494,7 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
-	mux.Handle("GET", pattern_Repository_GetModels_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Repository_ListModels_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -503,14 +503,14 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Repository_GetModels_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Repository_ListModels_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Repository_GetModels_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Repository_ListModels_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -720,7 +720,7 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 var (
 	pattern_Repository_Healthz_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "repository", "healthz"}, ""))
 
-	pattern_Repository_GetModels_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "repository", "models"}, ""))
+	pattern_Repository_ListModels_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "repository", "models"}, ""))
 
 	pattern_Repository_CreateModel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "repository", "models"}, ""))
 
@@ -746,7 +746,7 @@ var (
 var (
 	forward_Repository_Healthz_0 = runtime.ForwardResponseMessage
 
-	forward_Repository_GetModels_0 = runtime.ForwardResponseMessage
+	forward_Repository_ListModels_0 = runtime.ForwardResponseMessage
 
 	forward_Repository_CreateModel_0 = runtime.ForwardResponseMessage
 
