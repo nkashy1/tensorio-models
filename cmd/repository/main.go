@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
-	"time"
 )
 
 func startGrpcServer() {
@@ -57,5 +56,7 @@ func startProxyServer() {
 func main() {
 	go startGrpcServer()
 	go startProxyServer()
-	time.Sleep(1 * time.Hour)
+
+	// sleep forever
+	select {}
 }
