@@ -597,6 +597,9 @@
         "upgradeTo": {
           "type": "string"
         },
+        "canonicalCheckpoint": {
+          "type": "string"
+        },
         "hyperParameters": {
           "type": "object",
           "additionalProperties": {
