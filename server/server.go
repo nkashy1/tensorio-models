@@ -291,6 +291,6 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 }
 
 func getCheckpointResourcePath(modelID, hyperParametersID, checkpointID string) string {
-	resourcePath := fmt.Sprintf("models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperParametersID, checkpointID)
+	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperParametersID, checkpointID)
 	return resourcePath
 }
