@@ -20,7 +20,7 @@ func testingServer() api.RepositoryServer {
 // Tests that models can be successfully created and listed against a fresh memory RepositoryStorage
 // backend.
 // Also tests that attempts to create duplicated models result in errors.
-func TestCreateModel(t *testing.T) {
+func TestCreateModelAndListModels(t *testing.T) {
 	server := testingServer()
 
 	modelRequests := make([]api.CreateModelRequest, 5)
@@ -206,4 +206,278 @@ func TestGetModel(t *testing.T) {
 		t.Error(err)
 	}
 	assert.Equal(t, model.Model, getModelResponse.Model, "Did not receive the expected model in GetModel response")
+}
+
+// Tests that hyperparameters are correctly created
+func TestCreateAndListHyperParameters(t *testing.T) {
+	server := testingServer()
+
+	// Create a model under which to test hyperparameters functionality
+	modelID := "test-model"
+	model := api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     modelID,
+			Description: "This is a test",
+		},
+	}
+	ctx := context.Background()
+	_, err := server.CreateModel(ctx, &model)
+	if err != nil {
+		t.Error(err)
+	}
+
+	createHyperparametersRequests := make([]api.CreateHyperParametersRequest, 21)
+	for i := range createHyperparametersRequests {
+		hyperparametersID := fmt.Sprintf("hyperparameters-%d", i)
+		hyperparameters := make(map[string]string)
+		hyperparameters["parameter"] = fmt.Sprintf("parameter-value-for-%d", i)
+		createHyperparametersRequests[i] = api.CreateHyperParametersRequest{
+			ModelId:          modelID,
+			HyperParameterId: hyperparametersID,
+			HyperParameters:  hyperparameters,
+		}
+	}
+
+	listHyperparametersRequest := api.ListHyperParametersRequest{
+		ModelId:  modelID,
+		MaxItems: int32(21),
+	}
+
+	for i, req := range createHyperparametersRequests {
+		listHyperparametersResponse, err := server.ListHyperParameters(ctx, &listHyperparametersRequest)
+		if err != nil {
+			t.Error(err)
+		}
+		if len(listHyperparametersResponse.HyperParametersIds) != i {
+			t.Errorf("Incorrect number of registered hyperparameters for model %s; expected: %d, actual: %d", modelID, i, len(listHyperparametersResponse.HyperParametersIds))
+		}
+		createHyperparametersResponse, err := server.CreateHyperParameters(ctx, &req)
+		if err != nil {
+			t.Error(err)
+		}
+		expectedResourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s", modelID, req.HyperParameterId)
+		if createHyperparametersResponse.ResourcePath != expectedResourcePath {
+			t.Errorf("Incorrect resource path in CreateHyperParameters response; expected: %s, actual: %s", expectedResourcePath, createHyperparametersResponse.ResourcePath)
+		}
+	}
+}
+
+// Tests that hyperparameters are correctly listed (pagination behaviour)
+func TestListHyperParameters(t *testing.T) {
+	server := testingServer()
+
+	// Create a model under which to test hyperparameters functionality
+	modelID := "test-model"
+	model := api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     modelID,
+			Description: "This is a test",
+		},
+	}
+	ctx := context.Background()
+	_, err := server.CreateModel(ctx, &model)
+	if err != nil {
+		t.Error(err)
+	}
+
+	hpCreationRequests := make([]api.CreateHyperParametersRequest, 21)
+	for i := range hpCreationRequests {
+		modelID := modelID
+		hyperparametersID := fmt.Sprintf("hyperparameters-%d", i)
+		hyperparameters := make(map[string]string)
+		hyperparameters["parameter"] = fmt.Sprintf("parameter-value-for-%d", i)
+		hpCreationRequests[i] = api.CreateHyperParametersRequest{
+			ModelId:          modelID,
+			HyperParameterId: hyperparametersID,
+			HyperParameters:  hyperparameters,
+		}
+	}
+	hyperparametersIDs := make([]string, len(hpCreationRequests))
+	for i, req := range hpCreationRequests {
+		hyperparametersIDs[i] = req.HyperParameterId
+		_, err := server.CreateHyperParameters(ctx, &req)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+	sort.Strings(hyperparametersIDs)
+
+	// ListHyperParameters does not return hyperparameters IDs, but rather tags of the form
+	// <modelID>:<hyperparmetersID>
+	// We account for this with hyperparametersTags
+	hyperparametersTags := make([]string, len(hyperparametersIDs))
+	for i, hyperparametersID := range hyperparametersIDs {
+		hyperparametersTags[i] = fmt.Sprintf("%s:%s", modelID, hyperparametersID)
+	}
+	// NOTE: HyperParameterIDs are sorted lexicographically, not chronologically!
+
+	type ListHyperParametersTest struct {
+		Server                    *api.RepositoryServer
+		ModelId                   string
+		Marker                    string
+		MaxItems                  int32
+		ExpectedHyperParameterIds []string
+	}
+
+	tests := []ListHyperParametersTest{
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			MaxItems:                  int32(5),
+			ExpectedHyperParameterIds: hyperparametersTags[0:5],
+		},
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			Marker:                    hyperparametersIDs[2],
+			MaxItems:                  int32(5),
+			ExpectedHyperParameterIds: hyperparametersTags[2:7],
+		},
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			Marker:                    hyperparametersIDs[16],
+			MaxItems:                  int32(5),
+			ExpectedHyperParameterIds: hyperparametersTags[16:21],
+		},
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			Marker:                    hyperparametersIDs[16],
+			MaxItems:                  int32(6),
+			ExpectedHyperParameterIds: hyperparametersTags[16:21],
+		},
+		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
+		// not after and including marker. No need to change behaviour, just make the two consistent.
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			Marker:                    hyperparametersIDs[0],
+			MaxItems:                  int32(20),
+			ExpectedHyperParameterIds: hyperparametersTags[0:20],
+		},
+	}
+
+	for i, test := range tests {
+		listHyperParametersRequest := api.ListHyperParametersRequest{
+			ModelId:  modelID,
+			Marker:   test.Marker,
+			MaxItems: test.MaxItems,
+		}
+
+		tsrv := *test.Server
+		listHyperParametersResponse, err := tsrv.ListHyperParameters(ctx, &listHyperParametersRequest)
+		if err != nil {
+			t.Error(err)
+		}
+		assert.Equalf(t, test.ExpectedHyperParameterIds, listHyperParametersResponse.HyperParametersIds, "TestListHyperParameters %d: ListHyperParameters request returned incorrect HyperParameterIds", i)
+	}
+}
+
+// Tests that hyperparameters update behaviour is correct
+func TestUpdateHyperParameters(t *testing.T) {
+	server := testingServer()
+
+	// Create a model under which to test hyperparameters functionality
+	modelID := "test-model"
+	model := api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     modelID,
+			Description: "This is a test",
+		},
+	}
+	ctx := context.Background()
+	_, err := server.CreateModel(ctx, &model)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Create hyperparameters to set up the test
+	hyperparametersID := "test-hyperparameters"
+	oldHyperparameters := make(map[string]string)
+	oldHyperparameters["untouched-parameter-key"] = "old-value"
+	oldHyperparameters["old-parameter-key"] = "old-value"
+
+	hpCreationRequest := api.CreateHyperParametersRequest{
+		ModelId:          modelID,
+		HyperParameterId: hyperparametersID,
+		HyperParameters:  oldHyperparameters,
+	}
+	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	newHyperparameters := make(map[string]string)
+	newHyperparameters["old-parameter-key"] = "new-value"
+	newHyperparameters["new-parameter-key"] = "new-value"
+	canonicalCheckpoint := "lol"
+	hpUpdateRequest := api.UpdateHyperParametersRequest{
+		ModelId:             modelID,
+		HyperParametersId:   hyperparametersID,
+		HyperParameters:     newHyperparameters,
+		CanonicalCheckpoint: canonicalCheckpoint,
+	}
+	hpUpdateResponse, err := server.UpdateHyperParameters(ctx, &hpUpdateRequest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Note: UpdateHyperParameters merges hyperparameter maps from the request value into the
+	// value in storage (with the former taking precedence on conflicting keys).
+	expectedHyperparameters := make(map[string]string)
+	for k, v := range oldHyperparameters {
+		expectedHyperparameters[k] = v
+	}
+	for k, v := range newHyperparameters {
+		expectedHyperparameters[k] = v
+	}
+	assert.Equal(t, modelID, hpUpdateResponse.ModelId, "Did not receive expected ModelID in UpdateHyperParameters response")
+	assert.Equal(t, hyperparametersID, hpUpdateResponse.HyperParametersId, "Did not receive expected HyperParametersID in UpdateHyperParameters response")
+	assert.Equal(t, canonicalCheckpoint, hpUpdateResponse.CanonicalCheckpoint, "Did not receive expected CanonicalCheckpoint in UpdateHyperParameters response")
+	assert.Equal(t, expectedHyperparameters, hpUpdateResponse.HyperParameters, "Did not receive expected hyperparameters in UpdateHyperParameters response")
+}
+
+// Creates hyperparameters for a given model and tests that GetHyperParameters returns the expected information
+func TestGetHyperParameters(t *testing.T) {
+	server := testingServer()
+
+	// Create a model under which to test hyperparameters functionality
+	modelID := "test-model"
+	model := api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     modelID,
+			Description: "This is a test",
+		},
+	}
+	ctx := context.Background()
+	_, err := server.CreateModel(ctx, &model)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Create hyperparameters to set up the test
+	hyperparametersID := "test-hyperparameters"
+	hyperparameters := make(map[string]string)
+	hyperparameters["untouched-parameter-key"] = "old-value"
+	hyperparameters["old-parameter-key"] = "old-value"
+
+	hpCreationRequest := api.CreateHyperParametersRequest{
+		ModelId:          modelID,
+		HyperParameterId: hyperparametersID,
+		HyperParameters:  hyperparameters,
+	}
+	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	hpGetRequest := api.GetHyperParametersRequest{
+		ModelId:           modelID,
+		HyperParametersId: hyperparametersID,
+	}
+	hpGetResponse, err := server.GetHyperParameters(ctx, &hpGetRequest)
+	assert.Equal(t, modelID, hpGetResponse.ModelId, "Did not receive expected ModelID in UpdateHyperParameters response")
+	assert.Equal(t, hyperparametersID, hpGetResponse.HyperParametersId, "Did not receive expected HyperParametersID in UpdateHyperParameters response")
+	assert.Equal(t, hyperparameters, hpGetResponse.HyperParameters, "Did not receive expected hyperparameters in UpdateHyperParameters response")
 }

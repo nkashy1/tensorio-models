@@ -189,7 +189,7 @@ func (srv *server) UpdateHyperParameters(ctx context.Context, req *api.UpdateHyp
 	hyperparametersID := req.HyperParametersId
 	canonicalCheckpoint := req.CanonicalCheckpoint
 	hyperparameters := req.HyperParameters
-	log.Printf("CreateHyperParameters request - ModelId: %s, HyperParameterId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
+	log.Printf("UpdateHyperParameters request - ModelId: %s, HyperParameterId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
 
 	existingHyperparameters, err := srv.storage.GetHyperparameters(ctx, modelID, hyperparametersID)
 	if err != nil {
