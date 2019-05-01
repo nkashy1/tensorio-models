@@ -57,7 +57,7 @@ func startProxyServer() {
 }
 
 func main() {
-	/* BEGIN command line argument parsing */
+	/* BEGIN cli */
 	// Backend specification
 	Backends := map[string]func() storage.RepositoryStorage{
 		"memory": memory.NewMemoryRepositoryStorage,
@@ -80,7 +80,7 @@ func main() {
 	if !exists {
 		log.Fatalf("Unknown backend: %s. Choices are: %s", backendArg, BackendChoices)
 	}
-	/* END command line argument parsing */
+	/* END cli */
 
 	repositoryBackend := backend()
 	apiServer := server.NewServer(repositoryBackend)
