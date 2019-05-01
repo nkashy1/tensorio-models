@@ -14,7 +14,6 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func startGrpcServer(apiServer api.RepositoryServer) {
@@ -87,5 +86,7 @@ func main() {
 
 	go startGrpcServer(apiServer)
 	go startProxyServer()
-	time.Sleep(1 * time.Hour)
+
+	// sleep forever
+	select {}
 }
