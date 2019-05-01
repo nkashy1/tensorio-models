@@ -34,3 +34,4 @@ COPY --from=build /go/bin/repository /bin/repository
 EXPOSE 8080/tcp
 EXPOSE 8081/tcp
 ENTRYPOINT ["/bin/repository"]
+CMD []
