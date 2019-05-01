@@ -22,7 +22,7 @@ func testingServer() api.RepositoryServer {
 // Also tests that attempts to create duplicated models result in errors.
 func TestCreateModelAndListModels(t *testing.T) {
 	server := testingServer()
-modelRequests := make([]api.CreateModelRequest, 5)
+	modelRequests := make([]api.CreateModelRequest, 5)
 	for i := range modelRequests {
 		modelID := fmt.Sprintf("test-model-%d", i)
 		description := fmt.Sprintf("This is test model %d", i)
@@ -503,9 +503,9 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 	hyperparameters["parameter"] = "parameter-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId: modelID,
+		ModelId:          modelID,
 		HyperParameterId: hyperparametersID,
-		HyperParameters: hyperparameters,
+		HyperParameters:  hyperparameters,
 	}
 	hpCreationResponse, err := server.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
@@ -520,18 +520,18 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 		info := make(map[string]string)
 		info["parameter"] = fmt.Sprintf("value-for-%d", i)
 		ckptCreationRequests[i] = api.CreateCheckpointRequest{
-			ModelId: modelID,
+			ModelId:           modelID,
 			HyperParametersId: hyperparametersID,
-			CheckpointId: ckptID,
-			Link: link,
-			Info: info,
+			CheckpointId:      ckptID,
+			Link:              link,
+			Info:              info,
 		}
 	}
 
-	listCheckpointsRequest := api.ListCheckpointsRequest {
-		ModelId:  modelID,
+	listCheckpointsRequest := api.ListCheckpointsRequest{
+		ModelId:           modelID,
 		HyperParametersId: hyperparametersID,
-		MaxItems: int32(21),
+		MaxItems:          int32(21),
 	}
 
 	for i, req := range ckptCreationRequests {
@@ -576,9 +576,9 @@ func TestListCheckpoints(t *testing.T) {
 	hyperparameters["parameter"] = "parameter-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId: modelID,
+		ModelId:          modelID,
 		HyperParameterId: hyperparametersID,
-		HyperParameters: hyperparameters,
+		HyperParameters:  hyperparameters,
 	}
 	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
@@ -592,11 +592,11 @@ func TestListCheckpoints(t *testing.T) {
 		info := make(map[string]string)
 		info["parameter"] = fmt.Sprintf("value-for-%d", i)
 		ckptCreationRequests[i] = api.CreateCheckpointRequest{
-			ModelId: modelID,
+			ModelId:           modelID,
 			HyperParametersId: hyperparametersID,
-			CheckpointId: checkpointID,
-			Link: link,
-			Info: info,
+			CheckpointId:      checkpointID,
+			Link:              link,
+			Info:              info,
 		}
 	}
 
@@ -620,64 +620,64 @@ func TestListCheckpoints(t *testing.T) {
 	}
 
 	type ListCheckpointsTest struct {
-		Server                    *api.RepositoryServer
-		ModelId                   string
-		HyperparametersId		  string
-		Marker                    string
-		MaxItems                  int32
-		ExpectedCheckpointIds     []string
+		Server                *api.RepositoryServer
+		ModelId               string
+		HyperparametersId     string
+		Marker                string
+		MaxItems              int32
+		ExpectedCheckpointIds []string
 	}
 
 	tests := []ListCheckpointsTest{
 		{
-			Server: &server,
-			ModelId: modelID,
-			HyperparametersId: hyperparametersID,
-			MaxItems: int32(5),
+			Server:                &server,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			MaxItems:              int32(5),
 			ExpectedCheckpointIds: checkpointTags[0:5],
 		},
 		{
-			Server:                    &server,
-			ModelId:                   modelID,
-			HyperparametersId: hyperparametersID,
-			Marker:                    checkpointIDs[2],
-			MaxItems:                  int32(5),
+			Server:                &server,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[2],
+			MaxItems:              int32(5),
 			ExpectedCheckpointIds: checkpointTags[2:7],
 		},
 		{
-			Server:                    &server,
-			ModelId:                   modelID,
-			HyperparametersId: hyperparametersID,
-			Marker:                    checkpointIDs[16],
-			MaxItems:                  int32(5),
+			Server:                &server,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[16],
+			MaxItems:              int32(5),
 			ExpectedCheckpointIds: checkpointTags[16:21],
 		},
 		{
-			Server:                    &server,
-			ModelId:                   modelID,
-			HyperparametersId: hyperparametersID,
-			Marker:                    checkpointIDs[16],
-			MaxItems:                  int32(6),
+			Server:                &server,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[16],
+			MaxItems:              int32(6),
 			ExpectedCheckpointIds: checkpointTags[16:21],
 		},
 		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
 		// not after and including marker. No need to change behaviour, just make the two consistent.
 		{
-			Server:                    &server,
-			ModelId:                   modelID,
-			HyperparametersId: hyperparametersID,
-			Marker:                    checkpointIDs[0],
-			MaxItems:                  int32(20),
+			Server:                &server,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[0],
+			MaxItems:              int32(20),
 			ExpectedCheckpointIds: checkpointTags[0:20],
 		},
 	}
 
 	for i, test := range tests {
 		listCkptRequest := api.ListCheckpointsRequest{
-			ModelId: test.ModelId,
+			ModelId:           test.ModelId,
 			HyperParametersId: test.HyperparametersId,
-			Marker: test.Marker,
-			MaxItems: test.MaxItems,
+			Marker:            test.Marker,
+			MaxItems:          test.MaxItems,
 		}
 		tsrv := *test.Server
 		listCkptResponse, err := tsrv.ListCheckpoints(ctx, &listCkptRequest)
@@ -712,9 +712,9 @@ func TestGetCheckpoint(t *testing.T) {
 	hyperparameters["parameter"] = "parameter-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId: modelID,
+		ModelId:          modelID,
 		HyperParameterId: hyperparametersID,
-		HyperParameters: hyperparameters,
+		HyperParameters:  hyperparameters,
 	}
 	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
@@ -727,11 +727,11 @@ func TestGetCheckpoint(t *testing.T) {
 	info["parameter"] = "value"
 
 	createCheckpointRequest := api.CreateCheckpointRequest{
-		ModelId: modelID,
+		ModelId:           modelID,
 		HyperParametersId: hyperparametersID,
-		CheckpointId: checkpointID,
-		Link: link,
-		Info: info,
+		CheckpointId:      checkpointID,
+		Link:              link,
+		Info:              info,
 	}
 	createCheckpointResponse, err := server.CreateCheckpoint(ctx, &createCheckpointRequest)
 	if err != nil {
@@ -739,9 +739,9 @@ func TestGetCheckpoint(t *testing.T) {
 	}
 
 	getCheckpointRequest := api.GetCheckpointRequest{
-		ModelId: modelID,
+		ModelId:           modelID,
 		HyperParametersId: hyperparametersID,
-		CheckpointId: checkpointID,
+		CheckpointId:      checkpointID,
 	}
 	getCheckpointResponse, err := server.GetCheckpoint(ctx, &getCheckpointRequest)
 	if err != nil {
