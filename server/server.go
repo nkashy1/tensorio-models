@@ -219,7 +219,7 @@ func (srv *server) UpdateHyperParameters(ctx context.Context, req *api.UpdateHyp
 		HyperParametersId:   storedHyperparameters.HyperParametersId,
 		UpgradeTo:           "",
 		CanonicalCheckpoint: storedHyperparameters.CanonicalCheckpoint,
-		HyperParameters: storedHyperparameters.HyperParameters,
+		HyperParameters:     storedHyperparameters.HyperParameters,
 	}
 	return resp, nil
 }
@@ -250,10 +250,10 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 	link := req.Link
 	log.Printf("CreateCheckpoint request - ModelId: %s, HyperParametersId: %s, CheckpointId: %s, Link: %s", modelID, hyperparametersID, checkpointID, link)
 	storageCheckpoint := storage.Checkpoint{
-		ModelId: modelID,
+		ModelId:           modelID,
 		HyperParametersId: hyperparametersID,
-		CheckpointId: checkpointID,
-		Link: link,
+		CheckpointId:      checkpointID,
+		Link:              link,
 	}
 	err := srv.storage.AddCheckpoint(ctx, storageCheckpoint)
 	if err != nil {
