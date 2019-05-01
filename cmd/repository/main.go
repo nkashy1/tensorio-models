@@ -22,10 +22,11 @@ func startGrpcServer(apiServer api.RepositoryServer) {
 
 	grpcServer := grpc.NewServer()
 	lis, err := net.Listen("tcp", serverAddress)
-	api.RegisterRepositoryServer(grpcServer, apiServer)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	api.RegisterRepositoryServer(grpcServer, apiServer)
 
 	err = grpcServer.Serve(lis)
 	if err != nil {
