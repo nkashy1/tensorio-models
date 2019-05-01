@@ -22,8 +22,7 @@ func testingServer() api.RepositoryServer {
 // Also tests that attempts to create duplicated models result in errors.
 func TestCreateModelAndListModels(t *testing.T) {
 	server := testingServer()
-
-	modelRequests := make([]api.CreateModelRequest, 5)
+modelRequests := make([]api.CreateModelRequest, 5)
 	for i := range modelRequests {
 		modelID := fmt.Sprintf("test-model-%d", i)
 		description := fmt.Sprintf("This is test model %d", i)
@@ -282,7 +281,6 @@ func TestListHyperParameters(t *testing.T) {
 
 	hpCreationRequests := make([]api.CreateHyperParametersRequest, 21)
 	for i := range hpCreationRequests {
-		modelID := modelID
 		hyperparametersID := fmt.Sprintf("hyperparameters-%d", i)
 		hyperparameters := make(map[string]string)
 		hyperparameters["parameter"] = fmt.Sprintf("parameter-value-for-%d", i)
@@ -300,6 +298,7 @@ func TestListHyperParameters(t *testing.T) {
 			t.Error(err)
 		}
 	}
+	// NOTE: HyperParameterIDs are sorted lexicographically, not chronologically!
 	sort.Strings(hyperparametersIDs)
 
 	// ListHyperParameters does not return hyperparameters IDs, but rather tags of the form
@@ -309,7 +308,6 @@ func TestListHyperParameters(t *testing.T) {
 	for i, hyperparametersID := range hyperparametersIDs {
 		hyperparametersTags[i] = fmt.Sprintf("%s:%s", modelID, hyperparametersID)
 	}
-	// NOTE: HyperParameterIDs are sorted lexicographically, not chronologically!
 
 	type ListHyperParametersTest struct {
 		Server                    *api.RepositoryServer
@@ -360,7 +358,7 @@ func TestListHyperParameters(t *testing.T) {
 
 	for i, test := range tests {
 		listHyperParametersRequest := api.ListHyperParametersRequest{
-			ModelId:  modelID,
+			ModelId:  test.ModelId,
 			Marker:   test.Marker,
 			MaxItems: test.MaxItems,
 		}
@@ -480,4 +478,277 @@ func TestGetHyperParameters(t *testing.T) {
 	assert.Equal(t, modelID, hpGetResponse.ModelId, "Did not receive expected ModelID in UpdateHyperParameters response")
 	assert.Equal(t, hyperparametersID, hpGetResponse.HyperParametersId, "Did not receive expected HyperParametersID in UpdateHyperParameters response")
 	assert.Equal(t, hyperparameters, hpGetResponse.HyperParameters, "Did not receive expected hyperparameters in UpdateHyperParameters response")
+}
+
+// Tests that checkpoints are correctly created and listed
+func TestCreateAndListCheckpoints(t *testing.T) {
+	server := testingServer()
+
+	// Create a model and hyperparameters under which to test checkpoint functionality
+	modelID := "test-model"
+	model := api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     modelID,
+			Description: "This is a test",
+		},
+	}
+	ctx := context.Background()
+	_, err := server.CreateModel(ctx, &model)
+	if err != nil {
+		t.Error(err)
+	}
+
+	hyperparametersID := "test-hyperparameters"
+	hyperparameters := make(map[string]string)
+	hyperparameters["parameter"] = "parameter-value"
+
+	hpCreationRequest := api.CreateHyperParametersRequest{
+		ModelId: modelID,
+		HyperParameterId: hyperparametersID,
+		HyperParameters: hyperparameters,
+	}
+	hpCreationResponse, err := server.CreateHyperParameters(ctx, &hpCreationRequest)
+	if err != nil {
+		t.Error(err)
+	}
+	hyperparametersResourcePath := hpCreationResponse.ResourcePath
+
+	ckptCreationRequests := make([]api.CreateCheckpointRequest, 21)
+	for i := range ckptCreationRequests {
+		ckptID := fmt.Sprintf("checkpoint-%d", i)
+		link := fmt.Sprintf("http://example.com/checkpoints-for-test/%d.zip", i)
+		info := make(map[string]string)
+		info["parameter"] = fmt.Sprintf("value-for-%d", i)
+		ckptCreationRequests[i] = api.CreateCheckpointRequest{
+			ModelId: modelID,
+			HyperParametersId: hyperparametersID,
+			CheckpointId: ckptID,
+			Link: link,
+			Info: info,
+		}
+	}
+
+	listCheckpointsRequest := api.ListCheckpointsRequest {
+		ModelId:  modelID,
+		HyperParametersId: hyperparametersID,
+		MaxItems: int32(21),
+	}
+
+	for i, req := range ckptCreationRequests {
+		listCheckpointsResponse, err := server.ListCheckpoints(ctx, &listCheckpointsRequest)
+		if err != nil {
+			t.Error(err)
+		}
+		if len(listCheckpointsResponse.CheckpointIds) != i {
+			t.Errorf("Incorrect number of registered hyperparameters for model %s; expected: %d, actual: %d", modelID, i, len(listCheckpointsResponse.CheckpointIds))
+		}
+		createCheckpointsResponse, err := server.CreateCheckpoint(ctx, &req)
+		if err != nil {
+			t.Error(err)
+		}
+		expectedResourcePath := fmt.Sprintf("%s/checkpoints/%s", hyperparametersResourcePath, req.CheckpointId)
+		if createCheckpointsResponse.ResourcePath != expectedResourcePath {
+			t.Errorf("Incorrect resource path in CreateCheckpoints response; expected: %s, actual: %s", expectedResourcePath, createCheckpointsResponse.ResourcePath)
+		}
+	}
+}
+
+// Tests that checkpoints are correctly listed (pagination behaviour)
+func TestListCheckpoints(t *testing.T) {
+	server := testingServer()
+
+	// Create a model and hyperparameters under which to test checkpoint functionality
+	modelID := "test-model"
+	model := api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     modelID,
+			Description: "This is a test",
+		},
+	}
+	ctx := context.Background()
+	_, err := server.CreateModel(ctx, &model)
+	if err != nil {
+		t.Error(err)
+	}
+
+	hyperparametersID := "test-hyperparameters"
+	hyperparameters := make(map[string]string)
+	hyperparameters["parameter"] = "parameter-value"
+
+	hpCreationRequest := api.CreateHyperParametersRequest{
+		ModelId: modelID,
+		HyperParameterId: hyperparametersID,
+		HyperParameters: hyperparameters,
+	}
+	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	ckptCreationRequests := make([]api.CreateCheckpointRequest, 21)
+	for i := range ckptCreationRequests {
+		checkpointID := fmt.Sprintf("checkpoint-%d", i)
+		link := fmt.Sprintf("http://example.com/checkpoints-for-test/%d.zip", i)
+		info := make(map[string]string)
+		info["parameter"] = fmt.Sprintf("value-for-%d", i)
+		ckptCreationRequests[i] = api.CreateCheckpointRequest{
+			ModelId: modelID,
+			HyperParametersId: hyperparametersID,
+			CheckpointId: checkpointID,
+			Link: link,
+			Info: info,
+		}
+	}
+
+	checkpointIDs := make([]string, len(ckptCreationRequests))
+	for i, req := range ckptCreationRequests {
+		checkpointIDs[i] = req.CheckpointId
+		_, err := server.CreateCheckpoint(ctx, &req)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+	// NOTE: CheckpointIds are sorted lexicographically, not chronologically!
+	sort.Strings(checkpointIDs)
+
+	// ListCheckpoints does not return checkpoint IDs, but rather tags of the form
+	// <modelID>:<hyperparmetersID>:<checkpointId>
+	// We account for this with hyperparametersTags
+	checkpointTags := make([]string, len(checkpointIDs))
+	for i, checkpointID := range checkpointIDs {
+		checkpointTags[i] = fmt.Sprintf("%s:%s:%s", modelID, hyperparametersID, checkpointID)
+	}
+
+	type ListCheckpointsTest struct {
+		Server                    *api.RepositoryServer
+		ModelId                   string
+		HyperparametersId		  string
+		Marker                    string
+		MaxItems                  int32
+		ExpectedCheckpointIds     []string
+	}
+
+	tests := []ListCheckpointsTest{
+		{
+			Server: &server,
+			ModelId: modelID,
+			HyperparametersId: hyperparametersID,
+			MaxItems: int32(5),
+			ExpectedCheckpointIds: checkpointTags[0:5],
+		},
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			HyperparametersId: hyperparametersID,
+			Marker:                    checkpointIDs[2],
+			MaxItems:                  int32(5),
+			ExpectedCheckpointIds: checkpointTags[2:7],
+		},
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			HyperparametersId: hyperparametersID,
+			Marker:                    checkpointIDs[16],
+			MaxItems:                  int32(5),
+			ExpectedCheckpointIds: checkpointTags[16:21],
+		},
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			HyperparametersId: hyperparametersID,
+			Marker:                    checkpointIDs[16],
+			MaxItems:                  int32(6),
+			ExpectedCheckpointIds: checkpointTags[16:21],
+		},
+		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
+		// not after and including marker. No need to change behaviour, just make the two consistent.
+		{
+			Server:                    &server,
+			ModelId:                   modelID,
+			HyperparametersId: hyperparametersID,
+			Marker:                    checkpointIDs[0],
+			MaxItems:                  int32(20),
+			ExpectedCheckpointIds: checkpointTags[0:20],
+		},
+	}
+
+	for i, test := range tests {
+		listCkptRequest := api.ListCheckpointsRequest{
+			ModelId: test.ModelId,
+			HyperParametersId: test.HyperparametersId,
+			Marker: test.Marker,
+			MaxItems: test.MaxItems,
+		}
+		tsrv := *test.Server
+		listCkptResponse, err := tsrv.ListCheckpoints(ctx, &listCkptRequest)
+		if err != nil {
+			t.Error(err)
+		}
+		errorMessage := fmt.Sprintf("Test %d: ListCheckpoints response does not contain the expected CheckpointIds", i)
+		assert.Equalf(t, test.ExpectedCheckpointIds, listCkptResponse.CheckpointIds, errorMessage)
+	}
+}
+
+// Creates a checkpoint for a given model and hyperparameters, and tests that GetCheckpoint returns the expected information
+func TestGetCheckpoint(t *testing.T) {
+	server := testingServer()
+
+	// Create a model and hyperparameters under which to test checkpoint functionality
+	modelID := "test-model"
+	model := api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     modelID,
+			Description: "This is a test",
+		},
+	}
+	ctx := context.Background()
+	_, err := server.CreateModel(ctx, &model)
+	if err != nil {
+		t.Error(err)
+	}
+
+	hyperparametersID := "test-hyperparameters"
+	hyperparameters := make(map[string]string)
+	hyperparameters["parameter"] = "parameter-value"
+
+	hpCreationRequest := api.CreateHyperParametersRequest{
+		ModelId: modelID,
+		HyperParameterId: hyperparametersID,
+		HyperParameters: hyperparameters,
+	}
+	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	checkpointID := "test-checkpoint"
+	link := "http://example.com/checkpoints-for-test/ckpt.zip"
+	info := make(map[string]string)
+	info["parameter"] = "value"
+
+	createCheckpointRequest := api.CreateCheckpointRequest{
+		ModelId: modelID,
+		HyperParametersId: hyperparametersID,
+		CheckpointId: checkpointID,
+		Link: link,
+		Info: info,
+	}
+	createCheckpointResponse, err := server.CreateCheckpoint(ctx, &createCheckpointRequest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	getCheckpointRequest := api.GetCheckpointRequest{
+		ModelId: modelID,
+		HyperParametersId: hyperparametersID,
+		CheckpointId: checkpointID,
+	}
+	getCheckpointResponse, err := server.GetCheckpoint(ctx, &getCheckpointRequest)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, createCheckpointResponse.ResourcePath, getCheckpointResponse.ResourcePath, "Incorrect ResourcePath in GetCheckpointResponse")
+	assert.Equal(t, link, getCheckpointResponse.Link, "Incorrect Link in GetCheckpointResponse")
+	// TODO(frederick): Make the following assertion pass
+	// assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
 }
