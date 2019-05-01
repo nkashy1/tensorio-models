@@ -14,6 +14,8 @@ type server struct {
 	storage storage.RepositoryStorage
 }
 
+// NewServer - Creates an api.RepositoryServer which handles gRPC requests using a given
+// storage.RepositoryStorage backend
 func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
 	return &server{storage: storage}
 }
@@ -223,16 +225,44 @@ func (srv *server) UpdateHyperParameters(ctx context.Context, req *api.UpdateHyp
 }
 
 func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpointsRequest) (*api.ListCheckpointsResponse, error) {
-	log.Println(ctx)
+	modelID := req.ModelId
+	hyperparametersID := req.HyperParametersId
+	marker := req.Marker
+	maxItems := int(req.MaxItems)
+	log.Printf("ListCheckpoints request - ModelId: %s, HyperParametersId: %s, Marker: %s, MaxItems: %d", modelID, hyperparametersID, marker, maxItems)
+	checkpointIDs, err := srv.storage.ListCheckpoints(ctx, modelID, hyperparametersID, marker, maxItems)
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+		message := fmt.Sprintf("Could not list checkpoints for model (%s) and hyperparameters (%s) in storage", modelID, hyperparametersID)
+		grpcErr := status.Error(codes.Unavailable, message)
+		return nil, grpcErr
+	}
 	resp := &api.ListCheckpointsResponse{
-		CheckpointIds: []string{"model.ckpt-321312", "model.ckpt-320210", "model.ckpt-319117"},
+		CheckpointIds: checkpointIDs,
 	}
 	return resp, nil
 }
 
 func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpointRequest) (*api.CreateCheckpointResponse, error) {
-	log.Println(req)
-	resourcePath := getCheckpointResourcePath(req.ModelId, req.HyperParametersId, req.CheckpointId)
+	modelID := req.ModelId
+	hyperparametersID := req.HyperParametersId
+	checkpointID := req.CheckpointId
+	link := req.Link
+	log.Printf("CreateCheckpoint request - ModelId: %s, HyperParametersId: %s, CheckpointId: %s, Link: %s", modelID, hyperparametersID, checkpointID, link)
+	storageCheckpoint := storage.Checkpoint{
+		ModelId: modelID,
+		HyperParametersId: hyperparametersID,
+		CheckpointId: checkpointID,
+		Link: link,
+	}
+	err := srv.storage.AddCheckpoint(ctx, storageCheckpoint)
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+		message := fmt.Sprintf("Could not store checkpoint (%v) in storage", storageCheckpoint)
+		grpcErr := status.Error(codes.Unavailable, message)
+		return nil, grpcErr
+	}
+	resourcePath := getCheckpointResourcePath(modelID, hyperparametersID, checkpointID)
 	resp := &api.CreateCheckpointResponse{
 		ResourcePath: resourcePath,
 	}
@@ -240,16 +270,27 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 }
 
 func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequest) (*api.GetCheckpointResponse, error) {
-	resourcePath := getCheckpointResourcePath(req.ModelId, req.HyperParametersId, req.CheckpointId)
+	modelID := req.ModelId
+	hyperparametersID := req.HyperParametersId
+	checkpointID := req.CheckpointId
+	log.Printf("GetCheckpoint request - ModelId: %s, HyperParametersId: %s, CheckpointId: %s", modelID, hyperparametersID, checkpointID)
+	storedCheckpoint, err := srv.storage.GetCheckpoint(ctx, modelID, hyperparametersID, checkpointID)
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+		message := fmt.Sprintf("Could not get checkpoint (%s) of hyperparameters (%s) for model (%s) from storage", checkpointID, hyperparametersID, modelID)
+		grpcErr := status.Error(codes.Unavailable, message)
+		return nil, grpcErr
+	}
+	resourcePath := getCheckpointResourcePath(modelID, hyperparametersID, checkpointID)
 	resp := &api.GetCheckpointResponse{
 		ResourcePath: resourcePath,
-		Link:         "https://storage.googleapis.com/doc-ai-models/happy-face/batch-9-2-0-9-2-0/model.ckpt-322405.zip",
-		Info:         map[string]string{"standard-1-accuracy": "0.934"},
+		Link:         storedCheckpoint.Link,
+		Info:         storedCheckpoint.Info,
 	}
 	return resp, nil
 }
 
-func getCheckpointResourcePath(modelId, hyperParametersId, checkpointId string) string {
-	resourcePath := fmt.Sprintf("models/%s/hyperparameters/%s/checkpoints/%s", modelId, hyperParametersId, checkpointId)
+func getCheckpointResourcePath(modelID, hyperParametersID, checkpointID string) string {
+	resourcePath := fmt.Sprintf("models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperParametersID, checkpointID)
 	return resourcePath
 }
