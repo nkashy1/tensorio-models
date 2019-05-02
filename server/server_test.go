@@ -13,15 +13,15 @@ import (
 
 func testingServer() api.RepositoryServer {
 	storage := memory.NewMemoryRepositoryStorage()
-	server := server.NewServer(storage)
-	return server
+	srv := server.NewServer(storage)
+	return srv
 }
 
 // Tests that models can be successfully created and listed against a fresh memory RepositoryStorage
 // backend.
 // Also tests that attempts to create duplicated models result in errors.
 func TestCreateModelAndListModels(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 	modelRequests := make([]api.CreateModelRequest, 5)
 	for i := range modelRequests {
 		modelID := fmt.Sprintf("test-model-%d", i)
@@ -42,15 +42,13 @@ func TestCreateModelAndListModels(t *testing.T) {
 		MaxItems: 20,
 	}
 	for i, req := range modelRequests {
-		listModelsResponse, err := server.ListModels(ctx, &listModelsRequest)
+		listModelsResponse, err := srv.ListModels(ctx, &listModelsRequest)
+		assert.NoError(t, err)
 		models := listModelsResponse.ModelIds
-		if err != nil {
-			t.Error(err)
-		}
 		if len(models) != i {
 			t.Errorf("Incorrect number of models in storage; expected: %d, actual: %d", i, len(models))
 		}
-		createModelResponse, err := server.CreateModel(ctx, &req)
+		createModelResponse, err := srv.CreateModel(ctx, &req)
 		if err != nil {
 			t.Error(err)
 		}
@@ -61,7 +59,7 @@ func TestCreateModelAndListModels(t *testing.T) {
 	}
 
 	// Creation with a duplicated request should fail
-	_, err := server.CreateModel(ctx, &modelRequests[0])
+	_, err := srv.CreateModel(ctx, &modelRequests[0])
 	if err == nil {
 		t.Error("Server did not error out on creation of duplicate model")
 	}
@@ -69,7 +67,7 @@ func TestCreateModelAndListModels(t *testing.T) {
 
 // Tests that models are correctly listed (pagination behaviour)
 func TestListModels(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	modelRequests := make([]api.CreateModelRequest, 21)
 	for i := range modelRequests {
@@ -87,7 +85,7 @@ func TestListModels(t *testing.T) {
 	modelIDs := make([]string, len(modelRequests))
 	for i, req := range modelRequests {
 		modelIDs[i] = req.Model.ModelId
-		_, err := server.CreateModel(ctx, &req)
+		_, err := srv.CreateModel(ctx, &req)
 		if err != nil {
 			t.Error(err)
 		}
@@ -104,24 +102,24 @@ func TestListModels(t *testing.T) {
 
 	tests := []ListModelsTest{
 		{
-			Server:           &server,
+			Server:           &srv,
 			MaxItems:         int32(5),
 			ExpectedModelIds: modelIDs[0:5],
 		},
 		{
-			Server:           &server,
+			Server:           &srv,
 			Marker:           modelIDs[2],
 			MaxItems:         int32(5),
 			ExpectedModelIds: modelIDs[2:7],
 		},
 		{
-			Server:           &server,
+			Server:           &srv,
 			Marker:           modelIDs[16],
 			MaxItems:         int32(5),
 			ExpectedModelIds: modelIDs[16:21],
 		},
 		{
-			Server:           &server,
+			Server:           &srv,
 			Marker:           modelIDs[16],
 			MaxItems:         int32(6),
 			ExpectedModelIds: modelIDs[16:21],
@@ -129,7 +127,7 @@ func TestListModels(t *testing.T) {
 		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
 		// not after and including marker. No need to change behaviour, just make the two consistent.
 		{
-			Server:           &server,
+			Server:           &srv,
 			Marker:           modelIDs[0],
 			MaxItems:         int32(20),
 			ExpectedModelIds: modelIDs[0:20],
@@ -153,7 +151,7 @@ func TestListModels(t *testing.T) {
 
 // Tests that model update behaviour is correct
 func TestUpdateModel(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	model := api.CreateModelRequest{
 		Model: &api.Model{
@@ -164,7 +162,7 @@ func TestUpdateModel(t *testing.T) {
 
 	ctx := context.Background()
 
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -176,7 +174,7 @@ func TestUpdateModel(t *testing.T) {
 			Description: "This is only a test",
 		},
 	}
-	updateModelResponse, err := server.UpdateModel(ctx, &updateModelRequest)
+	updateModelResponse, err := srv.UpdateModel(ctx, &updateModelRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -185,7 +183,7 @@ func TestUpdateModel(t *testing.T) {
 
 // Creates a model and tests that GetModel returns the expected information
 func TestGetModel(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	model := api.CreateModelRequest{
 		Model: &api.Model{
@@ -194,13 +192,13 @@ func TestGetModel(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
 
 	getModelRequest := api.GetModelRequest{ModelId: model.Model.ModelId}
-	getModelResponse, err := server.GetModel(ctx, &getModelRequest)
+	getModelResponse, err := srv.GetModel(ctx, &getModelRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -209,7 +207,7 @@ func TestGetModel(t *testing.T) {
 
 // Tests that hyperparameters are correctly created
 func TestCreateAndListHyperParameters(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	// Create a model under which to test hyperparameters functionality
 	modelID := "test-model"
@@ -220,7 +218,7 @@ func TestCreateAndListHyperParameters(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -243,14 +241,14 @@ func TestCreateAndListHyperParameters(t *testing.T) {
 	}
 
 	for i, req := range createHyperparametersRequests {
-		listHyperparametersResponse, err := server.ListHyperParameters(ctx, &listHyperparametersRequest)
+		listHyperparametersResponse, err := srv.ListHyperParameters(ctx, &listHyperparametersRequest)
 		if err != nil {
 			t.Error(err)
 		}
 		if len(listHyperparametersResponse.HyperParametersIds) != i {
 			t.Errorf("Incorrect number of registered hyperparameters for model %s; expected: %d, actual: %d", modelID, i, len(listHyperparametersResponse.HyperParametersIds))
 		}
-		createHyperparametersResponse, err := server.CreateHyperParameters(ctx, &req)
+		createHyperparametersResponse, err := srv.CreateHyperParameters(ctx, &req)
 		if err != nil {
 			t.Error(err)
 		}
@@ -263,7 +261,7 @@ func TestCreateAndListHyperParameters(t *testing.T) {
 
 // Tests that hyperparameters are correctly listed (pagination behaviour)
 func TestListHyperParameters(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	// Create a model under which to test hyperparameters functionality
 	modelID := "test-model"
@@ -274,7 +272,7 @@ func TestListHyperParameters(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -293,7 +291,7 @@ func TestListHyperParameters(t *testing.T) {
 	hyperparametersIDs := make([]string, len(hpCreationRequests))
 	for i, req := range hpCreationRequests {
 		hyperparametersIDs[i] = req.HyperParameterId
-		_, err := server.CreateHyperParameters(ctx, &req)
+		_, err := srv.CreateHyperParameters(ctx, &req)
 		if err != nil {
 			t.Error(err)
 		}
@@ -319,27 +317,27 @@ func TestListHyperParameters(t *testing.T) {
 
 	tests := []ListHyperParametersTest{
 		{
-			Server:                    &server,
+			Server:                    &srv,
 			ModelId:                   modelID,
 			MaxItems:                  int32(5),
 			ExpectedHyperParameterIds: hyperparametersTags[0:5],
 		},
 		{
-			Server:                    &server,
+			Server:                    &srv,
 			ModelId:                   modelID,
 			Marker:                    hyperparametersIDs[2],
 			MaxItems:                  int32(5),
 			ExpectedHyperParameterIds: hyperparametersTags[2:7],
 		},
 		{
-			Server:                    &server,
+			Server:                    &srv,
 			ModelId:                   modelID,
 			Marker:                    hyperparametersIDs[16],
 			MaxItems:                  int32(5),
 			ExpectedHyperParameterIds: hyperparametersTags[16:21],
 		},
 		{
-			Server:                    &server,
+			Server:                    &srv,
 			ModelId:                   modelID,
 			Marker:                    hyperparametersIDs[16],
 			MaxItems:                  int32(6),
@@ -348,7 +346,7 @@ func TestListHyperParameters(t *testing.T) {
 		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
 		// not after and including marker. No need to change behaviour, just make the two consistent.
 		{
-			Server:                    &server,
+			Server:                    &srv,
 			ModelId:                   modelID,
 			Marker:                    hyperparametersIDs[0],
 			MaxItems:                  int32(20),
@@ -374,7 +372,7 @@ func TestListHyperParameters(t *testing.T) {
 
 // Tests that hyperparameters update behaviour is correct
 func TestUpdateHyperParameters(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	// Create a model under which to test hyperparameters functionality
 	modelID := "test-model"
@@ -385,7 +383,7 @@ func TestUpdateHyperParameters(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -401,7 +399,7 @@ func TestUpdateHyperParameters(t *testing.T) {
 		HyperParameterId: hyperparametersID,
 		HyperParameters:  oldHyperparameters,
 	}
-	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -416,7 +414,7 @@ func TestUpdateHyperParameters(t *testing.T) {
 		HyperParameters:     newHyperparameters,
 		CanonicalCheckpoint: canonicalCheckpoint,
 	}
-	hpUpdateResponse, err := server.UpdateHyperParameters(ctx, &hpUpdateRequest)
+	hpUpdateResponse, err := srv.UpdateHyperParameters(ctx, &hpUpdateRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -438,7 +436,7 @@ func TestUpdateHyperParameters(t *testing.T) {
 
 // Creates hyperparameters for a given model and tests that GetHyperParameters returns the expected information
 func TestGetHyperParameters(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	// Create a model under which to test hyperparameters functionality
 	modelID := "test-model"
@@ -449,7 +447,7 @@ func TestGetHyperParameters(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -465,7 +463,7 @@ func TestGetHyperParameters(t *testing.T) {
 		HyperParameterId: hyperparametersID,
 		HyperParameters:  hyperparameters,
 	}
-	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -474,7 +472,8 @@ func TestGetHyperParameters(t *testing.T) {
 		ModelId:           modelID,
 		HyperParametersId: hyperparametersID,
 	}
-	hpGetResponse, err := server.GetHyperParameters(ctx, &hpGetRequest)
+	hpGetResponse, err := srv.GetHyperParameters(ctx, &hpGetRequest)
+	assert.NoError(t, err)
 	assert.Equal(t, modelID, hpGetResponse.ModelId, "Did not receive expected ModelID in UpdateHyperParameters response")
 	assert.Equal(t, hyperparametersID, hpGetResponse.HyperParametersId, "Did not receive expected HyperParametersID in UpdateHyperParameters response")
 	assert.Equal(t, hyperparameters, hpGetResponse.HyperParameters, "Did not receive expected hyperparameters in UpdateHyperParameters response")
@@ -482,7 +481,7 @@ func TestGetHyperParameters(t *testing.T) {
 
 // Tests that checkpoints are correctly created and listed
 func TestCreateAndListCheckpoints(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	// Create a model and hyperparameters under which to test checkpoint functionality
 	modelID := "test-model"
@@ -493,7 +492,7 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -507,7 +506,7 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 		HyperParameterId: hyperparametersID,
 		HyperParameters:  hyperparameters,
 	}
-	hpCreationResponse, err := server.CreateHyperParameters(ctx, &hpCreationRequest)
+	hpCreationResponse, err := srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -535,14 +534,14 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 	}
 
 	for i, req := range ckptCreationRequests {
-		listCheckpointsResponse, err := server.ListCheckpoints(ctx, &listCheckpointsRequest)
+		listCheckpointsResponse, err := srv.ListCheckpoints(ctx, &listCheckpointsRequest)
 		if err != nil {
 			t.Error(err)
 		}
 		if len(listCheckpointsResponse.CheckpointIds) != i {
 			t.Errorf("Incorrect number of registered hyperparameters for model %s; expected: %d, actual: %d", modelID, i, len(listCheckpointsResponse.CheckpointIds))
 		}
-		createCheckpointsResponse, err := server.CreateCheckpoint(ctx, &req)
+		createCheckpointsResponse, err := srv.CreateCheckpoint(ctx, &req)
 		if err != nil {
 			t.Error(err)
 		}
@@ -555,7 +554,7 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 
 // Tests that checkpoints are correctly listed (pagination behaviour)
 func TestListCheckpoints(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	// Create a model and hyperparameters under which to test checkpoint functionality
 	modelID := "test-model"
@@ -566,7 +565,7 @@ func TestListCheckpoints(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -580,7 +579,7 @@ func TestListCheckpoints(t *testing.T) {
 		HyperParameterId: hyperparametersID,
 		HyperParameters:  hyperparameters,
 	}
-	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -603,7 +602,7 @@ func TestListCheckpoints(t *testing.T) {
 	checkpointIDs := make([]string, len(ckptCreationRequests))
 	for i, req := range ckptCreationRequests {
 		checkpointIDs[i] = req.CheckpointId
-		_, err := server.CreateCheckpoint(ctx, &req)
+		_, err := srv.CreateCheckpoint(ctx, &req)
 		if err != nil {
 			t.Error(err)
 		}
@@ -630,14 +629,14 @@ func TestListCheckpoints(t *testing.T) {
 
 	tests := []ListCheckpointsTest{
 		{
-			Server:                &server,
+			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			MaxItems:              int32(5),
 			ExpectedCheckpointIds: checkpointTags[0:5],
 		},
 		{
-			Server:                &server,
+			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[2],
@@ -645,7 +644,7 @@ func TestListCheckpoints(t *testing.T) {
 			ExpectedCheckpointIds: checkpointTags[2:7],
 		},
 		{
-			Server:                &server,
+			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[16],
@@ -653,7 +652,7 @@ func TestListCheckpoints(t *testing.T) {
 			ExpectedCheckpointIds: checkpointTags[16:21],
 		},
 		{
-			Server:                &server,
+			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[16],
@@ -663,7 +662,7 @@ func TestListCheckpoints(t *testing.T) {
 		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
 		// not after and including marker. No need to change behaviour, just make the two consistent.
 		{
-			Server:                &server,
+			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
@@ -691,7 +690,7 @@ func TestListCheckpoints(t *testing.T) {
 
 // Creates a checkpoint for a given model and hyperparameters, and tests that GetCheckpoint returns the expected information
 func TestGetCheckpoint(t *testing.T) {
-	server := testingServer()
+	srv := testingServer()
 
 	// Create a model and hyperparameters under which to test checkpoint functionality
 	modelID := "test-model"
@@ -702,7 +701,7 @@ func TestGetCheckpoint(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	_, err := server.CreateModel(ctx, &model)
+	_, err := srv.CreateModel(ctx, &model)
 	if err != nil {
 		t.Error(err)
 	}
@@ -716,7 +715,7 @@ func TestGetCheckpoint(t *testing.T) {
 		HyperParameterId: hyperparametersID,
 		HyperParameters:  hyperparameters,
 	}
-	_, err = server.CreateHyperParameters(ctx, &hpCreationRequest)
+	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -733,7 +732,7 @@ func TestGetCheckpoint(t *testing.T) {
 		Link:              link,
 		Info:              info,
 	}
-	createCheckpointResponse, err := server.CreateCheckpoint(ctx, &createCheckpointRequest)
+	createCheckpointResponse, err := srv.CreateCheckpoint(ctx, &createCheckpointRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -743,7 +742,7 @@ func TestGetCheckpoint(t *testing.T) {
 		HyperParametersId: hyperparametersID,
 		CheckpointId:      checkpointID,
 	}
-	getCheckpointResponse, err := server.GetCheckpoint(ctx, &getCheckpointRequest)
+	getCheckpointResponse, err := srv.GetCheckpoint(ctx, &getCheckpointRequest)
 	if err != nil {
 		t.Error(err)
 	}
