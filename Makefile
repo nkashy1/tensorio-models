@@ -23,5 +23,5 @@ api/repository.swagger.json: api/repository.proto
 	cd api && protoc -I . repository.proto --swagger_out=logtostderr=true:. --proto_path=$(GOPATH)/src --proto_path=$(GOPATH)/pkg/mod --proto_path=$(GRPC_GATEWAY_PROTO_DIR)
 
 build: api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.json
-	go test ./...
+	go test ./... -cover
 	go build ./...
