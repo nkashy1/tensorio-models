@@ -4,6 +4,26 @@ package api;
 
 import "google/api/annotations.proto";
 
+/**
+ * Health checks inspired by the conventions here:
+ * https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+ * (although they do not follow that protocol exactly)
+ *
+ * Exposed using the Healthz method on the Repository service.
+ */
+message HealthCheckRequest {
+    string service = 1;
+}
+
+message HealthCheckResponse {
+    enum ServingStatus {
+        UNKNOWN = 0;
+        SERVING = 1;
+        NOT_SERVING = 2;
+    }
+    ServingStatus status = 1;
+}
+
 message Model {
     string modelId = 1;
     string description = 2;
@@ -82,7 +102,8 @@ message UpdateHyperParametersRequest {
     string modelId = 1;
     string hyperParametersId = 2;
     string upgradeTo = 3;
-    map<string, string> hyperParameters = 4;
+    string canonicalCheckpoint = 4;
+    map<string, string> hyperParameters = 5;
 }
 
 message UpdateHyperParametersResponse {
@@ -129,6 +150,11 @@ message GetCheckpointResponse {
 }
 
 service Repository {
+    rpc Healthz(HealthCheckRequest) returns (HealthCheckResponse) {
+        option (google.api.http) = {
+            get: "/v1/repository/healthz"
+        };
+    };
     rpc ListModels (ListModelsRequest) returns (ListModelsResponse) {
         option (google.api.http) = {
             get: "/v1/repository/models"

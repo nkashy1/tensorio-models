@@ -21,3 +21,16 @@ go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 go install github.com/golang/protobuf/protoc-gen-go
 ```
+
+## Running server
+
+The server can be run with `make run`, but there is a caveat -- `make run` requires a
+`RUN_ARGS` argument.
+
+For example:
+```
+RUN_ARGS="-backend memory" make run
+```
+
+Without this argument, `make run` fails -- simply because the `repository` binary has required
+arguments.
