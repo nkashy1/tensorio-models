@@ -1,0 +1,8 @@
+A tensorio-models is now running on your helm cluster!
+
+It is configured to use the {{ .Values.deployment.backend }} backend.
+
+The service host is configured as {{ .Values.service.hostname }}. Requests to this host are
+routed to the service.
+
+To test that everything is functioning, use `helm test {{ .Release.Name }}`
