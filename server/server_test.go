@@ -229,9 +229,9 @@ func TestCreateAndListHyperParameters(t *testing.T) {
 		hyperparameters := make(map[string]string)
 		hyperparameters["parameter"] = fmt.Sprintf("parameter-value-for-%d", i)
 		createHyperparametersRequests[i] = api.CreateHyperParametersRequest{
-			ModelId:          modelID,
-			HyperParameterId: hyperparametersID,
-			HyperParameters:  hyperparameters,
+			ModelId:           modelID,
+			HyperParametersId: hyperparametersID,
+			HyperParameters:   hyperparameters,
 		}
 	}
 
@@ -252,7 +252,7 @@ func TestCreateAndListHyperParameters(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		expectedResourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s", modelID, req.HyperParameterId)
+		expectedResourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s", modelID, req.HyperParametersId)
 		if createHyperparametersResponse.ResourcePath != expectedResourcePath {
 			t.Errorf("Incorrect resource path in CreateHyperParameters response; expected: %s, actual: %s", expectedResourcePath, createHyperparametersResponse.ResourcePath)
 		}
@@ -283,20 +283,20 @@ func TestListHyperParameters(t *testing.T) {
 		hyperparameters := make(map[string]string)
 		hyperparameters["parameter"] = fmt.Sprintf("parameter-value-for-%d", i)
 		hpCreationRequests[i] = api.CreateHyperParametersRequest{
-			ModelId:          modelID,
-			HyperParameterId: hyperparametersID,
-			HyperParameters:  hyperparameters,
+			ModelId:           modelID,
+			HyperParametersId: hyperparametersID,
+			HyperParameters:   hyperparameters,
 		}
 	}
 	hyperparametersIDs := make([]string, len(hpCreationRequests))
 	for i, req := range hpCreationRequests {
-		hyperparametersIDs[i] = req.HyperParameterId
+		hyperparametersIDs[i] = req.HyperParametersId
 		_, err := srv.CreateHyperParameters(ctx, &req)
 		if err != nil {
 			t.Error(err)
 		}
 	}
-	// NOTE: HyperParameterIDs are sorted lexicographically, not chronologically!
+	// NOTE: HyperParametersIDs are sorted lexicographically, not chronologically!
 	sort.Strings(hyperparametersIDs)
 
 	// ListHyperParameters does not return hyperparameters IDs, but rather tags of the form
@@ -308,49 +308,49 @@ func TestListHyperParameters(t *testing.T) {
 	}
 
 	type ListHyperParametersTest struct {
-		Server                    *api.RepositoryServer
-		ModelId                   string
-		Marker                    string
-		MaxItems                  int32
-		ExpectedHyperParameterIds []string
+		Server                     *api.RepositoryServer
+		ModelId                    string
+		Marker                     string
+		MaxItems                   int32
+		ExpectedHyperParametersIds []string
 	}
 
 	tests := []ListHyperParametersTest{
 		{
-			Server:                    &srv,
-			ModelId:                   modelID,
-			MaxItems:                  int32(5),
-			ExpectedHyperParameterIds: hyperparametersTags[0:5],
+			Server:                     &srv,
+			ModelId:                    modelID,
+			MaxItems:                   int32(5),
+			ExpectedHyperParametersIds: hyperparametersTags[0:5],
 		},
 		{
-			Server:                    &srv,
-			ModelId:                   modelID,
-			Marker:                    hyperparametersIDs[2],
-			MaxItems:                  int32(5),
-			ExpectedHyperParameterIds: hyperparametersTags[2:7],
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[2],
+			MaxItems:                   int32(5),
+			ExpectedHyperParametersIds: hyperparametersTags[2:7],
 		},
 		{
-			Server:                    &srv,
-			ModelId:                   modelID,
-			Marker:                    hyperparametersIDs[16],
-			MaxItems:                  int32(5),
-			ExpectedHyperParameterIds: hyperparametersTags[16:21],
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[16],
+			MaxItems:                   int32(5),
+			ExpectedHyperParametersIds: hyperparametersTags[16:21],
 		},
 		{
-			Server:                    &srv,
-			ModelId:                   modelID,
-			Marker:                    hyperparametersIDs[16],
-			MaxItems:                  int32(6),
-			ExpectedHyperParameterIds: hyperparametersTags[16:21],
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[16],
+			MaxItems:                   int32(6),
+			ExpectedHyperParametersIds: hyperparametersTags[16:21],
 		},
 		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
 		// not after and including marker. No need to change behaviour, just make the two consistent.
 		{
-			Server:                    &srv,
-			ModelId:                   modelID,
-			Marker:                    hyperparametersIDs[0],
-			MaxItems:                  int32(20),
-			ExpectedHyperParameterIds: hyperparametersTags[0:20],
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[0],
+			MaxItems:                   int32(20),
+			ExpectedHyperParametersIds: hyperparametersTags[0:20],
 		},
 	}
 
@@ -366,7 +366,7 @@ func TestListHyperParameters(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		assert.Equalf(t, test.ExpectedHyperParameterIds, listHyperParametersResponse.HyperParametersIds, "TestListHyperParameters %d: ListHyperParameters request returned incorrect HyperParameterIds", i)
+		assert.Equalf(t, test.ExpectedHyperParametersIds, listHyperParametersResponse.HyperParametersIds, "TestListHyperParameters %d: ListHyperParameters request returned incorrect HyperParametersIds", i)
 	}
 }
 
@@ -395,9 +395,9 @@ func TestUpdateHyperParameters(t *testing.T) {
 	oldHyperparameters["old-parameter-key"] = "old-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId:          modelID,
-		HyperParameterId: hyperparametersID,
-		HyperParameters:  oldHyperparameters,
+		ModelId:           modelID,
+		HyperParametersId: hyperparametersID,
+		HyperParameters:   oldHyperparameters,
 	}
 	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
@@ -459,9 +459,9 @@ func TestGetHyperParameters(t *testing.T) {
 	hyperparameters["old-parameter-key"] = "old-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId:          modelID,
-		HyperParameterId: hyperparametersID,
-		HyperParameters:  hyperparameters,
+		ModelId:           modelID,
+		HyperParametersId: hyperparametersID,
+		HyperParameters:   hyperparameters,
 	}
 	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
@@ -502,9 +502,9 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 	hyperparameters["parameter"] = "parameter-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId:          modelID,
-		HyperParameterId: hyperparametersID,
-		HyperParameters:  hyperparameters,
+		ModelId:           modelID,
+		HyperParametersId: hyperparametersID,
+		HyperParameters:   hyperparameters,
 	}
 	hpCreationResponse, err := srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
@@ -575,9 +575,9 @@ func TestListCheckpoints(t *testing.T) {
 	hyperparameters["parameter"] = "parameter-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId:          modelID,
-		HyperParameterId: hyperparametersID,
-		HyperParameters:  hyperparameters,
+		ModelId:           modelID,
+		HyperParametersId: hyperparametersID,
+		HyperParameters:   hyperparameters,
 	}
 	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
@@ -711,9 +711,9 @@ func TestGetCheckpoint(t *testing.T) {
 	hyperparameters["parameter"] = "parameter-value"
 
 	hpCreationRequest := api.CreateHyperParametersRequest{
-		ModelId:          modelID,
-		HyperParameterId: hyperparametersID,
-		HyperParameters:  hyperparameters,
+		ModelId:           modelID,
+		HyperParametersId: hyperparametersID,
+		HyperParameters:   hyperparameters,
 	}
 	_, err = srv.CreateHyperParameters(ctx, &hpCreationRequest)
 	if err != nil {
