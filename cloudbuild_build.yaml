@@ -1,0 +1,21 @@
+# Builds docker image and pushes it to DockerHub
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "docker-build-image"
+    args: ["build", "-t", "docai/tensorio-models", "-f", "dockerfiles/Dockerfile.repository", "."]
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "docker-apply-tag"
+    args: ["tag", "docai/tensorio-models:latest", "docai/tensorio-models:sha-$SHORT_SHA"]
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "docker-login"
+    entrypoint: 'bash'
+    args: ['-c', 'docker login --username=$$DOCKER_USER --password=$$DOCKER_PASSWORD']
+    secretEnv: ['DOCKER_USER', 'DOCKER_PASSWORD']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "docker-push"
+    args: ["push", "docai/tensorio-models"]
+secrets:
+  - kmsKeyName: projects/doc-ai-infra-sec/locations/global/keyRings/tensorio/cryptoKeys/deployment-key
+    secretEnv:
+      DOCKER_USER: "CiQAdjLgjMWWaaJ8iGzpfl5G+oWQ4joTIBnO2IXwuFc5hx2qMdYSMwBCI0rQRFr4nb2Gt6DtO/DWZmQNB2z0sJPqrOon1nTyiBNcEOEURZnX/qrUEr57PDBcHg=="
+      DOCKER_PASSWORD: "CiQAdjLgjNQnHgagpioX8hYkzwXBjUWQ6tfIK+ynckSlmmNORWQSOQBCI0rQ8eKXLCw/y1Bt9ZMa1WKBNddxCM1nHR/kxpxP5C9zOOxXNXUWrdqHgbIcr47+6jlFyP8/Dg=="
