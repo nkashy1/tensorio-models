@@ -1,6 +1,7 @@
 GOPATH:=$(shell go env GOPATH)
 GRPC_LIST:=$(shell go list -m -f "{{.Dir}}" github.com/grpc-ecosystem/grpc-gateway)
 GRPC_GATEWAY_PROTO_DIR:="${GRPC_LIST}/third_party/googleapis"
+TIMESTAMP:=$(shell date -u +%s)
 
 default: fmt build
 
@@ -25,3 +26,11 @@ api/repository.swagger.json: api/repository.proto
 build: api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.json
 	go test ./... -cover
 	go build ./...
+
+coverage: api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.json
+	go test -coverprofile=test.out ./...
+	go tool cover -html=test.out -o coverage-$(TIMESTAMP).html
+	echo "Coverage report: coverage-$(TIMESTAMP).html"
+
+coverage-cleanup:
+	rm test.out coverage-*.html
