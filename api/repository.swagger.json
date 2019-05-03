@@ -444,7 +444,7 @@
         "modelId": {
           "type": "string"
         },
-        "hyperParameterId": {
+        "hyperParametersId": {
           "type": "string"
         },
         "canonicalCheckpoint": {
