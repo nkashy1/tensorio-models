@@ -76,7 +76,7 @@ message ListHyperParametersResponse {
 
 message CreateHyperParametersRequest {
     string modelId = 1;
-    string hyperParameterId = 2;
+    string hyperParametersId = 2;
     string canonicalCheckpoint = 3;
     map<string, string> hyperParameters = 4;
 }

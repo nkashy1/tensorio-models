@@ -140,10 +140,10 @@ func (srv *server) ListHyperParameters(ctx context.Context, req *api.ListHyperPa
 
 func (srv *server) CreateHyperParameters(ctx context.Context, req *api.CreateHyperParametersRequest) (*api.CreateHyperParametersResponse, error) {
 	modelID := req.ModelId
-	hyperparametersID := req.HyperParameterId
+	hyperparametersID := req.HyperParametersId
 	canonicalCheckpoint := req.CanonicalCheckpoint
 	hyperparameters := req.HyperParameters
-	log.Printf("CreateHyperParameters request - ModelId: %s, HyperParameterId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
+	log.Printf("CreateHyperParameters request - ModelId: %s, HyperParametersId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
 	storageHyperparameters := storage.HyperParameters{
 		ModelId:             modelID,
 		HyperParametersId:   hyperparametersID,
@@ -190,7 +190,7 @@ func (srv *server) UpdateHyperParameters(ctx context.Context, req *api.UpdateHyp
 	hyperparametersID := req.HyperParametersId
 	canonicalCheckpoint := req.CanonicalCheckpoint
 	hyperparameters := req.HyperParameters
-	log.Printf("UpdateHyperParameters request - ModelId: %s, HyperParameterId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
+	log.Printf("UpdateHyperParameters request - ModelId: %s, HyperParametersId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
 
 	existingHyperparameters, err := srv.storage.GetHyperparameters(ctx, modelID, hyperparametersID)
 	if err != nil {
