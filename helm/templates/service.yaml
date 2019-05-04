@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ include "tensorio-models.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}
+    helm.sh/chart: {{ include "tensorio-models.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind:  Mapping
+      name: {{ include "tensorio-models.fullname" . }}-rest-mapping
+      prefix: /rest/
+      host: {{ .Values.service.hostname }}
+      timeout_ms: 5000
+      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.service.restPort }}
+      ---
+      apiVersion: ambassador/v1
+      kind:  Mapping
+      name: {{ include "tensorio-models.fullname" . }}-grpc-mapping
+      prefix: /grpc/
+      host: {{ .Values.service.hostname }}
+      timeout_ms: 5000
+      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.service.grpcPort }}
+
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.restPort }}
+      targetPort: rest
+      protocol: TCP
+      name: rest
+    - port: {{ .Values.service.grpcPort }}
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
