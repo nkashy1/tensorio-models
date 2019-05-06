@@ -88,6 +88,9 @@ func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest)
 func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest) (*api.UpdateModelResponse, error) {
 	modelID := req.ModelId
 	model := req.Model
+	if model == nil {
+		return nil, api.MissingRequiredFieldError("model", "model to update").Err()
+	}
 	log.Printf("UpdateModel request - ModelId: %s, Model: %v", modelID, model)
 	storedModel, err := srv.storage.GetModel(ctx, modelID)
 	if err != nil {
