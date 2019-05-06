@@ -27,7 +27,7 @@ message HealthCheckResponse {
 message Model {
     string modelId = 1;
     string description = 2;
-    string canonicalHyperParameters=3;
+    string canonicalHyperparameters=3;
 }
 
 message ListModelsRequest {
@@ -64,59 +64,59 @@ message UpdateModelResponse {
     Model model = 1;
 }
 
-message ListHyperParametersRequest {
+message ListHyperparametersRequest {
     string modelId = 1;
     string marker = 2;
     int32 maxItems = 3;
 }
 
-message ListHyperParametersResponse {
-    repeated string hyperParametersIds = 1;
+message ListHyperparametersResponse {
+    repeated string hyperparametersIds = 1;
 }
 
-message CreateHyperParametersRequest {
+message CreateHyperparametersRequest {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
     string canonicalCheckpoint = 3;
-    map<string, string> hyperParameters = 4;
+    map<string, string> hyperparameters = 4;
 }
 
-message CreateHyperParametersResponse {
+message CreateHyperparametersResponse {
     string resourcePath = 1;
 }
 
-message GetHyperParametersRequest {
+message GetHyperparametersRequest {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
 }
 
-message GetHyperParametersResponse {
+message GetHyperparametersResponse {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
     string upgradeTo = 3;
     string canonicalCheckpoint = 4;
-    map<string, string> hyperParameters = 5;
+    map<string, string> hyperparameters = 5;
 }
 
-message UpdateHyperParametersRequest {
+message UpdateHyperparametersRequest {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
     string upgradeTo = 3;
     string canonicalCheckpoint = 4;
-    map<string, string> hyperParameters = 5;
+    map<string, string> hyperparameters = 5;
 }
 
-message UpdateHyperParametersResponse {
+message UpdateHyperparametersResponse {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
     string upgradeTo = 3;
     string canonicalCheckpoint = 4;
-    map<string, string> hyperParameters = 5;
+    map<string, string> hyperparameters = 5;
 }
 
 message ListCheckpointsRequest {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
     string marker = 3;
     int32 maxItems = 4;
 }
@@ -127,7 +127,7 @@ message ListCheckpointsResponse {
 
 message CreateCheckpointRequest {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
     string checkpointId = 3;
     string link = 4;
     map<string, string> info = 5;
@@ -139,7 +139,7 @@ message CreateCheckpointResponse {
 
 message GetCheckpointRequest {
     string modelId = 1;
-    string hyperParametersId = 2;
+    string hyperparametersId = 2;
     string checkpointId = 3;
 }
 
@@ -177,42 +177,42 @@ service Repository {
             body: "*"
         };
     }
-    rpc ListHyperParameters(ListHyperParametersRequest) returns (ListHyperParametersResponse) {
+    rpc ListHyperparameters(ListHyperparametersRequest) returns (ListHyperparametersResponse) {
         option (google.api.http) = {
             get: "/v1/repository/models/{modelId}/hyperparameters"
         };
     }
-    rpc CreateHyperParameters(CreateHyperParametersRequest) returns (CreateHyperParametersResponse) {
+    rpc CreateHyperparameters(CreateHyperparametersRequest) returns (CreateHyperparametersResponse) {
         option (google.api.http) = {
             post: "/v1/repository/models/{modelId}/hyperparameters"
             body: "*"
         };
     }
-    rpc GetHyperParameters(GetHyperParametersRequest) returns (GetHyperParametersResponse) {
+    rpc GetHyperparameters(GetHyperparametersRequest) returns (GetHyperparametersResponse) {
         option (google.api.http) = {
-            get: "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}"
+            get: "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}"
         };
     }
-    rpc UpdateHyperParameters(UpdateHyperParametersRequest) returns (UpdateHyperParametersResponse) {
+    rpc UpdateHyperparameters(UpdateHyperparametersRequest) returns (UpdateHyperparametersResponse) {
         option (google.api.http) = {
-            put: "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}"
+            put: "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}"
             body: "*"
         };
     }
     rpc ListCheckpoints(ListCheckpointsRequest) returns (ListCheckpointsResponse) {
         option (google.api.http) = {
-            get: "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}/checkpoints"
+            get: "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}/checkpoints"
         };
     }
     rpc CreateCheckpoint(CreateCheckpointRequest) returns (CreateCheckpointResponse) {
         option (google.api.http) = {
-            post: "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}/checkpoints"
+            post: "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}/checkpoints"
             body: "*"
         };
     }
     rpc GetCheckpoint(GetCheckpointRequest) returns (GetCheckpointResponse) {
         option (google.api.http) = {
-            get: "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}/checkpoints/{checkpointId}"
+            get: "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}/checkpoints/{checkpointId}"
         };
     }
 }

@@ -18,16 +18,16 @@ func TestMemory_UpdateModel(t *testing.T) {
 	tests.Test_UpdateModels(t, memory.NewMemoryRepositoryStorage())
 }
 
-func TestMemory_AddHyperParameters(t *testing.T) {
-	tests.Test_AddHyperParameters(t, memory.NewMemoryRepositoryStorage())
+func TestMemory_AddHyperparameters(t *testing.T) {
+	tests.Test_AddHyperparameters(t, memory.NewMemoryRepositoryStorage())
 }
 
-func TestMemory_ListHyperParameters(t *testing.T) {
-	tests.Test_ListHyperParams(t, memory.NewMemoryRepositoryStorage())
+func TestMemory_ListHyperparameters(t *testing.T) {
+	tests.Test_ListHyperparams(t, memory.NewMemoryRepositoryStorage())
 }
 
-func TestMemory_UpdateHyperParameters(t *testing.T) {
-	tests.Test_UpdateHyperParams(t, memory.NewMemoryRepositoryStorage())
+func TestMemory_UpdateHyperparameters(t *testing.T) {
+	tests.Test_UpdateHyperparams(t, memory.NewMemoryRepositoryStorage())
 }
 
 func TestMemory_AddCheckpoint(t *testing.T) {

@@ -19,7 +19,7 @@ func Test_AddModel(t *testing.T, store storage.RepositoryStorage) {
 	model := storage.Model{
 		ModelId:                  "add_model",
 		Description:              "description of a model",
-		CanonicalHyperParameters: "canonical hyper params",
+		CanonicalHyperparameters: "canonical hyper params",
 	}
 
 	// add model
@@ -34,7 +34,7 @@ func Test_AddModel(t *testing.T, store storage.RepositoryStorage) {
 	model2 := storage.Model{
 		ModelId:                  "add_model2",
 		Description:              "description of a model",
-		CanonicalHyperParameters: "canonical hyper params",
+		CanonicalHyperparameters: "canonical hyper params",
 	}
 
 	err = store.AddModel(ctx, model2)
@@ -66,7 +66,7 @@ func Test_ListModels(t *testing.T, store storage.RepositoryStorage) {
 	model := storage.Model{
 		ModelId:                  "model1",
 		Description:              "description of a model",
-		CanonicalHyperParameters: "canonical hyper params",
+		CanonicalHyperparameters: "canonical hyper params",
 	}
 	store.AddModel(ctx, model)
 
@@ -119,7 +119,7 @@ func Test_UpdateModels(t *testing.T, store storage.RepositoryStorage) {
 	model := storage.Model{
 		ModelId:                  "model1",
 		Description:              "old description",
-		CanonicalHyperParameters: "old canonical",
+		CanonicalHyperparameters: "old canonical",
 	}
 	_, err := store.UpdateModel(ctx, model)
 	assert.Error(t, err, "Model should not exist")
@@ -131,7 +131,7 @@ func Test_UpdateModels(t *testing.T, store storage.RepositoryStorage) {
 	modelUpdate := storage.Model{
 		ModelId:                  "model1",
 		Description:              "",
-		CanonicalHyperParameters: "",
+		CanonicalHyperparameters: "",
 	}
 	updatedModel, err := store.UpdateModel(ctx, modelUpdate)
 
@@ -142,7 +142,7 @@ func Test_UpdateModels(t *testing.T, store storage.RepositoryStorage) {
 	modelUpdate = storage.Model{
 		ModelId:                  "model1",
 		Description:              "new description",
-		CanonicalHyperParameters: "new canonical",
+		CanonicalHyperparameters: "new canonical",
 	}
 	updatedModel, err = store.UpdateModel(ctx, modelUpdate)
 
@@ -151,7 +151,7 @@ func Test_UpdateModels(t *testing.T, store storage.RepositoryStorage) {
 	assert.Equal(t, modelUpdate, updatedModel)
 }
 
-func Test_AddHyperParameters(t *testing.T, store storage.RepositoryStorage) {
+func Test_AddHyperparameters(t *testing.T, store storage.RepositoryStorage) {
 	ctx := context.Background()
 
 	_, err := store.GetHyperparameters(ctx, "model1", "param1")
@@ -160,142 +160,142 @@ func Test_AddHyperParameters(t *testing.T, store storage.RepositoryStorage) {
 	model := storage.Model{
 		ModelId:                  "model1",
 		Description:              "description1",
-		CanonicalHyperParameters: "canonical1",
+		CanonicalHyperparameters: "canonical1",
 	}
 	store.AddModel(ctx, model)
 
 	_, err = store.GetHyperparameters(ctx, "model1", "param1")
 	assert.Error(t, err, "Hyperparameter should not exist")
 
-	params := storage.HyperParameters{
+	params := storage.Hyperparameters{
 		ModelId:             "fail",
-		HyperParametersId:   "paramid",
+		HyperparametersId:   "paramid",
 		CanonicalCheckpoint: "checkpoint",
 	}
 
 	// error on add params to non existence model
-	err = store.AddHyperParameters(ctx, params)
+	err = store.AddHyperparameters(ctx, params)
 	assert.Error(t, err)
 
 	// add params
 	params.ModelId = "model1"
-	err = store.AddHyperParameters(ctx, params)
+	err = store.AddHyperparameters(ctx, params)
 	assert.NoError(t, err)
 
 	// expect error on conflict
-	err = store.AddHyperParameters(ctx, params)
+	err = store.AddHyperparameters(ctx, params)
 	assert.Error(t, err)
 }
 
-func Test_ListHyperParams(t *testing.T, store storage.RepositoryStorage) {
+func Test_ListHyperparams(t *testing.T, store storage.RepositoryStorage) {
 	ctx := context.Background()
 
-	_, err := store.ListHyperParameters(ctx, "nomodel", "marker", 2)
+	_, err := store.ListHyperparameters(ctx, "nomodel", "marker", 2)
 	assert.Error(t, err)
 
 	model := storage.Model{
 		ModelId:                  "model1",
 		Description:              "description1",
-		CanonicalHyperParameters: "canonical1",
+		CanonicalHyperparameters: "canonical1",
 	}
 	store.AddModel(ctx, model)
 	model.ModelId = "model2"
 	store.AddModel(ctx, model)
-	params, err := store.ListHyperParameters(ctx, "model1", "marker", 2)
+	params, err := store.ListHyperparameters(ctx, "model1", "marker", 2)
 	assert.Equal(t, []string{}, params)
 	assert.NoError(t, err)
 
-	param := storage.HyperParameters{
+	param := storage.Hyperparameters{
 		ModelId:             "model1",
-		HyperParametersId:   "param1",
+		HyperparametersId:   "param1",
 		CanonicalCheckpoint: "canon1",
 	}
-	store.AddHyperParameters(ctx, param)
+	store.AddHyperparameters(ctx, param)
 
-	param.HyperParametersId = "param3"
-	store.AddHyperParameters(ctx, param)
+	param.HyperparametersId = "param3"
+	store.AddHyperparameters(ctx, param)
 
 	param.ModelId = "model2"
-	param.HyperParametersId = "param1"
-	store.AddHyperParameters(ctx, param)
+	param.HyperparametersId = "param1"
+	store.AddHyperparameters(ctx, param)
 
 	param.ModelId = "model1"
-	param.HyperParametersId = "param2"
-	store.AddHyperParameters(ctx, param)
+	param.HyperparametersId = "param2"
+	store.AddHyperparameters(ctx, param)
 
-	param.HyperParametersId = "param4"
-	store.AddHyperParameters(ctx, param)
+	param.HyperparametersId = "param4"
+	store.AddHyperparameters(ctx, param)
 
-	param = storage.HyperParameters{
+	param = storage.Hyperparameters{
 		ModelId:             "model1",
-		HyperParametersId:   "param1",
+		HyperparametersId:   "param1",
 		CanonicalCheckpoint: "canon1",
 	}
 
-	params, err = store.ListHyperParameters(ctx, "model1", "marker", 2)
+	params, err = store.ListHyperparameters(ctx, "model1", "marker", 2)
 	assert.Equal(t, []string{"model1:param1", "model1:param2"}, params)
 	assert.NoError(t, err)
 
-	params, err = store.ListHyperParameters(ctx, "model1", "marker", 5)
+	params, err = store.ListHyperparameters(ctx, "model1", "marker", 5)
 	assert.Equal(t, []string{"model1:param1", "model1:param2", "model1:param3", "model1:param4"}, params)
 	assert.NoError(t, err)
 
-	params, err = store.ListHyperParameters(ctx, "model1", "param22", 5)
+	params, err = store.ListHyperparameters(ctx, "model1", "param22", 5)
 	assert.Equal(t, []string{"model1:param3", "model1:param4"}, params)
 	assert.NoError(t, err)
 
-	params, err = store.ListHyperParameters(ctx, "model2", "", 5)
+	params, err = store.ListHyperparameters(ctx, "model2", "", 5)
 	assert.Equal(t, []string{"model2:param1"}, params)
 	assert.NoError(t, err)
 }
 
-func Test_UpdateHyperParams(t *testing.T, store storage.RepositoryStorage) {
+func Test_UpdateHyperparams(t *testing.T, store storage.RepositoryStorage) {
 	ctx := context.Background()
 
 	model := storage.Model{
 		ModelId:                  "model1",
 		Description:              "desc",
-		CanonicalHyperParameters: "canon",
+		CanonicalHyperparameters: "canon",
 	}
 
-	hyperParameters := storage.HyperParameters{
+	hyperparameters := storage.Hyperparameters{
 		ModelId:             "model1",
-		HyperParametersId:   "param1",
+		HyperparametersId:   "param1",
 		CanonicalCheckpoint: "checkpoint1",
-		HyperParameters:     map[string]string{"hp1": "1"},
+		Hyperparameters:     map[string]string{"hp1": "1"},
 	}
 
-	_, err := store.UpdateHyperParameters(ctx, hyperParameters)
+	_, err := store.UpdateHyperparameters(ctx, hyperparameters)
 	assert.Error(t, err)
 
 	store.AddModel(ctx, model)
-	_, err = store.UpdateHyperParameters(ctx, hyperParameters)
+	_, err = store.UpdateHyperparameters(ctx, hyperparameters)
 	assert.Error(t, err)
 
-	store.AddHyperParameters(ctx, hyperParameters)
+	store.AddHyperparameters(ctx, hyperparameters)
 
-	hyperParametersUpdate := storage.HyperParameters{
+	hyperparametersUpdate := storage.Hyperparameters{
 		ModelId:             "model1",
-		HyperParametersId:   "param1",
+		HyperparametersId:   "param1",
 		CanonicalCheckpoint: "",
-		HyperParameters:     nil,
+		Hyperparameters:     nil,
 	}
 
-	updatedHyperParameters, err := store.UpdateHyperParameters(ctx, hyperParametersUpdate)
-	assert.Equal(t, hyperParameters, updatedHyperParameters)
+	updatedHyperparameters, err := store.UpdateHyperparameters(ctx, hyperparametersUpdate)
+	assert.Equal(t, hyperparameters, updatedHyperparameters)
 
-	hyperParametersUpdate.CanonicalCheckpoint = "checkpoint2"
-	hyperParametersUpdate.HyperParameters = make(map[string]string)
-	hyperParametersUpdate.HyperParameters["hp1"] = "1.1"
-	hyperParametersUpdate.HyperParameters["hp2"] = "2"
-	expectedHyperParameters := storage.HyperParameters{
+	hyperparametersUpdate.CanonicalCheckpoint = "checkpoint2"
+	hyperparametersUpdate.Hyperparameters = make(map[string]string)
+	hyperparametersUpdate.Hyperparameters["hp1"] = "1.1"
+	hyperparametersUpdate.Hyperparameters["hp2"] = "2"
+	expectedHyperparameters := storage.Hyperparameters{
 		ModelId:             "model1",
-		HyperParametersId:   "param1",
+		HyperparametersId:   "param1",
 		CanonicalCheckpoint: "checkpoint2",
-		HyperParameters:     map[string]string{"hp1": "1.1", "hp2": "2"},
+		Hyperparameters:     map[string]string{"hp1": "1.1", "hp2": "2"},
 	}
-	updatedHyperParameters, err = store.UpdateHyperParameters(ctx, hyperParametersUpdate)
-	assert.Equal(t, expectedHyperParameters, updatedHyperParameters)
+	updatedHyperparameters, err = store.UpdateHyperparameters(ctx, hyperparametersUpdate)
+	assert.Equal(t, expectedHyperparameters, updatedHyperparameters)
 }
 
 func Test_AddCheckpoint(t *testing.T, store storage.RepositoryStorage) {
@@ -303,7 +303,7 @@ func Test_AddCheckpoint(t *testing.T, store storage.RepositoryStorage) {
 
 	checkpoint1 := storage.Checkpoint{
 		ModelId:           "model1",
-		HyperParametersId: "params1",
+		HyperparametersId: "params1",
 		CheckpointId:      "cp1",
 		Link:              "link1",
 		CreatedAt:         time.Now(),
@@ -318,7 +318,7 @@ func Test_AddCheckpoint(t *testing.T, store storage.RepositoryStorage) {
 	model1 := storage.Model{
 		ModelId:                  "model1",
 		Description:              "desc",
-		CanonicalHyperParameters: "canon",
+		CanonicalHyperparameters: "canon",
 	}
 	store.AddModel(ctx, model1)
 
@@ -328,13 +328,13 @@ func Test_AddCheckpoint(t *testing.T, store storage.RepositoryStorage) {
 	err = store.AddCheckpoint(ctx, checkpoint1)
 	assert.Error(t, err)
 
-	params1 := storage.HyperParameters{
+	params1 := storage.Hyperparameters{
 		ModelId:             "model1",
-		HyperParametersId:   "params1",
+		HyperparametersId:   "params1",
 		CanonicalCheckpoint: "canon1",
-		HyperParameters:     map[string]string{"hp1": "1"},
+		Hyperparameters:     map[string]string{"hp1": "1"},
 	}
-	store.AddHyperParameters(ctx, params1)
+	store.AddHyperparameters(ctx, params1)
 
 	_, err = store.GetCheckpoint(ctx, "model1", "params1", "cp1")
 	assert.Error(t, err)
@@ -360,26 +360,26 @@ func Test_ListCheckpoints(t *testing.T, store storage.RepositoryStorage) {
 	model1 := storage.Model{
 		ModelId:                  "model1",
 		Description:              "desc",
-		CanonicalHyperParameters: "canon",
+		CanonicalHyperparameters: "canon",
 	}
 	store.AddModel(ctx, model1)
 
 	_, err = store.ListCheckpoints(ctx, "model1", "params1", "", 4)
 	assert.Error(t, err)
 
-	params1 := storage.HyperParameters{
+	params1 := storage.Hyperparameters{
 		ModelId:             "model1",
-		HyperParametersId:   "params1",
+		HyperparametersId:   "params1",
 		CanonicalCheckpoint: "canon1",
-		HyperParameters:     map[string]string{"hp1": "1"},
+		Hyperparameters:     map[string]string{"hp1": "1"},
 	}
-	store.AddHyperParameters(ctx, params1)
+	store.AddHyperparameters(ctx, params1)
 	_, err = store.ListCheckpoints(ctx, "model1", "params1", "", 4)
 	assert.NoError(t, err)
 
 	checkpoint1 := storage.Checkpoint{
 		ModelId:           "model1",
-		HyperParametersId: "params1",
+		HyperparametersId: "params1",
 		CheckpointId:      "cp1",
 		Link:              "link1",
 		CreatedAt:         time.Now(),
