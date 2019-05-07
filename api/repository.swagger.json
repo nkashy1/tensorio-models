@@ -491,6 +491,10 @@
         "link": {
           "type": "string"
         },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
         "info": {
           "type": "object",
           "additionalProperties": {

@@ -3,6 +3,8 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
+import "google/protobuf/Timestamp.proto";
+
 
 /**
  * Health checks inspired by the conventions here:
@@ -146,7 +148,8 @@ message GetCheckpointRequest {
 message GetCheckpointResponse {
     string resourcePath = 1;
     string link = 2;
-    map<string, string> info = 3;
+    google.protobuf.Timestamp createdAt = 3;
+    map<string, string> info = 4;
 }
 
 service Repository {

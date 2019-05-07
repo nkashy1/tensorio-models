@@ -3,12 +3,13 @@ package server
 import (
 	"context"
 	"fmt"
-
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/storage"
+	"github.com/golang/protobuf/ptypes"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 type server struct {
@@ -270,6 +271,7 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 		ModelId:           modelID,
 		HyperparametersId: hyperparametersID,
 		CheckpointId:      checkpointID,
+		CreatedAt:         time.Now(),
 		Link:              link,
 	}
 	err := srv.storage.AddCheckpoint(ctx, storageCheckpoint)
@@ -299,9 +301,15 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 		return nil, grpcErr
 	}
 	resourcePath := getCheckpointResourcePath(modelID, hyperparametersID, checkpointID)
+	createdAt, err := ptypes.TimestampProto(storedCheckpoint.CreatedAt)
+	if err != nil {
+		log.Error("unable to serialize CreatedAt")
+		return nil, err
+	}
 	resp := &api.GetCheckpointResponse{
 		ResourcePath: resourcePath,
 		Link:         storedCheckpoint.Link,
+		CreatedAt:    createdAt,
 		Info:         storedCheckpoint.Info,
 	}
 	return resp, nil

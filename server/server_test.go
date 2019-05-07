@@ -6,9 +6,11 @@ import (
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/server"
 	"github.com/doc-ai/tensorio-models/storage/memory"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/assert"
 	"sort"
 	"testing"
+	"time"
 )
 
 func testingServer() api.RepositoryServer {
@@ -830,6 +832,11 @@ func TestGetCheckpoint(t *testing.T) {
 	}
 	assert.Equal(t, createCheckpointResponse.ResourcePath, getCheckpointResponse.ResourcePath, "Incorrect ResourcePath in GetCheckpointResponse")
 	assert.Equal(t, link, getCheckpointResponse.Link, "Incorrect Link in GetCheckpointResponse")
+
+	createdAt, err := ptypes.Timestamp(getCheckpointResponse.CreatedAt)
+	assert.NoError(t, err)
+	assert.WithinDuration(t, time.Now(), createdAt, 2*time.Second)
+
 	// TODO(frederick): Make the following assertion pass
 	// assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
 }
