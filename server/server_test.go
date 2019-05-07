@@ -132,6 +132,23 @@ func TestListModels(t *testing.T) {
 			MaxItems:         int32(20),
 			ExpectedModelIds: modelIDs[0:20],
 		},
+		{
+			Server:           &srv,
+			Marker:           modelIDs[0],
+			ExpectedModelIds: modelIDs[0:10],
+		},
+		{
+			Server:           &srv,
+			Marker:           modelIDs[0],
+			MaxItems:         0,
+			ExpectedModelIds: modelIDs[0:10],
+		},
+		{
+			Server:           &srv,
+			Marker:           modelIDs[0],
+			MaxItems:         -10,
+			ExpectedModelIds: modelIDs[0:10],
+		},
 	}
 
 	for i, test := range tests {
@@ -373,6 +390,26 @@ func TestListHyperparameters(t *testing.T) {
 			Marker:                     hyperparametersIDs[0],
 			MaxItems:                   int32(20),
 			ExpectedHyperparametersIds: hyperparametersTags[0:20],
+		},
+		{
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[0],
+			ExpectedHyperparametersIds: hyperparametersTags[0:10],
+		},
+		{
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[0],
+			MaxItems:                   0,
+			ExpectedHyperparametersIds: hyperparametersTags[0:10],
+		},
+		{
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[0],
+			MaxItems:                   -10,
+			ExpectedHyperparametersIds: hyperparametersTags[0:10],
 		},
 	}
 
@@ -690,6 +727,29 @@ func TestListCheckpoints(t *testing.T) {
 			Marker:                checkpointIDs[0],
 			MaxItems:              int32(20),
 			ExpectedCheckpointIds: checkpointTags[0:20],
+		},
+		{
+			Server:                &srv,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[0],
+			ExpectedCheckpointIds: checkpointTags[0:10],
+		},
+		{
+			Server:                &srv,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[0],
+			MaxItems:              0,
+			ExpectedCheckpointIds: checkpointTags[0:10],
+		},
+		{
+			Server:                &srv,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[0],
+			MaxItems:              -10,
+			ExpectedCheckpointIds: checkpointTags[0:10],
 		},
 	}
 

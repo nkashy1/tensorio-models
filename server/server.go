@@ -32,6 +32,9 @@ func (srv *server) Healthz(ctx context.Context, req *api.HealthCheckRequest) (*a
 func (srv *server) ListModels(ctx context.Context, req *api.ListModelsRequest) (*api.ListModelsResponse, error) {
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
+	if maxItems <= 0 {
+		maxItems = 10
+	}
 	log.Printf("ListModels request - Marker: %s, MaxItems: %d", marker, maxItems)
 	models, err := srv.storage.ListModels(ctx, marker, maxItems)
 	if err != nil {
@@ -127,6 +130,9 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 	modelID := req.ModelId
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
+	if maxItems <= 0 {
+		maxItems = 10
+	}
 	log.Printf("ListHyperparameters request - ModelId: %s, Marker: %s, MaxItems: %d", modelID, marker, maxItems)
 	hyperparametersIDs, err := srv.storage.ListHyperparameters(ctx, modelID, marker, maxItems)
 	if err != nil {
@@ -233,6 +239,9 @@ func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpoints
 	hyperparametersID := req.HyperparametersId
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
+	if maxItems <= 0 {
+		maxItems = 10
+	}
 	log.Printf("ListCheckpoints request - ModelId: %s, HyperparametersId: %s, Marker: %s, MaxItems: %d", modelID, hyperparametersID, marker, maxItems)
 	checkpointIDs, err := srv.storage.ListCheckpoints(ctx, modelID, hyperparametersID, marker, maxItems)
 	if err != nil {
