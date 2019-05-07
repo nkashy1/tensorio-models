@@ -2,6 +2,7 @@ GOPATH:=$(shell go env GOPATH)
 GRPC_LIST:=$(shell go list -m -f "{{.Dir}}" github.com/grpc-ecosystem/grpc-gateway)
 GRPC_GATEWAY_PROTO_DIR:="${GRPC_LIST}/third_party/googleapis"
 TIMESTAMP:=$(shell date -u +%s)
+RUN_ARGS=-backend memory
 
 default: fmt build
 

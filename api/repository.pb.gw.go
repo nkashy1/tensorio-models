@@ -142,11 +142,11 @@ func request_Repository_UpdateModel_0(ctx context.Context, marshaler runtime.Mar
 }
 
 var (
-	filter_Repository_ListHyperParameters_0 = &utilities.DoubleArray{Encoding: map[string]int{"modelId": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_Repository_ListHyperparameters_0 = &utilities.DoubleArray{Encoding: map[string]int{"modelId": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_Repository_ListHyperParameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListHyperParametersRequest
+func request_Repository_ListHyperparameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListHyperparametersRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -167,17 +167,17 @@ func request_Repository_ListHyperParameters_0(ctx context.Context, marshaler run
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "modelId", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Repository_ListHyperParameters_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Repository_ListHyperparameters_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.ListHyperParameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListHyperparameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func request_Repository_CreateHyperParameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateHyperParametersRequest
+func request_Repository_CreateHyperparameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq CreateHyperparametersRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -206,13 +206,13 @@ func request_Repository_CreateHyperParameters_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "modelId", err)
 	}
 
-	msg, err := client.CreateHyperParameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.CreateHyperparameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func request_Repository_GetHyperParameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetHyperParametersRequest
+func request_Repository_GetHyperparameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetHyperparametersRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -233,24 +233,24 @@ func request_Repository_GetHyperParameters_0(ctx context.Context, marshaler runt
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "modelId", err)
 	}
 
-	val, ok = pathParams["hyperParametersId"]
+	val, ok = pathParams["hyperparametersId"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperParametersId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperparametersId")
 	}
 
-	protoReq.HyperParametersId, err = runtime.String(val)
+	protoReq.HyperparametersId, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperParametersId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperparametersId", err)
 	}
 
-	msg, err := client.GetHyperParameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetHyperparameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func request_Repository_UpdateHyperParameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UpdateHyperParametersRequest
+func request_Repository_UpdateHyperparameters_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq UpdateHyperparametersRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -279,24 +279,24 @@ func request_Repository_UpdateHyperParameters_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "modelId", err)
 	}
 
-	val, ok = pathParams["hyperParametersId"]
+	val, ok = pathParams["hyperparametersId"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperParametersId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperparametersId")
 	}
 
-	protoReq.HyperParametersId, err = runtime.String(val)
+	protoReq.HyperparametersId, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperParametersId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperparametersId", err)
 	}
 
-	msg, err := client.UpdateHyperParameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.UpdateHyperparameters(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 var (
-	filter_Repository_ListCheckpoints_0 = &utilities.DoubleArray{Encoding: map[string]int{"modelId": 0, "hyperParametersId": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_Repository_ListCheckpoints_0 = &utilities.DoubleArray{Encoding: map[string]int{"modelId": 0, "hyperparametersId": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
 func request_Repository_ListCheckpoints_0(ctx context.Context, marshaler runtime.Marshaler, client RepositoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -321,15 +321,15 @@ func request_Repository_ListCheckpoints_0(ctx context.Context, marshaler runtime
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "modelId", err)
 	}
 
-	val, ok = pathParams["hyperParametersId"]
+	val, ok = pathParams["hyperparametersId"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperParametersId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperparametersId")
 	}
 
-	protoReq.HyperParametersId, err = runtime.String(val)
+	protoReq.HyperparametersId, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperParametersId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperparametersId", err)
 	}
 
 	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Repository_ListCheckpoints_0); err != nil {
@@ -371,15 +371,15 @@ func request_Repository_CreateCheckpoint_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "modelId", err)
 	}
 
-	val, ok = pathParams["hyperParametersId"]
+	val, ok = pathParams["hyperparametersId"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperParametersId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperparametersId")
 	}
 
-	protoReq.HyperParametersId, err = runtime.String(val)
+	protoReq.HyperparametersId, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperParametersId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperparametersId", err)
 	}
 
 	msg, err := client.CreateCheckpoint(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -409,15 +409,15 @@ func request_Repository_GetCheckpoint_0(ctx context.Context, marshaler runtime.M
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "modelId", err)
 	}
 
-	val, ok = pathParams["hyperParametersId"]
+	val, ok = pathParams["hyperparametersId"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperParametersId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hyperparametersId")
 	}
 
-	protoReq.HyperParametersId, err = runtime.String(val)
+	protoReq.HyperparametersId, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperParametersId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hyperparametersId", err)
 	}
 
 	val, ok = pathParams["checkpointId"]
@@ -574,7 +574,7 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
-	mux.Handle("GET", pattern_Repository_ListHyperParameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Repository_ListHyperparameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -583,18 +583,18 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Repository_ListHyperParameters_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Repository_ListHyperparameters_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Repository_ListHyperParameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Repository_ListHyperparameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Repository_CreateHyperParameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Repository_CreateHyperparameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -603,18 +603,18 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Repository_CreateHyperParameters_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Repository_CreateHyperparameters_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Repository_CreateHyperParameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Repository_CreateHyperparameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Repository_GetHyperParameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Repository_GetHyperparameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -623,18 +623,18 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Repository_GetHyperParameters_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Repository_GetHyperparameters_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Repository_GetHyperParameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Repository_GetHyperparameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("PUT", pattern_Repository_UpdateHyperParameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_Repository_UpdateHyperparameters_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -643,14 +643,14 @@ func RegisterRepositoryHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Repository_UpdateHyperParameters_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Repository_UpdateHyperparameters_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Repository_UpdateHyperParameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Repository_UpdateHyperparameters_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -728,19 +728,19 @@ var (
 
 	pattern_Repository_UpdateModel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "repository", "models", "modelId"}, ""))
 
-	pattern_Repository_ListHyperParameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "repository", "models", "modelId", "hyperparameters"}, ""))
+	pattern_Repository_ListHyperparameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "repository", "models", "modelId", "hyperparameters"}, ""))
 
-	pattern_Repository_CreateHyperParameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "repository", "models", "modelId", "hyperparameters"}, ""))
+	pattern_Repository_CreateHyperparameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "repository", "models", "modelId", "hyperparameters"}, ""))
 
-	pattern_Repository_GetHyperParameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperParametersId"}, ""))
+	pattern_Repository_GetHyperparameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperparametersId"}, ""))
 
-	pattern_Repository_UpdateHyperParameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperParametersId"}, ""))
+	pattern_Repository_UpdateHyperparameters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperparametersId"}, ""))
 
-	pattern_Repository_ListCheckpoints_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperParametersId", "checkpoints"}, ""))
+	pattern_Repository_ListCheckpoints_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperparametersId", "checkpoints"}, ""))
 
-	pattern_Repository_CreateCheckpoint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperParametersId", "checkpoints"}, ""))
+	pattern_Repository_CreateCheckpoint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperparametersId", "checkpoints"}, ""))
 
-	pattern_Repository_GetCheckpoint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperParametersId", "checkpoints", "checkpointId"}, ""))
+	pattern_Repository_GetCheckpoint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "repository", "models", "modelId", "hyperparameters", "hyperparametersId", "checkpoints", "checkpointId"}, ""))
 )
 
 var (
@@ -754,13 +754,13 @@ var (
 
 	forward_Repository_UpdateModel_0 = runtime.ForwardResponseMessage
 
-	forward_Repository_ListHyperParameters_0 = runtime.ForwardResponseMessage
+	forward_Repository_ListHyperparameters_0 = runtime.ForwardResponseMessage
 
-	forward_Repository_CreateHyperParameters_0 = runtime.ForwardResponseMessage
+	forward_Repository_CreateHyperparameters_0 = runtime.ForwardResponseMessage
 
-	forward_Repository_GetHyperParameters_0 = runtime.ForwardResponseMessage
+	forward_Repository_GetHyperparameters_0 = runtime.ForwardResponseMessage
 
-	forward_Repository_UpdateHyperParameters_0 = runtime.ForwardResponseMessage
+	forward_Repository_UpdateHyperparameters_0 = runtime.ForwardResponseMessage
 
 	forward_Repository_ListCheckpoints_0 = runtime.ForwardResponseMessage
 
