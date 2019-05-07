@@ -25,6 +25,7 @@ type Hyperparameters struct {
 	ModelId             string
 	HyperparametersId   string
 	CanonicalCheckpoint string
+	UpgradeTo           string
 	Hyperparameters     map[string]string
 }
 

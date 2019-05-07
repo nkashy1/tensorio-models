@@ -288,10 +288,12 @@ func Test_UpdateHyperparams(t *testing.T, store storage.RepositoryStorage) {
 	hyperparametersUpdate.Hyperparameters = make(map[string]string)
 	hyperparametersUpdate.Hyperparameters["hp1"] = "1.1"
 	hyperparametersUpdate.Hyperparameters["hp2"] = "2"
+	hyperparametersUpdate.UpgradeTo = "upgradeTo1"
 	expectedHyperparameters := storage.Hyperparameters{
 		ModelId:             "model1",
 		HyperparametersId:   "param1",
 		CanonicalCheckpoint: "checkpoint2",
+		UpgradeTo:           "upgradeTo1",
 		Hyperparameters:     map[string]string{"hp1": "1.1", "hp2": "2"},
 	}
 	updatedHyperparameters, err = store.UpdateHyperparameters(ctx, hyperparametersUpdate)

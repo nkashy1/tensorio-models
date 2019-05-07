@@ -173,8 +173,13 @@ func (s *memory) UpdateHyperparameters(ctx context.Context, hyperparameters stor
 	key := fmt.Sprintf("%s:%s", hyperparameters.ModelId, hyperparameters.HyperparametersId)
 
 	currentHyperparameters, _ := s.hyperparameters[key]
+
 	if strings.TrimSpace(hyperparameters.CanonicalCheckpoint) != "" {
 		currentHyperparameters.CanonicalCheckpoint = hyperparameters.CanonicalCheckpoint
+	}
+
+	if strings.TrimSpace(hyperparameters.UpgradeTo) != "" {
+		currentHyperparameters.UpgradeTo = hyperparameters.UpgradeTo
 	}
 
 	if hyperparameters.Hyperparameters != nil {

@@ -187,7 +187,7 @@ func (srv *server) GetHyperparameters(ctx context.Context, req *api.GetHyperpara
 	resp := &api.GetHyperparametersResponse{
 		ModelId:             storedHyperparameters.ModelId,
 		HyperparametersId:   storedHyperparameters.HyperparametersId,
-		UpgradeTo:           "",
+		UpgradeTo:           storedHyperparameters.UpgradeTo,
 		CanonicalCheckpoint: storedHyperparameters.CanonicalCheckpoint,
 		Hyperparameters:     storedHyperparameters.Hyperparameters,
 	}
@@ -197,6 +197,7 @@ func (srv *server) GetHyperparameters(ctx context.Context, req *api.GetHyperpara
 func (srv *server) UpdateHyperparameters(ctx context.Context, req *api.UpdateHyperparametersRequest) (*api.UpdateHyperparametersResponse, error) {
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
+	upgradeTo := req.UpgradeTo
 	canonicalCheckpoint := req.CanonicalCheckpoint
 	hyperparameters := req.Hyperparameters
 	log.Printf("UpdateHyperparameters request - ModelId: %s, HyperparametersId: %s, CanonicalCheckpoint: %s, Hyperparameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
@@ -212,6 +213,9 @@ func (srv *server) UpdateHyperparameters(ctx context.Context, req *api.UpdateHyp
 	updatedHyperparameters := existingHyperparameters
 	if canonicalCheckpoint != "" {
 		updatedHyperparameters.CanonicalCheckpoint = canonicalCheckpoint
+	}
+	if upgradeTo != "" {
+		updatedHyperparameters.UpgradeTo = upgradeTo
 	}
 	for k, v := range hyperparameters {
 		updatedHyperparameters.Hyperparameters[k] = v
