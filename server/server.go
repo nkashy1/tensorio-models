@@ -282,6 +282,7 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 		CheckpointId:      checkpointID,
 		CreatedAt:         time.Now(),
 		Link:              link,
+		Info:              req.Info,
 	}
 	err := srv.storage.AddCheckpoint(ctx, storageCheckpoint)
 	if err != nil {

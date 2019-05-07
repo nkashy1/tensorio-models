@@ -921,6 +921,5 @@ func TestGetCheckpoint(t *testing.T) {
 	assert.NoError(t, err)
 	assert.WithinDuration(t, time.Now(), createdAt, 2*time.Second)
 
-	// TODO(frederick): Make the following assertion pass
-	// assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
+	assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
 }
