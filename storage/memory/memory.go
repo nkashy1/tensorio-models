@@ -14,8 +14,8 @@ type memory struct {
 	modelList []string
 	models    map[string]storage.Model
 
-	hyperParametersList []string
-	hyperParameters     map[string]storage.HyperParameters
+	hyperparametersList []string
+	hyperparameters     map[string]storage.Hyperparameters
 
 	checkpointsList []string
 	checkpoints     map[string]storage.Checkpoint
@@ -28,8 +28,8 @@ func NewMemoryRepositoryStorage() storage.RepositoryStorage {
 		modelList: make([]string, 0),
 		models:    make(map[string]storage.Model),
 
-		hyperParametersList: make([]string, 0),
-		hyperParameters:     make(map[string]storage.HyperParameters),
+		hyperparametersList: make([]string, 0),
+		hyperparameters:     make(map[string]storage.Hyperparameters),
 
 		checkpointsList: make([]string, 0),
 		checkpoints:     make(map[string]storage.Checkpoint),
@@ -89,8 +89,8 @@ func (s *memory) UpdateModel(ctx context.Context, model storage.Model) (storage.
 	if strings.TrimSpace(model.Description) != "" {
 		currentModel.Description = model.Description
 	}
-	if strings.TrimSpace(model.CanonicalHyperParameters) != "" {
-		currentModel.CanonicalHyperParameters = model.CanonicalHyperParameters
+	if strings.TrimSpace(model.CanonicalHyperparameters) != "" {
+		currentModel.CanonicalHyperparameters = model.CanonicalHyperparameters
 	}
 
 	s.models[currentModel.ModelId] = currentModel
@@ -98,7 +98,7 @@ func (s *memory) UpdateModel(ctx context.Context, model storage.Model) (storage.
 	return s.models[model.ModelId], nil
 }
 
-func (s *memory) ListHyperParameters(ctx context.Context, modelId, marker string, maxItems int) ([]string, error) {
+func (s *memory) ListHyperparameters(ctx context.Context, modelId, marker string, maxItems int) ([]string, error) {
 	if _, err := s.GetModel(ctx, modelId); err != nil {
 		return nil, err
 	}
@@ -108,13 +108,13 @@ func (s *memory) ListHyperParameters(ctx context.Context, modelId, marker string
 
 	qualifiedMarker := fmt.Sprintf("%s:%s", modelId, marker)
 
-	firstIndex := sort.SearchStrings(s.hyperParametersList, qualifiedMarker)
+	firstIndex := sort.SearchStrings(s.hyperparametersList, qualifiedMarker)
 	lastIndex := firstIndex + maxItems
-	if lastIndex > len(s.hyperParametersList) {
-		lastIndex = len(s.hyperParametersList)
+	if lastIndex > len(s.hyperparametersList) {
+		lastIndex = len(s.hyperparametersList)
 	}
 
-	unsafeSlice := s.hyperParametersList[firstIndex:lastIndex]
+	unsafeSlice := s.hyperparametersList[firstIndex:lastIndex]
 	safeSlice := make([]string, 0, len(unsafeSlice))
 
 	for i := 0; i < len(unsafeSlice); i++ {
@@ -126,83 +126,83 @@ func (s *memory) ListHyperParameters(ctx context.Context, modelId, marker string
 	return safeSlice, nil
 }
 
-func (s *memory) GetHyperparameters(ctx context.Context, modelId string, hyperParametersId string) (storage.HyperParameters, error) {
+func (s *memory) GetHyperparameters(ctx context.Context, modelId string, hyperparametersId string) (storage.Hyperparameters, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	key := fmt.Sprintf("%s:%s", modelId, hyperParametersId)
-	if hyperParameters, ok := s.hyperParameters[key]; ok {
-		return hyperParameters, nil
+	key := fmt.Sprintf("%s:%s", modelId, hyperparametersId)
+	if hyperparameters, ok := s.hyperparameters[key]; ok {
+		return hyperparameters, nil
 	}
 
-	return storage.HyperParameters{}, storage.HyperParametersDoesNotExistError
+	return storage.Hyperparameters{}, storage.HyperparametersDoesNotExistError
 }
 
-func (s *memory) AddHyperParameters(ctx context.Context, hyperParameters storage.HyperParameters) error {
-	if _, err := s.GetModel(ctx, hyperParameters.ModelId); err != nil {
+func (s *memory) AddHyperparameters(ctx context.Context, hyperparameters storage.Hyperparameters) error {
+	if _, err := s.GetModel(ctx, hyperparameters.ModelId); err != nil {
 		return err
 	}
 
-	if _, err := s.GetHyperparameters(ctx, hyperParameters.ModelId, hyperParameters.HyperParametersId); err == nil {
-		return storage.HyperParametersExistsError
+	if _, err := s.GetHyperparameters(ctx, hyperparameters.ModelId, hyperparameters.HyperparametersId); err == nil {
+		return storage.HyperparametersExistsError
 	}
 
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	key := fmt.Sprintf("%s:%s", hyperParameters.ModelId, hyperParameters.HyperParametersId)
+	key := fmt.Sprintf("%s:%s", hyperparameters.ModelId, hyperparameters.HyperparametersId)
 
-	s.hyperParametersList = insert(s.hyperParametersList, key)
-	s.hyperParameters[key] = hyperParameters
+	s.hyperparametersList = insert(s.hyperparametersList, key)
+	s.hyperparameters[key] = hyperparameters
 
 	return nil
 }
 
-func (s *memory) UpdateHyperParameters(ctx context.Context, hyperParameters storage.HyperParameters) (storage.HyperParameters, error) {
-	if _, err := s.GetModel(ctx, hyperParameters.ModelId); err != nil {
-		return storage.HyperParameters{}, err
+func (s *memory) UpdateHyperparameters(ctx context.Context, hyperparameters storage.Hyperparameters) (storage.Hyperparameters, error) {
+	if _, err := s.GetModel(ctx, hyperparameters.ModelId); err != nil {
+		return storage.Hyperparameters{}, err
 	}
 
-	if _, err := s.GetHyperparameters(ctx, hyperParameters.ModelId, hyperParameters.HyperParametersId); err != nil {
-		return storage.HyperParameters{}, err
+	if _, err := s.GetHyperparameters(ctx, hyperparameters.ModelId, hyperparameters.HyperparametersId); err != nil {
+		return storage.Hyperparameters{}, err
 	}
 
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	key := fmt.Sprintf("%s:%s", hyperParameters.ModelId, hyperParameters.HyperParametersId)
+	key := fmt.Sprintf("%s:%s", hyperparameters.ModelId, hyperparameters.HyperparametersId)
 
-	currentHyperParameters, _ := s.hyperParameters[key]
-	if strings.TrimSpace(hyperParameters.CanonicalCheckpoint) != "" {
-		currentHyperParameters.CanonicalCheckpoint = hyperParameters.CanonicalCheckpoint
+	currentHyperparameters, _ := s.hyperparameters[key]
+	if strings.TrimSpace(hyperparameters.CanonicalCheckpoint) != "" {
+		currentHyperparameters.CanonicalCheckpoint = hyperparameters.CanonicalCheckpoint
 	}
 
-	if hyperParameters.HyperParameters != nil {
-		for k, v := range hyperParameters.HyperParameters {
+	if hyperparameters.Hyperparameters != nil {
+		for k, v := range hyperparameters.Hyperparameters {
 			if strings.TrimSpace(v) != "" {
-				currentHyperParameters.HyperParameters[k] = v
+				currentHyperparameters.Hyperparameters[k] = v
 			}
 		}
 	}
 
-	s.hyperParameters[key] = currentHyperParameters
+	s.hyperparameters[key] = currentHyperparameters
 
-	return currentHyperParameters, nil
+	return currentHyperparameters, nil
 }
 
-func (s *memory) ListCheckpoints(ctx context.Context, modelId, hyperParametersId, marker string, maxItems int) ([]string, error) {
+func (s *memory) ListCheckpoints(ctx context.Context, modelId, hyperparametersId, marker string, maxItems int) ([]string, error) {
 	if _, err := s.GetModel(ctx, modelId); err != nil {
 		return nil, err
 	}
 
-	if _, err := s.GetHyperparameters(ctx, modelId, hyperParametersId); err != nil {
+	if _, err := s.GetHyperparameters(ctx, modelId, hyperparametersId); err != nil {
 		return nil, err
 	}
 
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	qualifiedMarker := fmt.Sprintf("%s:%s:%s", modelId, hyperParametersId, marker)
+	qualifiedMarker := fmt.Sprintf("%s:%s:%s", modelId, hyperparametersId, marker)
 
 	firstIndex := sort.SearchStrings(s.checkpointsList, qualifiedMarker)
 	lastIndex := firstIndex + maxItems
@@ -214,7 +214,7 @@ func (s *memory) ListCheckpoints(ctx context.Context, modelId, hyperParametersId
 	safeSlice := make([]string, 0, len(unsafeSlice))
 
 	for i := 0; i < len(unsafeSlice); i++ {
-		if strings.HasPrefix(unsafeSlice[i], modelId+":"+hyperParametersId+":") {
+		if strings.HasPrefix(unsafeSlice[i], modelId+":"+hyperparametersId+":") {
 			safeSlice = append(safeSlice, unsafeSlice[i])
 		}
 	}
@@ -222,19 +222,19 @@ func (s *memory) ListCheckpoints(ctx context.Context, modelId, hyperParametersId
 	return safeSlice, nil
 }
 
-func (s *memory) GetCheckpoint(ctx context.Context, modelId, hyperParametersId, checkpointId string) (storage.Checkpoint, error) {
+func (s *memory) GetCheckpoint(ctx context.Context, modelId, hyperparametersId, checkpointId string) (storage.Checkpoint, error) {
 	if _, err := s.GetModel(ctx, modelId); err != nil {
 		return storage.Checkpoint{}, err
 	}
 
-	if _, err := s.GetHyperparameters(ctx, modelId, hyperParametersId); err != nil {
+	if _, err := s.GetHyperparameters(ctx, modelId, hyperparametersId); err != nil {
 		return storage.Checkpoint{}, err
 	}
 
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	key := fmt.Sprintf("%s:%s:%s", modelId, hyperParametersId, checkpointId)
+	key := fmt.Sprintf("%s:%s:%s", modelId, hyperparametersId, checkpointId)
 
 	if checkpoint, ok := s.checkpoints[key]; ok {
 		return checkpoint, nil
@@ -248,18 +248,18 @@ func (s *memory) AddCheckpoint(ctx context.Context, checkpoint storage.Checkpoin
 		return err
 	}
 
-	if _, err := s.GetHyperparameters(ctx, checkpoint.ModelId, checkpoint.HyperParametersId); err != nil {
+	if _, err := s.GetHyperparameters(ctx, checkpoint.ModelId, checkpoint.HyperparametersId); err != nil {
 		return err
 	}
 
-	if _, err := s.GetCheckpoint(ctx, checkpoint.ModelId, checkpoint.HyperParametersId, checkpoint.CheckpointId); err == nil {
+	if _, err := s.GetCheckpoint(ctx, checkpoint.ModelId, checkpoint.HyperparametersId, checkpoint.CheckpointId); err == nil {
 		return storage.CheckpointExistsError
 	}
 
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	key := fmt.Sprintf("%s:%s:%s", checkpoint.ModelId, checkpoint.HyperParametersId, checkpoint.CheckpointId)
+	key := fmt.Sprintf("%s:%s:%s", checkpoint.ModelId, checkpoint.HyperparametersId, checkpoint.CheckpointId)
 
 	s.checkpointsList = insert(s.checkpointsList, key)
 	s.checkpoints[key] = checkpoint

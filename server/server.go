@@ -58,7 +58,7 @@ func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api
 	respModel := api.Model{
 		ModelId:                  model.ModelId,
 		Description:              model.Description,
-		CanonicalHyperParameters: model.CanonicalHyperParameters,
+		CanonicalHyperparameters: model.CanonicalHyperparameters,
 	}
 	resp := &api.GetModelResponse{
 		Model: &respModel,
@@ -72,7 +72,7 @@ func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest)
 	storageModel := storage.Model{
 		ModelId:                  model.ModelId,
 		Description:              model.Description,
-		CanonicalHyperParameters: model.CanonicalHyperParameters,
+		CanonicalHyperparameters: model.CanonicalHyperparameters,
 	}
 	err := srv.storage.AddModel(ctx, storageModel)
 	if err != nil {
@@ -103,8 +103,8 @@ func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest)
 	if model.Description != "" {
 		updatedModel.Description = model.Description
 	}
-	if model.CanonicalHyperParameters != "" {
-		updatedModel.CanonicalHyperParameters = model.CanonicalHyperParameters
+	if model.CanonicalHyperparameters != "" {
+		updatedModel.CanonicalHyperparameters = model.CanonicalHyperparameters
 	}
 	newlyStoredModel, err := srv.storage.UpdateModel(ctx, updatedModel)
 	if err != nil {
@@ -117,43 +117,43 @@ func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest)
 		Model: &api.Model{
 			ModelId:                  newlyStoredModel.ModelId,
 			Description:              newlyStoredModel.Description,
-			CanonicalHyperParameters: newlyStoredModel.CanonicalHyperParameters,
+			CanonicalHyperparameters: newlyStoredModel.CanonicalHyperparameters,
 		},
 	}
 	return resp, nil
 }
 
-func (srv *server) ListHyperParameters(ctx context.Context, req *api.ListHyperParametersRequest) (*api.ListHyperParametersResponse, error) {
+func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperparametersRequest) (*api.ListHyperparametersResponse, error) {
 	modelID := req.ModelId
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
-	log.Printf("ListHyperParameters request - ModelId: %s, Marker: %s, MaxItems: %d", modelID, marker, maxItems)
-	hyperparametersIDs, err := srv.storage.ListHyperParameters(ctx, modelID, marker, maxItems)
+	log.Printf("ListHyperparameters request - ModelId: %s, Marker: %s, MaxItems: %d", modelID, marker, maxItems)
+	hyperparametersIDs, err := srv.storage.ListHyperparameters(ctx, modelID, marker, maxItems)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 		message := fmt.Sprintf("Could not list hyperparameters for model (%s) in storage", modelID)
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
-	resp := &api.ListHyperParametersResponse{
-		HyperParametersIds: hyperparametersIDs,
+	resp := &api.ListHyperparametersResponse{
+		HyperparametersIds: hyperparametersIDs,
 	}
 	return resp, nil
 }
 
-func (srv *server) CreateHyperParameters(ctx context.Context, req *api.CreateHyperParametersRequest) (*api.CreateHyperParametersResponse, error) {
+func (srv *server) CreateHyperparameters(ctx context.Context, req *api.CreateHyperparametersRequest) (*api.CreateHyperparametersResponse, error) {
 	modelID := req.ModelId
-	hyperparametersID := req.HyperParametersId
+	hyperparametersID := req.HyperparametersId
 	canonicalCheckpoint := req.CanonicalCheckpoint
-	hyperparameters := req.HyperParameters
-	log.Printf("CreateHyperParameters request - ModelId: %s, HyperParametersId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
-	storageHyperparameters := storage.HyperParameters{
+	hyperparameters := req.Hyperparameters
+	log.Printf("CreateHyperparameters request - ModelId: %s, HyperparametersId: %s, CanonicalCheckpoint: %s, Hyperparameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
+	storageHyperparameters := storage.Hyperparameters{
 		ModelId:             modelID,
-		HyperParametersId:   hyperparametersID,
+		HyperparametersId:   hyperparametersID,
 		CanonicalCheckpoint: canonicalCheckpoint,
-		HyperParameters:     hyperparameters,
+		Hyperparameters:     hyperparameters,
 	}
-	err := srv.storage.AddHyperParameters(ctx, storageHyperparameters)
+	err := srv.storage.AddHyperparameters(ctx, storageHyperparameters)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 		message := fmt.Sprintf("Could not store hyperparameters (%v) in storage", storageHyperparameters)
@@ -161,16 +161,16 @@ func (srv *server) CreateHyperParameters(ctx context.Context, req *api.CreateHyp
 		return nil, grpcErr
 	}
 	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s", modelID, hyperparametersID)
-	resp := &api.CreateHyperParametersResponse{
+	resp := &api.CreateHyperparametersResponse{
 		ResourcePath: resourcePath,
 	}
 	return resp, nil
 }
 
-func (srv *server) GetHyperParameters(ctx context.Context, req *api.GetHyperParametersRequest) (*api.GetHyperParametersResponse, error) {
+func (srv *server) GetHyperparameters(ctx context.Context, req *api.GetHyperparametersRequest) (*api.GetHyperparametersResponse, error) {
 	modelID := req.ModelId
-	hyperparametersID := req.HyperParametersId
-	log.Printf("GetHyperParameters request - ModelId: %s, HyperParametersId: %s", modelID, hyperparametersID)
+	hyperparametersID := req.HyperparametersId
+	log.Printf("GetHyperparameters request - ModelId: %s, HyperparametersId: %s", modelID, hyperparametersID)
 	storedHyperparameters, err := srv.storage.GetHyperparameters(ctx, modelID, hyperparametersID)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
@@ -178,22 +178,22 @@ func (srv *server) GetHyperParameters(ctx context.Context, req *api.GetHyperPara
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
-	resp := &api.GetHyperParametersResponse{
+	resp := &api.GetHyperparametersResponse{
 		ModelId:             storedHyperparameters.ModelId,
-		HyperParametersId:   storedHyperparameters.HyperParametersId,
+		HyperparametersId:   storedHyperparameters.HyperparametersId,
 		UpgradeTo:           "",
 		CanonicalCheckpoint: storedHyperparameters.CanonicalCheckpoint,
-		HyperParameters:     storedHyperparameters.HyperParameters,
+		Hyperparameters:     storedHyperparameters.Hyperparameters,
 	}
 	return resp, nil
 }
 
-func (srv *server) UpdateHyperParameters(ctx context.Context, req *api.UpdateHyperParametersRequest) (*api.UpdateHyperParametersResponse, error) {
+func (srv *server) UpdateHyperparameters(ctx context.Context, req *api.UpdateHyperparametersRequest) (*api.UpdateHyperparametersResponse, error) {
 	modelID := req.ModelId
-	hyperparametersID := req.HyperParametersId
+	hyperparametersID := req.HyperparametersId
 	canonicalCheckpoint := req.CanonicalCheckpoint
-	hyperparameters := req.HyperParameters
-	log.Printf("UpdateHyperParameters request - ModelId: %s, HyperParametersId: %s, CanonicalCheckpoint: %s, HyperParameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
+	hyperparameters := req.Hyperparameters
+	log.Printf("UpdateHyperparameters request - ModelId: %s, HyperparametersId: %s, CanonicalCheckpoint: %s, Hyperparameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
 
 	existingHyperparameters, err := srv.storage.GetHyperparameters(ctx, modelID, hyperparametersID)
 	if err != nil {
@@ -208,9 +208,9 @@ func (srv *server) UpdateHyperParameters(ctx context.Context, req *api.UpdateHyp
 		updatedHyperparameters.CanonicalCheckpoint = canonicalCheckpoint
 	}
 	for k, v := range hyperparameters {
-		updatedHyperparameters.HyperParameters[k] = v
+		updatedHyperparameters.Hyperparameters[k] = v
 	}
-	storedHyperparameters, err := srv.storage.UpdateHyperParameters(ctx, updatedHyperparameters)
+	storedHyperparameters, err := srv.storage.UpdateHyperparameters(ctx, updatedHyperparameters)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 		message := fmt.Sprintf("Could not store hyperparameters (%v) in storage", updatedHyperparameters)
@@ -218,22 +218,22 @@ func (srv *server) UpdateHyperParameters(ctx context.Context, req *api.UpdateHyp
 		return nil, grpcErr
 	}
 
-	resp := &api.UpdateHyperParametersResponse{
+	resp := &api.UpdateHyperparametersResponse{
 		ModelId:             storedHyperparameters.ModelId,
-		HyperParametersId:   storedHyperparameters.HyperParametersId,
+		HyperparametersId:   storedHyperparameters.HyperparametersId,
 		UpgradeTo:           "",
 		CanonicalCheckpoint: storedHyperparameters.CanonicalCheckpoint,
-		HyperParameters:     storedHyperparameters.HyperParameters,
+		Hyperparameters:     storedHyperparameters.Hyperparameters,
 	}
 	return resp, nil
 }
 
 func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpointsRequest) (*api.ListCheckpointsResponse, error) {
 	modelID := req.ModelId
-	hyperparametersID := req.HyperParametersId
+	hyperparametersID := req.HyperparametersId
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
-	log.Printf("ListCheckpoints request - ModelId: %s, HyperParametersId: %s, Marker: %s, MaxItems: %d", modelID, hyperparametersID, marker, maxItems)
+	log.Printf("ListCheckpoints request - ModelId: %s, HyperparametersId: %s, Marker: %s, MaxItems: %d", modelID, hyperparametersID, marker, maxItems)
 	checkpointIDs, err := srv.storage.ListCheckpoints(ctx, modelID, hyperparametersID, marker, maxItems)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
@@ -249,13 +249,13 @@ func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpoints
 
 func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpointRequest) (*api.CreateCheckpointResponse, error) {
 	modelID := req.ModelId
-	hyperparametersID := req.HyperParametersId
+	hyperparametersID := req.HyperparametersId
 	checkpointID := req.CheckpointId
 	link := req.Link
-	log.Printf("CreateCheckpoint request - ModelId: %s, HyperParametersId: %s, CheckpointId: %s, Link: %s", modelID, hyperparametersID, checkpointID, link)
+	log.Printf("CreateCheckpoint request - ModelId: %s, HyperparametersId: %s, CheckpointId: %s, Link: %s", modelID, hyperparametersID, checkpointID, link)
 	storageCheckpoint := storage.Checkpoint{
 		ModelId:           modelID,
-		HyperParametersId: hyperparametersID,
+		HyperparametersId: hyperparametersID,
 		CheckpointId:      checkpointID,
 		Link:              link,
 	}
@@ -275,9 +275,9 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 
 func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequest) (*api.GetCheckpointResponse, error) {
 	modelID := req.ModelId
-	hyperparametersID := req.HyperParametersId
+	hyperparametersID := req.HyperparametersId
 	checkpointID := req.CheckpointId
-	log.Printf("GetCheckpoint request - ModelId: %s, HyperParametersId: %s, CheckpointId: %s", modelID, hyperparametersID, checkpointID)
+	log.Printf("GetCheckpoint request - ModelId: %s, HyperparametersId: %s, CheckpointId: %s", modelID, hyperparametersID, checkpointID)
 	storedCheckpoint, err := srv.storage.GetCheckpoint(ctx, modelID, hyperparametersID, checkpointID)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
@@ -294,7 +294,7 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 	return resp, nil
 }
 
-func getCheckpointResourcePath(modelID, hyperParametersID, checkpointID string) string {
-	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperParametersID, checkpointID)
+func getCheckpointResourcePath(modelID, hyperparametersID, checkpointID string) string {
+	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperparametersID, checkpointID)
 	return resourcePath
 }

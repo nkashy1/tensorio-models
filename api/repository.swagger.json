@@ -150,12 +150,12 @@
     },
     "/v1/repository/models/{modelId}/hyperparameters": {
       "get": {
-        "operationId": "ListHyperParameters",
+        "operationId": "ListHyperparameters",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiListHyperParametersResponse"
+              "$ref": "#/definitions/apiListHyperparametersResponse"
             }
           }
         },
@@ -185,12 +185,12 @@
         ]
       },
       "post": {
-        "operationId": "CreateHyperParameters",
+        "operationId": "CreateHyperparameters",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiCreateHyperParametersResponse"
+              "$ref": "#/definitions/apiCreateHyperparametersResponse"
             }
           }
         },
@@ -206,7 +206,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiCreateHyperParametersRequest"
+              "$ref": "#/definitions/apiCreateHyperparametersRequest"
             }
           }
         ],
@@ -215,14 +215,14 @@
         ]
       }
     },
-    "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}": {
+    "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}": {
       "get": {
-        "operationId": "GetHyperParameters",
+        "operationId": "GetHyperparameters",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetHyperParametersResponse"
+              "$ref": "#/definitions/apiGetHyperparametersResponse"
             }
           }
         },
@@ -234,7 +234,7 @@
             "type": "string"
           },
           {
-            "name": "hyperParametersId",
+            "name": "hyperparametersId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -245,12 +245,12 @@
         ]
       },
       "put": {
-        "operationId": "UpdateHyperParameters",
+        "operationId": "UpdateHyperparameters",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiUpdateHyperParametersResponse"
+              "$ref": "#/definitions/apiUpdateHyperparametersResponse"
             }
           }
         },
@@ -262,7 +262,7 @@
             "type": "string"
           },
           {
-            "name": "hyperParametersId",
+            "name": "hyperparametersId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -272,7 +272,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiUpdateHyperParametersRequest"
+              "$ref": "#/definitions/apiUpdateHyperparametersRequest"
             }
           }
         ],
@@ -281,7 +281,7 @@
         ]
       }
     },
-    "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}/checkpoints": {
+    "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}/checkpoints": {
       "get": {
         "operationId": "ListCheckpoints",
         "responses": {
@@ -300,7 +300,7 @@
             "type": "string"
           },
           {
-            "name": "hyperParametersId",
+            "name": "hyperparametersId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -341,7 +341,7 @@
             "type": "string"
           },
           {
-            "name": "hyperParametersId",
+            "name": "hyperparametersId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -360,7 +360,7 @@
         ]
       }
     },
-    "/v1/repository/models/{modelId}/hyperparameters/{hyperParametersId}/checkpoints/{checkpointId}": {
+    "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}/checkpoints/{checkpointId}": {
       "get": {
         "operationId": "GetCheckpoint",
         "responses": {
@@ -379,7 +379,7 @@
             "type": "string"
           },
           {
-            "name": "hyperParametersId",
+            "name": "hyperparametersId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -413,7 +413,7 @@
         "modelId": {
           "type": "string"
         },
-        "hyperParametersId": {
+        "hyperparametersId": {
           "type": "string"
         },
         "checkpointId": {
@@ -438,19 +438,19 @@
         }
       }
     },
-    "apiCreateHyperParametersRequest": {
+    "apiCreateHyperparametersRequest": {
       "type": "object",
       "properties": {
         "modelId": {
           "type": "string"
         },
-        "hyperParametersId": {
+        "hyperparametersId": {
           "type": "string"
         },
         "canonicalCheckpoint": {
           "type": "string"
         },
-        "hyperParameters": {
+        "hyperparameters": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -458,7 +458,7 @@
         }
       }
     },
-    "apiCreateHyperParametersResponse": {
+    "apiCreateHyperparametersResponse": {
       "type": "object",
       "properties": {
         "resourcePath": {
@@ -499,13 +499,13 @@
         }
       }
     },
-    "apiGetHyperParametersResponse": {
+    "apiGetHyperparametersResponse": {
       "type": "object",
       "properties": {
         "modelId": {
           "type": "string"
         },
-        "hyperParametersId": {
+        "hyperparametersId": {
           "type": "string"
         },
         "upgradeTo": {
@@ -514,7 +514,7 @@
         "canonicalCheckpoint": {
           "type": "string"
         },
-        "hyperParameters": {
+        "hyperparameters": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -549,10 +549,10 @@
         }
       }
     },
-    "apiListHyperParametersResponse": {
+    "apiListHyperparametersResponse": {
       "type": "object",
       "properties": {
-        "hyperParametersIds": {
+        "hyperparametersIds": {
           "type": "array",
           "items": {
             "type": "string"
@@ -580,18 +580,18 @@
         "description": {
           "type": "string"
         },
-        "canonicalHyperParameters": {
+        "canonicalHyperparameters": {
           "type": "string"
         }
       }
     },
-    "apiUpdateHyperParametersRequest": {
+    "apiUpdateHyperparametersRequest": {
       "type": "object",
       "properties": {
         "modelId": {
           "type": "string"
         },
-        "hyperParametersId": {
+        "hyperparametersId": {
           "type": "string"
         },
         "upgradeTo": {
@@ -600,7 +600,7 @@
         "canonicalCheckpoint": {
           "type": "string"
         },
-        "hyperParameters": {
+        "hyperparameters": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -608,13 +608,13 @@
         }
       }
     },
-    "apiUpdateHyperParametersResponse": {
+    "apiUpdateHyperparametersResponse": {
       "type": "object",
       "properties": {
         "modelId": {
           "type": "string"
         },
-        "hyperParametersId": {
+        "hyperparametersId": {
           "type": "string"
         },
         "upgradeTo": {
@@ -623,7 +623,7 @@
         "canonicalCheckpoint": {
           "type": "string"
         },
-        "hyperParameters": {
+        "hyperparameters": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
