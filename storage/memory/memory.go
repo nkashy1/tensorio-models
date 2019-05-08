@@ -41,6 +41,21 @@ func (s *memory) ListModels(ctx context.Context, marker string, maxItems int) ([
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	firstIndex := sort.SearchStrings(s.modelList, marker)
+
+	// check if marker index is past the end of the list
+	if firstIndex == len(s.modelList) {
+		return make([]string, 0), nil
+	}
+
+	if marker == s.modelList[firstIndex] {
+		firstIndex = firstIndex + 1
+	}
+
+	// check if the updated marker index is past the end of the list
+	if firstIndex == len(s.modelList) {
+		return make([]string, 0), nil
+	}
+
 	lastIndex := firstIndex + maxItems
 	if lastIndex > len(s.modelList) {
 		lastIndex = len(s.modelList)
@@ -109,6 +124,21 @@ func (s *memory) ListHyperparameters(ctx context.Context, modelId, marker string
 	qualifiedMarker := fmt.Sprintf("%s:%s", modelId, marker)
 
 	firstIndex := sort.SearchStrings(s.hyperparametersList, qualifiedMarker)
+
+	// check if marker index is past the end of the list
+	if firstIndex == len(s.hyperparametersList) {
+		return make([]string, 0), nil
+	}
+
+	if qualifiedMarker == s.hyperparametersList[firstIndex] {
+		firstIndex = firstIndex + 1
+	}
+
+	// check if the updated marker index is past the end of the list
+	if firstIndex == len(s.hyperparametersList) {
+		return make([]string, 0), nil
+	}
+
 	lastIndex := firstIndex + maxItems
 	if lastIndex > len(s.hyperparametersList) {
 		lastIndex = len(s.hyperparametersList)
@@ -210,6 +240,20 @@ func (s *memory) ListCheckpoints(ctx context.Context, modelId, hyperparametersId
 	qualifiedMarker := fmt.Sprintf("%s:%s:%s", modelId, hyperparametersId, marker)
 
 	firstIndex := sort.SearchStrings(s.checkpointsList, qualifiedMarker)
+
+	// check if marker index is past the end of the list
+	if firstIndex == len(s.checkpointsList) {
+		return make([]string, 0), nil
+	}
+
+	if qualifiedMarker == s.checkpointsList[firstIndex] {
+		firstIndex = firstIndex + 1
+	}
+
+	// check if the updated marker index is past the end of the list
+	if firstIndex == len(s.checkpointsList) {
+		return make([]string, 0), nil
+	}
 	lastIndex := firstIndex + maxItems
 	if lastIndex > len(s.checkpointsList) {
 		lastIndex = len(s.checkpointsList)

@@ -84,15 +84,15 @@ func Test_ListModels(t *testing.T, store storage.RepositoryStorage) {
 	assert.NoError(t, err)
 
 	list, err = store.ListModels(ctx, "model1", 2)
-	assert.Equal(t, []string{"model1", "model2"}, list)
+	assert.Equal(t, []string{"model2", "model3"}, list)
+	assert.NoError(t, err)
+
+	list, err = store.ListModels(ctx, "model0", 4)
+	assert.Equal(t, []string{"model1", "model2", "model3", "model4"}, list)
 	assert.NoError(t, err)
 
 	list, err = store.ListModels(ctx, "model1", 4)
-	assert.Equal(t, []string{"model1", "model2", "model3", "model4"}, list)
-	assert.NoError(t, err)
-
-	list, err = store.ListModels(ctx, "model1", 5)
-	assert.Equal(t, []string{"model1", "model2", "model3", "model4"}, list)
+	assert.Equal(t, []string{"model2", "model3", "model4"}, list)
 	assert.NoError(t, err)
 
 	list, err = store.ListModels(ctx, "a", 2)
@@ -412,6 +412,14 @@ func Test_ListCheckpoints(t *testing.T, store storage.RepositoryStorage) {
 
 	checkpoints, err = store.ListCheckpoints(ctx, "model1", "params1", "cp22", 4)
 	assert.Equal(t, []string{
+		"model1:params1:cp3",
+		"model1:params1:cp4",
+	}, checkpoints)
+	assert.NoError(t, err)
+
+	checkpoints, err = store.ListCheckpoints(ctx, "model1", "params1", "cp1", 4)
+	assert.Equal(t, []string{
+		"model1:params1:cp2",
 		"model1:params1:cp3",
 		"model1:params1:cp4",
 	}, checkpoints)
