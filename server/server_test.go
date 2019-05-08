@@ -137,19 +137,19 @@ func TestListModels(t *testing.T) {
 		{
 			Server:           &srv,
 			Marker:           modelIDs[0],
-			ExpectedModelIds: modelIDs[0:10],
+			ExpectedModelIds: modelIDs[1:11],
 		},
 		{
 			Server:           &srv,
 			Marker:           modelIDs[0],
 			MaxItems:         0,
-			ExpectedModelIds: modelIDs[0:10],
+			ExpectedModelIds: modelIDs[1:11],
 		},
 		{
 			Server:           &srv,
 			Marker:           modelIDs[0],
 			MaxItems:         -10,
-			ExpectedModelIds: modelIDs[0:10],
+			ExpectedModelIds: modelIDs[1:11],
 		},
 	}
 
@@ -165,6 +165,10 @@ func TestListModels(t *testing.T) {
 			t.Error(err)
 		}
 		assert.Equalf(t, test.ExpectedModelIds, listModelsResponse.ModelIds, "TestListModels %d: ListModels request returned incorrect ModelIds", i)
+
+		if t.Failed() {
+			break
+		}
 	}
 }
 
@@ -205,8 +209,8 @@ func TestModelIdMatchesEmbeddedModelId(t *testing.T) {
 
 	model := &api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     "test-model",
-			Description: "This is a test",
+			ModelId: "test-model",
+			Details: "This is a test",
 		},
 	}
 
@@ -217,14 +221,14 @@ func TestModelIdMatchesEmbeddedModelId(t *testing.T) {
 	updateModelRequest := &api.UpdateModelRequest{
 		ModelId: "test-model",
 		Model: &api.Model{
-			Description: "desc1",
+			Details: "desc1",
 		},
 	}
 
 	expectedModel := &api.UpdateModelResponse{
 		Model: &api.Model{
-			ModelId:     "test-model",
-			Description: "desc1",
+			ModelId: "test-model",
+			Details: "desc1",
 		},
 	}
 
@@ -236,8 +240,8 @@ func TestModelIdMatchesEmbeddedModelId(t *testing.T) {
 	updateModelRequest = &api.UpdateModelRequest{
 		ModelId: "test-model",
 		Model: &api.Model{
-			ModelId:     "broken-model",
-			Description: "desc1",
+			ModelId: "broken-model",
+			Details: "desc1",
 		},
 	}
 
@@ -273,8 +277,8 @@ func TestMissingModelIdInHyperparameterUpdate(t *testing.T) {
 
 	model := &api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     "test-model",
-			Description: "This is a test",
+			ModelId: "test-model",
+			Details: "This is a test",
 		},
 	}
 
@@ -283,7 +287,7 @@ func TestMissingModelIdInHyperparameterUpdate(t *testing.T) {
 	updateModelRequest := &api.UpdateModelRequest{
 		Model: &api.Model{
 			ModelId:                  "test-model",
-			Description:              "desc1",
+			Details:                  "desc1",
 			CanonicalHyperparameters: "canon1",
 		},
 	}
@@ -468,21 +472,21 @@ func TestListHyperparameters(t *testing.T) {
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
-			ExpectedHyperparametersIds: hyperparametersTags[0:10],
+			ExpectedHyperparametersIds: hyperparametersTags[1:11],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
 			MaxItems:                   0,
-			ExpectedHyperparametersIds: hyperparametersTags[0:10],
+			ExpectedHyperparametersIds: hyperparametersTags[1:11],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
 			MaxItems:                   -10,
-			ExpectedHyperparametersIds: hyperparametersTags[0:10],
+			ExpectedHyperparametersIds: hyperparametersTags[1:11],
 		},
 	}
 
@@ -500,6 +504,10 @@ func TestListHyperparameters(t *testing.T) {
 		}
 		assert.Equal(t, test.ModelId, listHyperparametersResponse.ModelId)
 		assert.Equalf(t, test.ExpectedHyperparametersIds, listHyperparametersResponse.HyperparametersIds, "TestListHyperparameters %d: ListHyperparameters request returned incorrect HyperparametersIds", i)
+
+		if t.Failed() {
+			break
+		}
 	}
 }
 
@@ -807,7 +815,7 @@ func TestListCheckpoints(t *testing.T) {
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
-			ExpectedCheckpointIds: checkpointTags[0:10],
+			ExpectedCheckpointIds: checkpointTags[1:11],
 		},
 		{
 			Server:                &srv,
@@ -815,7 +823,7 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
 			MaxItems:              0,
-			ExpectedCheckpointIds: checkpointTags[0:10],
+			ExpectedCheckpointIds: checkpointTags[1:11],
 		},
 		{
 			Server:                &srv,
@@ -823,7 +831,7 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
 			MaxItems:              -10,
-			ExpectedCheckpointIds: checkpointTags[0:10],
+			ExpectedCheckpointIds: checkpointTags[1:11],
 		},
 	}
 
@@ -841,6 +849,10 @@ func TestListCheckpoints(t *testing.T) {
 		}
 		errorMessage := fmt.Sprintf("Test %d: ListCheckpoints response does not contain the expected CheckpointIds", i)
 		assert.Equalf(t, test.ExpectedCheckpointIds, listCkptResponse.CheckpointIds, errorMessage)
+
+		if t.Failed() {
+			break
+		}
 	}
 }
 
