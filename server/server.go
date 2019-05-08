@@ -92,8 +92,16 @@ func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest)
 func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest) (*api.UpdateModelResponse, error) {
 	modelID := req.ModelId
 	model := req.Model
+	if modelID == "" {
+		return nil, api.MissingRequiredFieldError("modelId", "model id to update").Err()
+	}
 	if model == nil {
 		return nil, api.MissingRequiredFieldError("model", "model to update").Err()
+	}
+	if req.Model.ModelId != "" {
+		if req.ModelId != req.Model.ModelId {
+			return nil, api.InvalidFieldValueError("request.model.modelId", "request.modelId != request.model.modelId").Err()
+		}
 	}
 	log.Printf("UpdateModel request - ModelId: %s, Model: %v", modelID, model)
 	storedModel, err := srv.storage.GetModel(ctx, modelID)

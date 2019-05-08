@@ -200,6 +200,52 @@ func TestUpdateModel(t *testing.T) {
 	assert.Equal(t, updateModelRequest.Model, updateModelResponse.Model, "UpdateModel models in request and response do not agree")
 }
 
+func TestModelIdMatchesEmbeddedModelId(t *testing.T) {
+	srv := testingServer()
+
+	model := &api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     "test-model",
+			Description: "This is a test",
+		},
+	}
+
+	_, err := srv.CreateModel(context.Background(), model)
+	assert.NoError(t, err)
+
+	// test missing
+	updateModelRequest := &api.UpdateModelRequest{
+		ModelId: "test-model",
+		Model: &api.Model{
+			Description: "desc1",
+		},
+	}
+
+	expectedModel := &api.UpdateModelResponse{
+		Model: &api.Model{
+			ModelId:     "test-model",
+			Description: "desc1",
+		},
+	}
+
+	updateModelResponse, err := srv.UpdateModel(context.Background(), updateModelRequest)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedModel, updateModelResponse)
+
+	// test mismatch
+	updateModelRequest = &api.UpdateModelRequest{
+		ModelId: "test-model",
+		Model: &api.Model{
+			ModelId:     "broken-model",
+			Description: "desc1",
+		},
+	}
+
+	updateModelResponse, err = srv.UpdateModel(context.Background(), updateModelRequest)
+	assert.Nil(t, updateModelResponse)
+	assert.Error(t, err)
+}
+
 func TestMissingModelInHyperparameterUpdate(t *testing.T) {
 	srv := testingServer()
 
@@ -215,6 +261,31 @@ func TestMissingModelInHyperparameterUpdate(t *testing.T) {
 	updateModelRequest := &api.UpdateModelRequest{
 		ModelId: "test-model",
 		Model:   nil,
+	}
+
+	updateModelResponse, err := srv.UpdateModel(context.Background(), updateModelRequest)
+	assert.Nil(t, updateModelResponse)
+	assert.Error(t, err)
+}
+
+func TestMissingModelIdInHyperparameterUpdate(t *testing.T) {
+	srv := testingServer()
+
+	model := &api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId:     "test-model",
+			Description: "This is a test",
+		},
+	}
+
+	srv.CreateModel(context.Background(), model)
+
+	updateModelRequest := &api.UpdateModelRequest{
+		Model: &api.Model{
+			ModelId:                  "test-model",
+			Description:              "desc1",
+			CanonicalHyperparameters: "canon1",
+		},
 	}
 
 	updateModelResponse, err := srv.UpdateModel(context.Background(), updateModelRequest)

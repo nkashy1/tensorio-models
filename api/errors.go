@@ -28,3 +28,25 @@ func MissingRequiredFieldError(field, fieldDescription string) *status.Status {
 
 	return statWithDetails
 }
+
+func InvalidFieldValueError(field, fieldDescription string) *status.Status {
+	stat := status.New(codes.InvalidArgument, fieldDescription)
+
+	fieldViolations := make([]*errdetails.BadRequest_FieldViolation, 0)
+	fieldViolations = append(fieldViolations, &errdetails.BadRequest_FieldViolation{
+		Field:       field,
+		Description: fieldDescription,
+	})
+
+	badrequest := &errdetails.BadRequest{
+		FieldViolations: fieldViolations,
+	}
+
+	statWithDetails, err := stat.WithDetails(badrequest)
+	if err != nil {
+		log.Error("unexpected error, unable to build status object: ", field, fieldDescription)
+		return stat
+	}
+
+	return statWithDetails
+}
