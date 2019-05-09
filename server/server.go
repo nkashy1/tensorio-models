@@ -3,12 +3,13 @@ package server
 import (
 	"context"
 	"fmt"
-
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/storage"
+	"github.com/golang/protobuf/ptypes"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 type server struct {
@@ -32,6 +33,9 @@ func (srv *server) Healthz(ctx context.Context, req *api.HealthCheckRequest) (*a
 func (srv *server) ListModels(ctx context.Context, req *api.ListModelsRequest) (*api.ListModelsResponse, error) {
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
+	if maxItems <= 0 {
+		maxItems = 10
+	}
 	log.Printf("ListModels request - Marker: %s, MaxItems: %d", marker, maxItems)
 	models, err := srv.storage.ListModels(ctx, marker, maxItems)
 	if err != nil {
@@ -57,7 +61,7 @@ func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api
 	}
 	respModel := api.Model{
 		ModelId:                  model.ModelId,
-		Description:              model.Description,
+		Details:                  model.Details,
 		CanonicalHyperparameters: model.CanonicalHyperparameters,
 	}
 	resp := &api.GetModelResponse{
@@ -71,7 +75,7 @@ func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest)
 	log.Printf("CreateModel request - Model: %v", model)
 	storageModel := storage.Model{
 		ModelId:                  model.ModelId,
-		Description:              model.Description,
+		Details:                  model.Details,
 		CanonicalHyperparameters: model.CanonicalHyperparameters,
 	}
 	err := srv.storage.AddModel(ctx, storageModel)
@@ -88,8 +92,16 @@ func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest)
 func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest) (*api.UpdateModelResponse, error) {
 	modelID := req.ModelId
 	model := req.Model
+	if modelID == "" {
+		return nil, api.MissingRequiredFieldError("modelId", "model id to update").Err()
+	}
 	if model == nil {
 		return nil, api.MissingRequiredFieldError("model", "model to update").Err()
+	}
+	if req.Model.ModelId != "" {
+		if req.ModelId != req.Model.ModelId {
+			return nil, api.InvalidFieldValueError("request.model.modelId", "request.modelId != request.model.modelId").Err()
+		}
 	}
 	log.Printf("UpdateModel request - ModelId: %s, Model: %v", modelID, model)
 	storedModel, err := srv.storage.GetModel(ctx, modelID)
@@ -100,8 +112,8 @@ func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest)
 		return nil, grpcErr
 	}
 	updatedModel := storedModel
-	if model.Description != "" {
-		updatedModel.Description = model.Description
+	if model.Details != "" {
+		updatedModel.Details = model.Details
 	}
 	if model.CanonicalHyperparameters != "" {
 		updatedModel.CanonicalHyperparameters = model.CanonicalHyperparameters
@@ -116,7 +128,7 @@ func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest)
 	resp := &api.UpdateModelResponse{
 		Model: &api.Model{
 			ModelId:                  newlyStoredModel.ModelId,
-			Description:              newlyStoredModel.Description,
+			Details:                  newlyStoredModel.Details,
 			CanonicalHyperparameters: newlyStoredModel.CanonicalHyperparameters,
 		},
 	}
@@ -127,6 +139,9 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 	modelID := req.ModelId
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
+	if maxItems <= 0 {
+		maxItems = 10
+	}
 	log.Printf("ListHyperparameters request - ModelId: %s, Marker: %s, MaxItems: %d", modelID, marker, maxItems)
 	hyperparametersIDs, err := srv.storage.ListHyperparameters(ctx, modelID, marker, maxItems)
 	if err != nil {
@@ -136,6 +151,7 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 		return nil, grpcErr
 	}
 	resp := &api.ListHyperparametersResponse{
+		ModelId:            modelID,
 		HyperparametersIds: hyperparametersIDs,
 	}
 	return resp, nil
@@ -181,7 +197,7 @@ func (srv *server) GetHyperparameters(ctx context.Context, req *api.GetHyperpara
 	resp := &api.GetHyperparametersResponse{
 		ModelId:             storedHyperparameters.ModelId,
 		HyperparametersId:   storedHyperparameters.HyperparametersId,
-		UpgradeTo:           "",
+		UpgradeTo:           storedHyperparameters.UpgradeTo,
 		CanonicalCheckpoint: storedHyperparameters.CanonicalCheckpoint,
 		Hyperparameters:     storedHyperparameters.Hyperparameters,
 	}
@@ -191,6 +207,7 @@ func (srv *server) GetHyperparameters(ctx context.Context, req *api.GetHyperpara
 func (srv *server) UpdateHyperparameters(ctx context.Context, req *api.UpdateHyperparametersRequest) (*api.UpdateHyperparametersResponse, error) {
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
+	upgradeTo := req.UpgradeTo
 	canonicalCheckpoint := req.CanonicalCheckpoint
 	hyperparameters := req.Hyperparameters
 	log.Printf("UpdateHyperparameters request - ModelId: %s, HyperparametersId: %s, CanonicalCheckpoint: %s, Hyperparameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
@@ -206,6 +223,9 @@ func (srv *server) UpdateHyperparameters(ctx context.Context, req *api.UpdateHyp
 	updatedHyperparameters := existingHyperparameters
 	if canonicalCheckpoint != "" {
 		updatedHyperparameters.CanonicalCheckpoint = canonicalCheckpoint
+	}
+	if upgradeTo != "" {
+		updatedHyperparameters.UpgradeTo = upgradeTo
 	}
 	for k, v := range hyperparameters {
 		updatedHyperparameters.Hyperparameters[k] = v
@@ -233,6 +253,9 @@ func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpoints
 	hyperparametersID := req.HyperparametersId
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
+	if maxItems <= 0 {
+		maxItems = 10
+	}
 	log.Printf("ListCheckpoints request - ModelId: %s, HyperparametersId: %s, Marker: %s, MaxItems: %d", modelID, hyperparametersID, marker, maxItems)
 	checkpointIDs, err := srv.storage.ListCheckpoints(ctx, modelID, hyperparametersID, marker, maxItems)
 	if err != nil {
@@ -257,7 +280,9 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 		ModelId:           modelID,
 		HyperparametersId: hyperparametersID,
 		CheckpointId:      checkpointID,
+		CreatedAt:         time.Now(),
 		Link:              link,
+		Info:              req.Info,
 	}
 	err := srv.storage.AddCheckpoint(ctx, storageCheckpoint)
 	if err != nil {
@@ -286,9 +311,15 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 		return nil, grpcErr
 	}
 	resourcePath := getCheckpointResourcePath(modelID, hyperparametersID, checkpointID)
+	createdAt, err := ptypes.TimestampProto(storedCheckpoint.CreatedAt)
+	if err != nil {
+		log.Error("unable to serialize CreatedAt")
+		return nil, err
+	}
 	resp := &api.GetCheckpointResponse{
 		ResourcePath: resourcePath,
 		Link:         storedCheckpoint.Link,
+		CreatedAt:    createdAt,
 		Info:         storedCheckpoint.Info,
 	}
 	return resp, nil

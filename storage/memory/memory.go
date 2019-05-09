@@ -41,6 +41,21 @@ func (s *memory) ListModels(ctx context.Context, marker string, maxItems int) ([
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	firstIndex := sort.SearchStrings(s.modelList, marker)
+
+	// check if marker index is past the end of the list
+	if firstIndex == len(s.modelList) {
+		return make([]string, 0), nil
+	}
+
+	if marker == s.modelList[firstIndex] {
+		firstIndex = firstIndex + 1
+	}
+
+	// check if the updated marker index is past the end of the list
+	if firstIndex == len(s.modelList) {
+		return make([]string, 0), nil
+	}
+
 	lastIndex := firstIndex + maxItems
 	if lastIndex > len(s.modelList) {
 		lastIndex = len(s.modelList)
@@ -86,8 +101,8 @@ func (s *memory) UpdateModel(ctx context.Context, model storage.Model) (storage.
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	if strings.TrimSpace(model.Description) != "" {
-		currentModel.Description = model.Description
+	if strings.TrimSpace(model.Details) != "" {
+		currentModel.Details = model.Details
 	}
 	if strings.TrimSpace(model.CanonicalHyperparameters) != "" {
 		currentModel.CanonicalHyperparameters = model.CanonicalHyperparameters
@@ -109,6 +124,21 @@ func (s *memory) ListHyperparameters(ctx context.Context, modelId, marker string
 	qualifiedMarker := fmt.Sprintf("%s:%s", modelId, marker)
 
 	firstIndex := sort.SearchStrings(s.hyperparametersList, qualifiedMarker)
+
+	// check if marker index is past the end of the list
+	if firstIndex == len(s.hyperparametersList) {
+		return make([]string, 0), nil
+	}
+
+	if qualifiedMarker == s.hyperparametersList[firstIndex] {
+		firstIndex = firstIndex + 1
+	}
+
+	// check if the updated marker index is past the end of the list
+	if firstIndex == len(s.hyperparametersList) {
+		return make([]string, 0), nil
+	}
+
 	lastIndex := firstIndex + maxItems
 	if lastIndex > len(s.hyperparametersList) {
 		lastIndex = len(s.hyperparametersList)
@@ -173,8 +203,13 @@ func (s *memory) UpdateHyperparameters(ctx context.Context, hyperparameters stor
 	key := fmt.Sprintf("%s:%s", hyperparameters.ModelId, hyperparameters.HyperparametersId)
 
 	currentHyperparameters, _ := s.hyperparameters[key]
+
 	if strings.TrimSpace(hyperparameters.CanonicalCheckpoint) != "" {
 		currentHyperparameters.CanonicalCheckpoint = hyperparameters.CanonicalCheckpoint
+	}
+
+	if strings.TrimSpace(hyperparameters.UpgradeTo) != "" {
+		currentHyperparameters.UpgradeTo = hyperparameters.UpgradeTo
 	}
 
 	if hyperparameters.Hyperparameters != nil {
@@ -205,6 +240,20 @@ func (s *memory) ListCheckpoints(ctx context.Context, modelId, hyperparametersId
 	qualifiedMarker := fmt.Sprintf("%s:%s:%s", modelId, hyperparametersId, marker)
 
 	firstIndex := sort.SearchStrings(s.checkpointsList, qualifiedMarker)
+
+	// check if marker index is past the end of the list
+	if firstIndex == len(s.checkpointsList) {
+		return make([]string, 0), nil
+	}
+
+	if qualifiedMarker == s.checkpointsList[firstIndex] {
+		firstIndex = firstIndex + 1
+	}
+
+	// check if the updated marker index is past the end of the list
+	if firstIndex == len(s.checkpointsList) {
+		return make([]string, 0), nil
+	}
 	lastIndex := firstIndex + maxItems
 	if lastIndex > len(s.checkpointsList) {
 		lastIndex = len(s.checkpointsList)

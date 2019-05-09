@@ -6,9 +6,11 @@ import (
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/server"
 	"github.com/doc-ai/tensorio-models/storage/memory"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/assert"
 	"sort"
 	"testing"
+	"time"
 )
 
 func testingServer() api.RepositoryServer {
@@ -25,11 +27,11 @@ func TestCreateModelAndListModels(t *testing.T) {
 	modelRequests := make([]api.CreateModelRequest, 5)
 	for i := range modelRequests {
 		modelID := fmt.Sprintf("test-model-%d", i)
-		description := fmt.Sprintf("This is test model %d", i)
+		details := fmt.Sprintf("This is test model %d", i)
 		model := api.CreateModelRequest{
 			Model: &api.Model{
-				ModelId:     modelID,
-				Description: description,
+				ModelId: modelID,
+				Details: details,
 			},
 		}
 		modelRequests[i] = model
@@ -72,11 +74,11 @@ func TestListModels(t *testing.T) {
 	modelRequests := make([]api.CreateModelRequest, 21)
 	for i := range modelRequests {
 		modelID := fmt.Sprintf("test-model-%d", i)
-		description := fmt.Sprintf("This is test model %d", i)
+		details := fmt.Sprintf("This is test model %d", i)
 		model := api.CreateModelRequest{
 			Model: &api.Model{
-				ModelId:     modelID,
-				Description: description,
+				ModelId: modelID,
+				Details: details,
 			},
 		}
 		modelRequests[i] = model
@@ -108,19 +110,19 @@ func TestListModels(t *testing.T) {
 		},
 		{
 			Server:           &srv,
-			Marker:           modelIDs[2],
+			Marker:           modelIDs[1],
 			MaxItems:         int32(5),
 			ExpectedModelIds: modelIDs[2:7],
 		},
 		{
 			Server:           &srv,
-			Marker:           modelIDs[16],
+			Marker:           modelIDs[15],
 			MaxItems:         int32(5),
 			ExpectedModelIds: modelIDs[16:21],
 		},
 		{
 			Server:           &srv,
-			Marker:           modelIDs[16],
+			Marker:           modelIDs[15],
 			MaxItems:         int32(6),
 			ExpectedModelIds: modelIDs[16:21],
 		},
@@ -130,7 +132,24 @@ func TestListModels(t *testing.T) {
 			Server:           &srv,
 			Marker:           modelIDs[0],
 			MaxItems:         int32(20),
-			ExpectedModelIds: modelIDs[0:20],
+			ExpectedModelIds: modelIDs[1:21],
+		},
+		{
+			Server:           &srv,
+			Marker:           modelIDs[0],
+			ExpectedModelIds: modelIDs[1:11],
+		},
+		{
+			Server:           &srv,
+			Marker:           modelIDs[0],
+			MaxItems:         0,
+			ExpectedModelIds: modelIDs[1:11],
+		},
+		{
+			Server:           &srv,
+			Marker:           modelIDs[0],
+			MaxItems:         -10,
+			ExpectedModelIds: modelIDs[1:11],
 		},
 	}
 
@@ -146,6 +165,10 @@ func TestListModels(t *testing.T) {
 			t.Error(err)
 		}
 		assert.Equalf(t, test.ExpectedModelIds, listModelsResponse.ModelIds, "TestListModels %d: ListModels request returned incorrect ModelIds", i)
+
+		if t.Failed() {
+			break
+		}
 	}
 }
 
@@ -155,8 +178,8 @@ func TestUpdateModel(t *testing.T) {
 
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     "test-model",
-			Description: "This is a test",
+			ModelId: "test-model",
+			Details: "This is a test",
 		},
 	}
 
@@ -170,8 +193,8 @@ func TestUpdateModel(t *testing.T) {
 	updateModelRequest := api.UpdateModelRequest{
 		ModelId: model.Model.ModelId,
 		Model: &api.Model{
-			ModelId:     "test-model",
-			Description: "This is only a test",
+			ModelId: "test-model",
+			Details: "This is only a test",
 		},
 	}
 	updateModelResponse, err := srv.UpdateModel(ctx, &updateModelRequest)
@@ -181,13 +204,59 @@ func TestUpdateModel(t *testing.T) {
 	assert.Equal(t, updateModelRequest.Model, updateModelResponse.Model, "UpdateModel models in request and response do not agree")
 }
 
+func TestModelIdMatchesEmbeddedModelId(t *testing.T) {
+	srv := testingServer()
+
+	model := &api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId: "test-model",
+			Details: "This is a test",
+		},
+	}
+
+	_, err := srv.CreateModel(context.Background(), model)
+	assert.NoError(t, err)
+
+	// test missing
+	updateModelRequest := &api.UpdateModelRequest{
+		ModelId: "test-model",
+		Model: &api.Model{
+			Details: "desc1",
+		},
+	}
+
+	expectedModel := &api.UpdateModelResponse{
+		Model: &api.Model{
+			ModelId: "test-model",
+			Details: "desc1",
+		},
+	}
+
+	updateModelResponse, err := srv.UpdateModel(context.Background(), updateModelRequest)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedModel, updateModelResponse)
+
+	// test mismatch
+	updateModelRequest = &api.UpdateModelRequest{
+		ModelId: "test-model",
+		Model: &api.Model{
+			ModelId: "broken-model",
+			Details: "desc1",
+		},
+	}
+
+	updateModelResponse, err = srv.UpdateModel(context.Background(), updateModelRequest)
+	assert.Nil(t, updateModelResponse)
+	assert.Error(t, err)
+}
+
 func TestMissingModelInHyperparameterUpdate(t *testing.T) {
 	srv := testingServer()
 
 	model := &api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     "test-model",
-			Description: "This is a test",
+			ModelId: "test-model",
+			Details: "This is a test",
 		},
 	}
 
@@ -203,14 +272,39 @@ func TestMissingModelInHyperparameterUpdate(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestMissingModelIdInHyperparameterUpdate(t *testing.T) {
+	srv := testingServer()
+
+	model := &api.CreateModelRequest{
+		Model: &api.Model{
+			ModelId: "test-model",
+			Details: "This is a test",
+		},
+	}
+
+	srv.CreateModel(context.Background(), model)
+
+	updateModelRequest := &api.UpdateModelRequest{
+		Model: &api.Model{
+			ModelId:                  "test-model",
+			Details:                  "desc1",
+			CanonicalHyperparameters: "canon1",
+		},
+	}
+
+	updateModelResponse, err := srv.UpdateModel(context.Background(), updateModelRequest)
+	assert.Nil(t, updateModelResponse)
+	assert.Error(t, err)
+}
+
 // Creates a model and tests that GetModel returns the expected information
 func TestGetModel(t *testing.T) {
 	srv := testingServer()
 
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     "test-model",
-			Description: "This is a test",
+			ModelId: "test-model",
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -235,8 +329,8 @@ func TestCreateAndListHyperparameters(t *testing.T) {
 	modelID := "test-model"
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     modelID,
-			Description: "This is a test",
+			ModelId: modelID,
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -289,8 +383,8 @@ func TestListHyperparameters(t *testing.T) {
 	modelID := "test-model"
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     modelID,
-			Description: "This is a test",
+			ModelId: modelID,
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -347,21 +441,21 @@ func TestListHyperparameters(t *testing.T) {
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
-			Marker:                     hyperparametersIDs[2],
+			Marker:                     hyperparametersIDs[1],
 			MaxItems:                   int32(5),
 			ExpectedHyperparametersIds: hyperparametersTags[2:7],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
-			Marker:                     hyperparametersIDs[16],
+			Marker:                     hyperparametersIDs[15],
 			MaxItems:                   int32(5),
 			ExpectedHyperparametersIds: hyperparametersTags[16:21],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
-			Marker:                     hyperparametersIDs[16],
+			Marker:                     hyperparametersIDs[15],
 			MaxItems:                   int32(6),
 			ExpectedHyperparametersIds: hyperparametersTags[16:21],
 		},
@@ -372,7 +466,27 @@ func TestListHyperparameters(t *testing.T) {
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
 			MaxItems:                   int32(20),
-			ExpectedHyperparametersIds: hyperparametersTags[0:20],
+			ExpectedHyperparametersIds: hyperparametersTags[1:21],
+		},
+		{
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[0],
+			ExpectedHyperparametersIds: hyperparametersTags[1:11],
+		},
+		{
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[0],
+			MaxItems:                   0,
+			ExpectedHyperparametersIds: hyperparametersTags[1:11],
+		},
+		{
+			Server:                     &srv,
+			ModelId:                    modelID,
+			Marker:                     hyperparametersIDs[0],
+			MaxItems:                   -10,
+			ExpectedHyperparametersIds: hyperparametersTags[1:11],
 		},
 	}
 
@@ -388,7 +502,12 @@ func TestListHyperparameters(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		assert.Equal(t, test.ModelId, listHyperparametersResponse.ModelId)
 		assert.Equalf(t, test.ExpectedHyperparametersIds, listHyperparametersResponse.HyperparametersIds, "TestListHyperparameters %d: ListHyperparameters request returned incorrect HyperparametersIds", i)
+
+		if t.Failed() {
+			break
+		}
 	}
 }
 
@@ -400,8 +519,8 @@ func TestUpdateHyperparameters(t *testing.T) {
 	modelID := "test-model"
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     modelID,
-			Description: "This is a test",
+			ModelId: modelID,
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -464,8 +583,8 @@ func TestGetHyperparameters(t *testing.T) {
 	modelID := "test-model"
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     modelID,
-			Description: "This is a test",
+			ModelId: modelID,
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -509,8 +628,8 @@ func TestCreateAndListCheckpoints(t *testing.T) {
 	modelID := "test-model"
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     modelID,
-			Description: "This is a test",
+			ModelId: modelID,
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -582,8 +701,8 @@ func TestListCheckpoints(t *testing.T) {
 	modelID := "test-model"
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     modelID,
-			Description: "This is a test",
+			ModelId: modelID,
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -661,7 +780,7 @@ func TestListCheckpoints(t *testing.T) {
 			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
-			Marker:                checkpointIDs[2],
+			Marker:                checkpointIDs[1],
 			MaxItems:              int32(5),
 			ExpectedCheckpointIds: checkpointTags[2:7],
 		},
@@ -669,7 +788,7 @@ func TestListCheckpoints(t *testing.T) {
 			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
-			Marker:                checkpointIDs[16],
+			Marker:                checkpointIDs[15],
 			MaxItems:              int32(5),
 			ExpectedCheckpointIds: checkpointTags[16:21],
 		},
@@ -677,7 +796,7 @@ func TestListCheckpoints(t *testing.T) {
 			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
-			Marker:                checkpointIDs[16],
+			Marker:                checkpointIDs[15],
 			MaxItems:              int32(6),
 			ExpectedCheckpointIds: checkpointTags[16:21],
 		},
@@ -689,7 +808,30 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
 			MaxItems:              int32(20),
-			ExpectedCheckpointIds: checkpointTags[0:20],
+			ExpectedCheckpointIds: checkpointTags[1:21],
+		},
+		{
+			Server:                &srv,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[0],
+			ExpectedCheckpointIds: checkpointTags[1:11],
+		},
+		{
+			Server:                &srv,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[0],
+			MaxItems:              0,
+			ExpectedCheckpointIds: checkpointTags[1:11],
+		},
+		{
+			Server:                &srv,
+			ModelId:               modelID,
+			HyperparametersId:     hyperparametersID,
+			Marker:                checkpointIDs[0],
+			MaxItems:              -10,
+			ExpectedCheckpointIds: checkpointTags[1:11],
 		},
 	}
 
@@ -707,6 +849,10 @@ func TestListCheckpoints(t *testing.T) {
 		}
 		errorMessage := fmt.Sprintf("Test %d: ListCheckpoints response does not contain the expected CheckpointIds", i)
 		assert.Equalf(t, test.ExpectedCheckpointIds, listCkptResponse.CheckpointIds, errorMessage)
+
+		if t.Failed() {
+			break
+		}
 	}
 }
 
@@ -718,8 +864,8 @@ func TestGetCheckpoint(t *testing.T) {
 	modelID := "test-model"
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId:     modelID,
-			Description: "This is a test",
+			ModelId: modelID,
+			Details: "This is a test",
 		},
 	}
 	ctx := context.Background()
@@ -770,6 +916,10 @@ func TestGetCheckpoint(t *testing.T) {
 	}
 	assert.Equal(t, createCheckpointResponse.ResourcePath, getCheckpointResponse.ResourcePath, "Incorrect ResourcePath in GetCheckpointResponse")
 	assert.Equal(t, link, getCheckpointResponse.Link, "Incorrect Link in GetCheckpointResponse")
-	// TODO(frederick): Make the following assertion pass
-	// assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
+
+	createdAt, err := ptypes.Timestamp(getCheckpointResponse.CreatedAt)
+	assert.NoError(t, err)
+	assert.WithinDuration(t, time.Now(), createdAt, 2*time.Second)
+
+	assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
 }
