@@ -1,4 +1,4 @@
-# Builds docker image and pushes it to DockerHub
+# Builds docker image and pushes tags to image repository
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     id: "docker-build-image"
