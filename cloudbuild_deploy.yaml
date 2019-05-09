@@ -1,0 +1,29 @@
+# Releases to GKE cluster via Helm.
+# Assumes that cluster docker daemon is authorized to pull from image repository.
+# Expects the following substitution variables to be defined:
+# - _VALUES_FILE : GCS path to values file for helm release
+# - _CLOUDSDK_CORE_PROJECT : GCP project in which GKE cluster lives
+# - _CLOUDSDK_COMPUTE_ZONE : GCE zone in which GKE cluster lives
+# - _CLOUDSDK_CONTAINER_CLUSTER : Name of GKE cluster
+# - _RELEASE_NAME : Name for helm release (default: tio-models)
+steps:
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: "values-yaml-download"
+    args: ['cp', '${_VALUES_FILE}', 'values.yaml']
+  - name: 'gcr.io/docai-neuron/helm'
+    id: "helm-release"
+    env:
+      - 'CLOUDSDK_CORE_PROJECT=${_CLOUDSDK_CORE_PROJECT}'
+      - 'CLOUDSDK_COMPUTE_ZONE=${_CLOUDSDK_COMPUTE_ZONE}'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
+    args:
+      - 'upgrade'
+      - '--install'
+      - '-f'
+      - 'values.yaml'
+      - '--set'
+      - 'deployment.tag=sha-$SHORT_SHA'
+      - '${_RELEASE_NAME}'
+      - 'helm/'
+substitutions:
+  _RELEASE_NAME: tio-models
