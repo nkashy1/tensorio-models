@@ -1,0 +1,5 @@
+# Runs go tests
+steps:
+  - name: 'golang:1.12'
+    id: "go-tests"
+    args: ["go", "test", "./..."]

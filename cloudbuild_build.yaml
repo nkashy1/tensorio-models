@@ -1,0 +1,11 @@
+# Builds docker image and pushes tags to image repository
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "docker-build-image"
+    args: ["build", "-t", "us.gcr.io/docai-neuron/tensorio/models", "-f", "dockerfiles/Dockerfile.repository", "."]
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "docker-apply-tag"
+    args: ["tag", "us.gcr.io/docai-neuron/tensorio/models:latest", "us.gcr.io/docai-neuron/tensorio/models:sha-$SHORT_SHA"]
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "docker-push"
+    args: ["push", "us.gcr.io/docai-neuron/tensorio/models"]

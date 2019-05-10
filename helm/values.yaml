@@ -6,9 +6,9 @@ namespace: default
 
 deployment:
   replicas: 1
-  repository: tensorio/repository
+  repository: docai/tensorio-models
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   backend: memory
 
 service:
