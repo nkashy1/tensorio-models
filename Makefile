@@ -13,7 +13,7 @@ docker-build:
 	docker build -t docai/tensorio-models -f dockerfiles/Dockerfile.repository .
 
 run: docker-build
-	docker run -p 8080:8080 -p 8081:8081 tensorio/repository ${RUN_ARGS}
+	docker run -p 8080:8080 -p 8081:8081 docai/tensorio-models ${RUN_ARGS}
 
 api/repository.pb.go: api/repository.proto
 	cd api && protoc -I . repository.proto --go_out=plugins=grpc:. --proto_path=${GOPATH}/src --proto_path=$(GOPATH)/pkg/mod --proto_path=$(GRPC_GATEWAY_PROTO_DIR)
