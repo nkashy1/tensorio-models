@@ -151,7 +151,7 @@ func (store gcsStorage) ListHyperparameters(ctx context.Context, modelId, marker
 }
 
 func (store gcsStorage) GetHyperparameters(ctx context.Context, modelId string, hyperparametersId string) (storage.Hyperparameters, error) {
-	objLoc := objParamPath(modelId, hyperparametersId)
+	objLoc := objHyperparametersPath(modelId, hyperparametersId)
 	object := store.bucket.Object(objLoc)
 
 	_, err := store.GetModel(ctx, modelId)
@@ -183,7 +183,7 @@ func (store gcsStorage) GetHyperparameters(ctx context.Context, modelId string, 
 }
 
 func (store gcsStorage) AddHyperparameters(ctx context.Context, hyperparameters storage.Hyperparameters) error {
-	objLoc := objParamPath(hyperparameters.ModelId, hyperparameters.HyperparametersId)
+	objLoc := objHyperparametersPath(hyperparameters.ModelId, hyperparameters.HyperparametersId)
 	object := store.bucket.Object(objLoc)
 
 	_, err := store.GetModel(ctx, hyperparameters.ModelId)
@@ -211,7 +211,7 @@ func (store gcsStorage) AddHyperparameters(ctx context.Context, hyperparameters 
 }
 
 func (store gcsStorage) UpdateHyperparameters(ctx context.Context, hyperparameters storage.Hyperparameters) (storage.Hyperparameters, error) {
-	objLoc := objParamPath(hyperparameters.ModelId, hyperparameters.HyperparametersId)
+	objLoc := objHyperparametersPath(hyperparameters.ModelId, hyperparameters.HyperparametersId)
 	object := store.bucket.Object(objLoc)
 
 	storedHyperparameters, err := store.GetHyperparameters(ctx, hyperparameters.ModelId, hyperparameters.HyperparametersId)
@@ -377,9 +377,7 @@ func listObjects(maxItems int, iter *gcs.ObjectIterator, marker string) ([]strin
 			return nil, err
 		}
 
-		name := obj.Prefix
-		splitNames := strings.Split(name, "/")
-		name = splitNames[len(splitNames)-2]
+		name := extractObjectName(obj.Prefix)
 
 		if name <= marker {
 			continue
