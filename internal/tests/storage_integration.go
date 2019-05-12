@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"testing"
 	"time"
 )
@@ -28,8 +27,8 @@ func Test_AddModel(t *testing.T, store storage.RepositoryStorage) {
 
 	// get model and ensure it hasn't changed
 	storedModel, err := store.GetModel(ctx, "add_model")
-	assert.Equal(t, model, storedModel)
 	assert.NoError(t, err)
+	assert.Equal(t, model, storedModel)
 
 	model2 := storage.Model{
 		ModelId:                  "add_model2",
@@ -68,16 +67,20 @@ func Test_ListModels(t *testing.T, store storage.RepositoryStorage) {
 		Details:                  "details of a model",
 		CanonicalHyperparameters: "canonical hyper params",
 	}
-	store.AddModel(ctx, model)
+	err = store.AddModel(ctx, model)
+	assert.NoError(t, err)
 
 	model.ModelId = "model3"
-	store.AddModel(ctx, model)
+	err = store.AddModel(ctx, model)
+	assert.NoError(t, err)
 
 	model.ModelId = "model2"
-	store.AddModel(ctx, model)
+	err = store.AddModel(ctx, model)
+	assert.NoError(t, err)
 
 	model.ModelId = "model4"
-	store.AddModel(ctx, model)
+	err = store.AddModel(ctx, model)
+	assert.NoError(t, err)
 
 	list, err = store.ListModels(ctx, "nothing", 2)
 	assert.Equal(t, []string{}, list)
@@ -162,7 +165,8 @@ func Test_AddHyperparameters(t *testing.T, store storage.RepositoryStorage) {
 		Details:                  "detail1",
 		CanonicalHyperparameters: "canonical1",
 	}
-	store.AddModel(ctx, model)
+	err = store.AddModel(ctx, model)
+	assert.NoError(t, err)
 
 	_, err = store.GetHyperparameters(ctx, "model1", "param1")
 	assert.Error(t, err, "Hyperparameter should not exist")
@@ -182,9 +186,15 @@ func Test_AddHyperparameters(t *testing.T, store storage.RepositoryStorage) {
 	err = store.AddHyperparameters(ctx, params)
 	assert.NoError(t, err)
 
+	storedParams, err := store.GetHyperparameters(ctx, params.ModelId, params.HyperparametersId)
+	assert.NoError(t, err)
+	assert.Equal(t, params, storedParams)
+
 	// expect error on conflict
 	err = store.AddHyperparameters(ctx, params)
 	assert.Error(t, err)
+
+	_, err = store.GetHyperparameters(ctx, params.ModelId, params.ModelId)
 }
 
 func Test_ListHyperparams(t *testing.T, store storage.RepositoryStorage) {
@@ -268,11 +278,14 @@ func Test_UpdateHyperparams(t *testing.T, store storage.RepositoryStorage) {
 	_, err := store.UpdateHyperparameters(ctx, hyperparameters)
 	assert.Error(t, err)
 
-	store.AddModel(ctx, model)
+	err = store.AddModel(ctx, model)
+	assert.NoError(t, err)
+
 	_, err = store.UpdateHyperparameters(ctx, hyperparameters)
 	assert.Error(t, err)
 
-	store.AddHyperparameters(ctx, hyperparameters)
+	err = store.AddHyperparameters(ctx, hyperparameters)
+	assert.NoError(t, err)
 
 	hyperparametersUpdate := storage.Hyperparameters{
 		ModelId:             "model1",
@@ -282,6 +295,7 @@ func Test_UpdateHyperparams(t *testing.T, store storage.RepositoryStorage) {
 	}
 
 	updatedHyperparameters, err := store.UpdateHyperparameters(ctx, hyperparametersUpdate)
+	assert.NoError(t, err)
 	assert.Equal(t, hyperparameters, updatedHyperparameters)
 
 	hyperparametersUpdate.CanonicalCheckpoint = "checkpoint2"
@@ -347,10 +361,15 @@ func Test_AddCheckpoint(t *testing.T, store storage.RepositoryStorage) {
 	err = store.AddCheckpoint(ctx, checkpoint1)
 	assert.Error(t, err)
 
+	recordedTime := time.Now()
 	addedCheckpoint, err := store.GetCheckpoint(ctx, "model1", "params1", "cp1")
-	log.Println(addedCheckpoint)
-	assert.Equal(t, checkpoint1, addedCheckpoint)
 	assert.NoError(t, err)
+
+	storedTime := addedCheckpoint.CreatedAt
+	assert.WithinDuration(t, recordedTime, storedTime, time.Second)
+
+	addedCheckpoint.CreatedAt = checkpoint1.CreatedAt
+	assert.Equal(t, checkpoint1, addedCheckpoint)
 }
 
 func Test_ListCheckpoints(t *testing.T, store storage.RepositoryStorage) {
