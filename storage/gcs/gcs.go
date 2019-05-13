@@ -1,19 +1,20 @@
 package gcs
 
 import (
-	gcs "cloud.google.com/go/storage"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/doc-ai/tensorio-models/storage"
-	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	gcs "cloud.google.com/go/storage"
+	"github.com/doc-ai/tensorio-models/storage"
+	"google.golang.org/api/iterator"
 )
 
 const (
-	StorageType string = "GSC"
+	StorageType string = "GCS"
 )
 
 type gcsStorage struct {
