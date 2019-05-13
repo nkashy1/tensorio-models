@@ -1,15 +1,20 @@
 package gcs
 
 import (
-	gcs "cloud.google.com/go/storage"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/doc-ai/tensorio-models/storage"
-	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	gcs "cloud.google.com/go/storage"
+	"github.com/doc-ai/tensorio-models/storage"
+	"google.golang.org/api/iterator"
+)
+
+const (
+	StorageType string = "GCS"
 )
 
 type gcsStorage struct {
@@ -25,6 +30,10 @@ func NewGCSStorage(client *gcs.Client, bucketName string) storage.RepositoryStor
 	res.bucket = bucket
 
 	return res
+}
+
+func (store gcsStorage) GetStorageType() string {
+	return StorageType
 }
 
 func (store gcsStorage) ListModels(ctx context.Context, marker string, maxItems int) ([]string, error) {

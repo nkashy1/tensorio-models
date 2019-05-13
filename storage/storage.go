@@ -39,6 +39,8 @@ type Checkpoint struct {
 }
 
 type RepositoryStorage interface {
+	GetStorageType() string
+
 	// MODELS
 
 	ListModels(ctx context.Context, marker string, maxItems int) ([]string, error)

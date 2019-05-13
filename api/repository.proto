@@ -26,6 +26,18 @@ message HealthCheckResponse {
     ServingStatus status = 1;
 }
 
+message ConfigRequest {
+}
+
+message ConfigResponse {
+    enum BackendType {
+        INVALID = 0;
+        MEMORY = 1;
+        GOOGLE_CLOUD_STORAGE = 2;
+    }
+    BackendType backendType = 1;
+}
+
 message Model {
     string modelId = 1;
     string details = 2;
@@ -157,6 +169,11 @@ service Repository {
     rpc Healthz(HealthCheckRequest) returns (HealthCheckResponse) {
         option (google.api.http) = {
             get: "/v1/repository/healthz"
+        };
+    };
+    rpc Config(ConfigRequest) returns (ConfigResponse) {
+        option (google.api.http) = {
+            get: "/v1/repository/config"
         };
     };
     rpc ListModels (ListModelsRequest) returns (ListModelsResponse) {

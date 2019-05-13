@@ -3,10 +3,15 @@ package memory
 import (
 	"context"
 	"fmt"
-	"github.com/doc-ai/tensorio-models/storage"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/doc-ai/tensorio-models/storage"
+)
+
+const (
+	StorageType string = "MEMORY"
 )
 
 type memory struct {
@@ -35,6 +40,10 @@ func NewMemoryRepositoryStorage() storage.RepositoryStorage {
 		checkpoints:     make(map[string]storage.Checkpoint),
 	}
 	return store
+}
+
+func (s *memory) GetStorageType() string {
+	return StorageType
 }
 
 func (s *memory) ListModels(ctx context.Context, marker string, maxItems int) ([]string, error) {
