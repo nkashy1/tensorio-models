@@ -12,6 +12,10 @@ import (
 	"strings"
 )
 
+const (
+	StorageType string = "GSC"
+)
+
 type gcsStorage struct {
 	client *gcs.Client
 	bucket *gcs.BucketHandle
@@ -25,6 +29,10 @@ func NewGCSStorage(client *gcs.Client, bucketName string) storage.RepositoryStor
 	res.bucket = bucket
 
 	return res
+}
+
+func (store gcsStorage) GetStorageType() string {
+	return StorageType
 }
 
 func (store gcsStorage) ListModels(ctx context.Context, marker string, maxItems int) ([]string, error) {

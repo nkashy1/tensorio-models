@@ -15,6 +15,22 @@
     "application/json"
   ],
   "paths": {
+    "/v1/repository/config": {
+      "get": {
+        "operationId": "Config",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiConfigResponse"
+            }
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
     "/v1/repository/healthz": {
       "get": {
         "operationId": "Healthz",
@@ -398,6 +414,15 @@
     }
   },
   "definitions": {
+    "ConfigResponseBackendType": {
+      "type": "string",
+      "enum": [
+        "INVALID",
+        "MEMORY",
+        "GOOGLE_CLOUD_STORAGE"
+      ],
+      "default": "INVALID"
+    },
     "HealthCheckResponseServingStatus": {
       "type": "string",
       "enum": [
@@ -406,6 +431,14 @@
         "NOT_SERVING"
       ],
       "default": "UNKNOWN"
+    },
+    "apiConfigResponse": {
+      "type": "object",
+      "properties": {
+        "backendType": {
+          "$ref": "#/definitions/ConfigResponseBackendType"
+        }
+      }
     },
     "apiCreateCheckpointRequest": {
       "type": "object",

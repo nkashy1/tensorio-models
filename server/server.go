@@ -3,13 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/storage"
+	"github.com/doc-ai/tensorio-models/storage/gcs"
+	"github.com/doc-ai/tensorio-models/storage/memory"
 	"github.com/golang/protobuf/ptypes"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"time"
 )
 
 type server struct {
@@ -25,7 +28,23 @@ func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
 func (srv *server) Healthz(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 	log.Println(req)
 	resp := &api.HealthCheckResponse{
-		Status: 1,
+		Status: api.HealthCheckResponse_SERVING,
+	}
+	return resp, nil
+}
+
+func (srv *server) Config(ctx context.Context, req *api.ConfigRequest) (*api.ConfigResponse, error) {
+	log.Println(req)
+	storageType := srv.storage.GetStorageType()
+	storageTypeEnum := api.ConfigResponse_INVALID
+	switch storageType {
+	case memory.StorageType:
+		storageTypeEnum = api.ConfigResponse_MEMORY
+	case gcs.StorageType:
+		storageTypeEnum = api.ConfigResponse_GOOGLE_CLOUD_STORAGE
+	}
+	resp := &api.ConfigResponse{
+		BackendType: storageTypeEnum,
 	}
 	return resp, nil
 }
