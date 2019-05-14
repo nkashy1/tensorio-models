@@ -29,6 +29,34 @@ func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
 	return &server{storage: storage}
 }
 
+// IsValidIDChar - returns whether c is a valid character - alphanumeric, _ and -
+func IsValidIDChar(c byte) bool {
+	if (c >= 'A') && (c <= 'Z') {
+		return true
+	}
+	if (c >= 'a') && (c <= 'z') {
+		return true
+	}
+	if (c >= '0') && (c <= '9') {
+		return true
+	}
+	if (c == '-') || (c == '_') {
+		return true
+	}
+	return false
+}
+
+// IsValidID - returns whether s is non-empty string of valid characters
+func IsValidID(s string) bool {
+	l := len(s)
+	for i := 0; i < l; i++ {
+		if !IsValidIDChar(s[i]) {
+			return false
+		}
+	}
+	return s != ""
+}
+
 func startGrpcServer(apiServer api.RepositoryServer, serverAddress string) {
 	log.Println("Starting grpc on:", serverAddress)
 
@@ -145,6 +173,10 @@ func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api
 func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest) (*api.CreateModelResponse, error) {
 	model := req.Model
 	log.Printf("CreateModel request - Model: %v", model)
+	if !IsValidID(model.ModelId) {
+		grpcErr := status.Error(codes.InvalidArgument, "ModelId was invalid")
+		return nil, grpcErr
+	}
 	storageModel := storage.Model{
 		ModelId:                  model.ModelId,
 		Details:                  model.Details,
@@ -232,6 +264,10 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 func (srv *server) CreateHyperparameters(ctx context.Context, req *api.CreateHyperparametersRequest) (*api.CreateHyperparametersResponse, error) {
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
+	if !IsValidID(hyperparametersID) {
+		grpcErr := status.Error(codes.InvalidArgument, "hyperparametersID is invalid")
+		return nil, grpcErr
+	}
 	canonicalCheckpoint := req.CanonicalCheckpoint
 	hyperparameters := req.Hyperparameters
 	log.Printf("CreateHyperparameters request - ModelId: %s, HyperparametersId: %s, CanonicalCheckpoint: %s, Hyperparameters: %v", modelID, hyperparametersID, canonicalCheckpoint, hyperparameters)
@@ -346,6 +382,10 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	checkpointID := req.CheckpointId
+	if !IsValidID(checkpointID) {
+		grpcErr := status.Error(codes.InvalidArgument, "checkpointId is invalid")
+		return nil, grpcErr
+	}
 	link := req.Link
 	log.Printf("CreateCheckpoint request - ModelId: %s, HyperparametersId: %s, CheckpointId: %s, Link: %s", modelID, hyperparametersID, checkpointID, link)
 	storageCheckpoint := storage.Checkpoint{

@@ -970,6 +970,15 @@ func postRequest(t *testing.T, url string, jsonStruct map[string]interface{}, st
 	return string(bodyBytes)
 }
 
+func TestIsValidID(t *testing.T) {
+	assert.True(t, server.IsValidID("dii-ZZ12_"))
+	assert.False(t, server.IsValidID(""))
+	assert.False(t, server.IsValidID(" X"))
+	assert.True(t, server.IsValidID("---"))
+	assert.False(t, server.IsValidID("1&2"))
+	assert.True(t, server.IsValidID("123"))
+}
+
 func TestURLEndpoints(t *testing.T) {
 	storage := memory.NewMemoryRepositoryStorage()
 	const grpcAddress = ":9300" // Use diff ports.
@@ -1041,17 +1050,17 @@ func TestURLEndpoints(t *testing.T) {
 				"link": "https://example.com/h1c1.tiobundle.zip",
 			}, http.StatusOK))
 
-	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HP Set2\"}",
+	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HPSet2\"}",
 		postRequest(t, baseUrl+"models/MyModel/hyperparameters",
 			map[string]interface{}{
-				"hyperparametersId": "HP Set2",
+				"hyperparametersId": "HPSet2",
 				"hyperparameters": map[string]string{
 					"number": "42",
 				},
 			}, http.StatusOK))
 
-	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HP Set2/checkpoints/hp2-ckpt1\"}",
-		postRequest(t, baseUrl+"models/MyModel/hyperparameters/HP Set2/checkpoints",
+	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HPSet2/checkpoints/hp2-ckpt1\"}",
+		postRequest(t, baseUrl+"models/MyModel/hyperparameters/HPSet2/checkpoints",
 			map[string]interface{}{
 				"checkpointId": "hp2-ckpt1",
 				"createdAt":    "1557794163",
