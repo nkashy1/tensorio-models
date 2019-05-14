@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
 	"time"
 
 	"github.com/doc-ai/tensorio-models/api"
@@ -10,7 +12,9 @@ import (
 	"github.com/doc-ai/tensorio-models/storage/gcs"
 	"github.com/doc-ai/tensorio-models/storage/memory"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -23,6 +27,55 @@ type server struct {
 // storage.RepositoryStorage backend
 func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
 	return &server{storage: storage}
+}
+
+func startGrpcServer(apiServer api.RepositoryServer, serverAddress string) {
+	log.Println("Starting grpc on:", serverAddress)
+
+	grpcServer := grpc.NewServer()
+	lis, err := net.Listen("tcp", serverAddress)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	api.RegisterRepositoryServer(grpcServer, apiServer)
+
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println("over")
+}
+
+func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
+	log.Println("Starting json-rpc on:", jsonServerAddress)
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	err := api.RegisterRepositoryHandlerFromEndpoint(ctx, mux, grpcServerAddress, opts)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = http.ListenAndServe(jsonServerAddress, mux)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+// StartGrpcAndProxyServer - Given a repository storage backend, this function starts a
+// new gRPC and JSON-RPC server in separate threads and waits until a message is received on the stopRequested channel.
+func StartGrpcAndProxyServer(storage storage.RepositoryStorage,
+	grpcServerAddress string, jsonServerAddress string,
+	stopRequested <-chan string) {
+	apiServer := NewServer(storage)
+	go startGrpcServer(apiServer, grpcServerAddress)
+	go startProxyServer(grpcServerAddress, jsonServerAddress)
+	stopReason := <-stopRequested
+	log.Println("Stopping server due to:", stopReason)
 }
 
 func (srv *server) Healthz(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
@@ -74,7 +127,7 @@ func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api
 	model, err := srv.storage.GetModel(ctx, modelID)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
-		message := fmt.Sprintf("Cloud not retrieve model (%s) from storage", modelID)
+		message := fmt.Sprintf("Could not retrieve model (%s) from storage", modelID)
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
@@ -126,7 +179,7 @@ func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest)
 	storedModel, err := srv.storage.GetModel(ctx, modelID)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
-		message := fmt.Sprintf("Cloud not retrieve model (%s) from storage", modelID)
+		message := fmt.Sprintf("Could not retrieve model (%s) from storage", modelID)
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
@@ -140,7 +193,7 @@ func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest)
 	newlyStoredModel, err := srv.storage.UpdateModel(ctx, updatedModel)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
-		message := fmt.Sprintf("Cloud not update model (%s) in storage", modelID)
+		message := fmt.Sprintf("Could not update model (%s) in storage", modelID)
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}

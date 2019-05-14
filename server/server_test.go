@@ -1,16 +1,21 @@
 package server_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"sort"
+	"testing"
+	"time"
+
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/server"
 	"github.com/doc-ai/tensorio-models/storage/memory"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/assert"
-	"sort"
-	"testing"
-	"time"
 )
 
 func testingServer() api.RepositoryServer {
@@ -922,4 +927,139 @@ func TestGetCheckpoint(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), createdAt, 2*time.Second)
 
 	assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
+}
+
+func sendGetRequest(t *testing.T, url string, status int) string {
+	resp, err := http.Get(url)
+	if err != nil {
+		t.Error(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != status {
+		t.Errorf("Expected: %d Got: %d for URL: %s", status, resp.StatusCode, url)
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Error(err)
+	}
+	return string(bodyBytes)
+}
+
+func postRequest(t *testing.T, url string, jsonStruct map[string]interface{}, status int) string {
+	bytesRepresentation, err := json.Marshal(jsonStruct)
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(bytesRepresentation))
+	if err != nil {
+		t.Error(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != status {
+		t.Errorf("Expected: %d Got: %d for POST URL: %s", status, resp.StatusCode, url)
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Error(err)
+	}
+	return string(bodyBytes)
+}
+
+func TestURLEndpoints(t *testing.T) {
+	storage := memory.NewMemoryRepositoryStorage()
+	const grpcAddress = ":9300" // Use diff ports.
+	const jsonAddress = ":9301"
+	stopRequestChannel := make(chan string)
+	go server.StartGrpcAndProxyServer(storage, grpcAddress, jsonAddress, stopRequestChannel)
+	baseUrl := fmt.Sprintf("http://localhost%s/v1/repository/", jsonAddress)
+	healthzUrl := baseUrl + "healthz"
+	response := ""
+	for ; response != "{\"status\":\"SERVING\"}"; response = sendGetRequest(t, healthzUrl, http.StatusOK) {
+		fmt.Println("Waiting for server to become healthy")
+		time.Sleep(100 * time.Millisecond)
+	}
+	assert.Equal(t, "{\"backendType\":\"MEMORY\"}", sendGetRequest(t, baseUrl+"config", http.StatusOK))
+	assert.Equal(t, "{}", sendGetRequest(t, baseUrl+"models", http.StatusOK))
+	const invModelErr = "\"Could not retrieve model (InvalidModelName) from storage\""
+	assert.Equal(t, "{\"error\":"+invModelErr+",\"message\":"+invModelErr+",\"code\":14}",
+		sendGetRequest(t, baseUrl+"models/InvalidModelName", http.StatusServiceUnavailable))
+	// Seems that these requests ignore canonicalHyperparameters or any other extra tags.
+	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel\"}",
+		postRequest(t, baseUrl+"models",
+			map[string]interface{}{"model": map[string]string{
+				"modelId":                  "MyModel",
+				"description":              "Selfie model",
+				"canonicalHyperparameters": "batch-666",
+				"randomTag":                "RandomValue",
+			}}, http.StatusOK))
+	assert.Equal(t, "{\"modelIds\":[\"MyModel\"]}", sendGetRequest(t, baseUrl+"models", http.StatusOK))
+	assert.Equal(t, "{\"resourcePath\":\"/models/BasicModel\"}",
+		postRequest(t, baseUrl+"models",
+			map[string]interface{}{"model": map[string]string{
+				"modelId":                  "BasicModel",
+				"description":              "Basic model",
+				"canonicalHyperparameters": "batch-123",
+			}}, http.StatusOK))
+
+	// Models are sorted lexicographically, not in order of recency.
+	assert.Equal(t, "{\"modelIds\":[\"BasicModel\",\"MyModel\"]}", sendGetRequest(t, baseUrl+"models", http.StatusOK))
+
+	// This is expected to fail. One needs to create model, hyperparameters and checkpoints in sequence.
+	assert.Equal(t, "Not Found\n",
+		postRequest(t, baseUrl+"models/GoodModel/hyperparameterId/batch-443",
+			map[string]interface{}{"model": map[string]string{
+				"modelId":                  "GoodModel",
+				"description":              "The best model",
+				"canonicalHyperparameters": "batch-443",
+			}}, http.StatusNotFound))
+	assert.Equal(t, "{\"modelIds\":[\"BasicModel\",\"MyModel\"]}", sendGetRequest(t, baseUrl+"models", http.StatusOK))
+
+	// Let's try emulating a real flow
+	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HPSet1\"}",
+		postRequest(t, baseUrl+"models/MyModel/hyperparameters",
+			map[string]interface{}{
+				"hyperparametersId": "HPSet1",
+				"hyperparameters": map[string]string{
+					"param1": "value1",
+					"param2": "v2",
+				},
+			}, http.StatusOK))
+
+	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HPSet1/checkpoints/chkpt-1\"}",
+		postRequest(t, baseUrl+"models/MyModel/hyperparameters/HPSet1/checkpoints",
+			map[string]interface{}{
+				"checkpointId": "chkpt-1",
+				"createdAt":    "1557790163",
+				"info": map[string]string{
+					"accuracy": "0.93",
+				},
+				"link": "https://example.com/h1c1.tiobundle.zip",
+			}, http.StatusOK))
+
+	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HP Set2\"}",
+		postRequest(t, baseUrl+"models/MyModel/hyperparameters",
+			map[string]interface{}{
+				"hyperparametersId": "HP Set2",
+				"hyperparameters": map[string]string{
+					"number": "42",
+				},
+			}, http.StatusOK))
+
+	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel/hyperparameters/HP Set2/checkpoints/hp2-ckpt1\"}",
+		postRequest(t, baseUrl+"models/MyModel/hyperparameters/HP Set2/checkpoints",
+			map[string]interface{}{
+				"checkpointId": "hp2-ckpt1",
+				"createdAt":    "1557794163",
+				"info": map[string]string{
+					"accuracy": "0.96",
+				},
+				"link": "https://example.com/h2c1.tiobundle.zip",
+			}, http.StatusOK))
+
+	stopRequestChannel <- "Test Complete"
 }

@@ -1,60 +1,15 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
-	"github.com/doc-ai/tensorio-models/api"
+	"strings"
+
 	"github.com/doc-ai/tensorio-models/server"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/doc-ai/tensorio-models/storage/memory"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"net"
-	"net/http"
-	"strings"
 )
-
-func startGrpcServer(apiServer api.RepositoryServer) {
-	serverAddress := ":8080"
-	log.Println("Starting grpc on:", serverAddress)
-
-	grpcServer := grpc.NewServer()
-	lis, err := net.Listen("tcp", serverAddress)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	api.RegisterRepositoryServer(grpcServer, apiServer)
-
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	log.Println("over")
-}
-
-func startProxyServer() {
-	grpcServerAddress := ":8080"
-	serverAddress := ":8081"
-	log.Println("Starting json-rpc on:", serverAddress)
-
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := api.RegisterRepositoryHandlerFromEndpoint(ctx, mux, grpcServerAddress, opts)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	err = http.ListenAndServe(serverAddress, mux)
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
 
 func main() {
 	/* BEGIN cli */
@@ -83,11 +38,8 @@ func main() {
 	/* END cli */
 
 	repositoryBackend := backend()
-	apiServer := server.NewServer(repositoryBackend)
-
-	go startGrpcServer(apiServer)
-	go startProxyServer()
-
-	// sleep forever
-	select {}
+	const grpcAddress = ":8080"
+	const jsonRpcAddress = ":8081"
+	server.StartGrpcAndProxyServer(repositoryBackend,
+		grpcAddress, jsonRpcAddress, make(chan string))
 }
