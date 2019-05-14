@@ -3,7 +3,7 @@ module github.com/doc-ai/tensorio-models
 go 1.12
 
 require (
-	cloud.google.com/go v0.37.4
+	cloud.google.com/go v0.39.0
 	github.com/fsouza/fake-gcs-server v1.7.0
 	github.com/golang/protobuf v1.3.1
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
