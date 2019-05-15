@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package api;
+
+import "google/api/annotations.proto";
+import "repository.proto";  // For HealthCheck and Config messages.
+ 
+message CreateTaskRequest {
+    string modelId = 1;
+    string hyperparametersId = 2;
+    // Note that TensorIO supports string ChkPtIds, while doc seems to suggest UTC secs-since-epoch.
+    // We would also accept updates based on more recent checkpoints.
+    string checkpointId = 3;
+    string taskId = 4;
+    int64 deadline = 5;  // UTC seconds since epoch when task expires
+    bool active = 6;  // May be created as inactive.
+    string task = 7;  // Encoded stream of bytes that represents upload/attachment of task
+}
+
+message ModifyTaskRequest {
+   string taskId = 1;   // Auto-populated from endpoint URL
+   int64 deadline = 2;  // In UTC seconds since epoch 
+   bool active = 3;
+}
+
+message ListTasksRequest {
+    string modelId = 1;
+    string hyperparametersId = 2;
+    string checkpointId = 3;
+    // Tasks are returned lexicographically sorted by taskId
+    // If specified only taskIds >= startTaskId will be returned.
+    string startTaskId = 4;
+    int32 maxItems = 5;
+    bool activeOnly = 6;  // True by default. If specified and false, return all tasks..
+}
+
+message ListTasksResponse {
+    string modelId = 1;
+    string hyperparametersId = 2;
+    string checkpointId = 3;
+    string startTaskId = 4;
+    int32 maxItems = 5;
+    repeated string taskIds = 6;
+}
+
+message GetTaskRequest {
+    string taskId = 1;  // Auto-populated from endpoint URL
+}
+
+// This is returned by both /create_task, /task/<taskId> and /modify_task/<taskId>
+message TaskDetails {
+    string modelId = 1;
+    string hyperparametersId = 2;
+    string checkpointId = 3;
+    int64 deadline = 4;
+    string taskId = 5;
+    bool active = 6;
+    string taskSpec = 7;  // URL to download task details
+    string resourcePath = 8;  // Endpoint to call get task info
+}
+
+message StartTaskRequest {
+   string taskId = 1;  // Auto-populated from endpoint URL
+}
+
+message StartTaskResponse {
+   enum RequestStatus {
+   	UNKNOWN = 0;
+	REJECTED = 1;
+	APPROVED = 2;
+   }
+   RequestStatus status = 1;
+   string jobId = 2;
+   string uploadTo = 3;  // URL to upload task output
+}
+
+message FinishTaskRequest {
+   enum TaskStatus {
+       UNKNOWN = 0;    // Do NOT use.
+       COMPLETED = 1;  // Task is complete and results are uploaded.
+       ERROR = 2;      // Some error occurred, use error for details.
+       ABORTED = 3;    // This client won't do the task.
+   }
+   string taskId = 1;  // Auto-populated from endpoint URL
+   TaskStatus status = 2;
+   string error = 3;
+}
+
+message FinishTaskResponse {
+   string taskId = 1;
+}
+
+service Flea {
+    rpc Healthz (HealthCheckRequest) returns (HealthCheckResponse) {
+        option (google.api.http) = {
+            get: "/v1/flea/healthz"
+        };
+    };
+    rpc Config (ConfigRequest) returns (ConfigResponse) {
+        option (google.api.http) = {
+            get: "/v1/flea/config"
+        };
+    };
+
+    // Task creator API/Flow:
+
+    rpc CreateTask (CreateTaskRequest) returns (TaskDetails) {
+        option (google.api.http) = {
+            post: "/v1/flea/create_task"
+            body: "*"
+        };
+    };
+    rpc ModifyTask (ModifyTaskRequest) returns (TaskDetails) {
+        option (google.api.http) = {
+            post: "/v1/flea/modify_task/{taskId}"
+            body: "*"
+        };
+    };
+
+    // Task doer API/Flow:
+
+    rpc ListTasks (ListTasksRequest) returns (ListTasksResponse) {
+        option (google.api.http) = {
+            get: "/v1/flea/tasks"
+        };
+    };
+    rpc GetTask (GetTaskRequest) returns (TaskDetails) {
+        option (google.api.http) = {
+            get: "/v1/task/{taskId}"
+        };
+    };
+    rpc StartTask (StartTaskRequest) returns (StartTaskResponse) {
+        option (google.api.http) = {
+            post: "/v1/start_task/{taskId}"
+	    body: "*"
+        };
+    };
+    rpc FinishTask (FinishTaskRequest) returns (FinishTaskResponse) {
+        option (google.api.http) = {
+            post: "/v1/finish_task/{taskId}"
+	    body: "*"
+        };
+    };    
+}
