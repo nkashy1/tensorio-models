@@ -411,11 +411,12 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 	}
 	link := req.Link
 	log.Printf("CreateCheckpoint request - ModelId: %s, HyperparametersId: %s, CheckpointId: %s, Link: %s", modelID, hyperparametersID, checkpointID, link)
+	utcNow := time.Now().UTC()
 	storageCheckpoint := storage.Checkpoint{
 		ModelId:           modelID,
 		HyperparametersId: hyperparametersID,
 		CheckpointId:      checkpointID,
-		CreatedAt:         time.Now(),
+		CreatedAt:         utcNow,
 		Link:              link,
 		Info:              req.Info,
 	}
