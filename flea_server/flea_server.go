@@ -3,12 +3,13 @@ package flea_server
 import (
 	"context"
 	"net"
+	"net/http"
 
 	"github.com/doc-ai/tensorio-models/api"
-	"github.com/doc-ai/tensorio-models/server"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/doc-ai/tensorio-models/storage/gcs"
 	"github.com/doc-ai/tensorio-models/storage/memory"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -40,6 +41,25 @@ func startGrpcServer(apiServer api.FleaServer, serverAddress string) {
 	}
 	log.Println("over")
 }
+func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
+	log.Println("Starting json-rpc on:", jsonServerAddress)
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	// Note the *Flea* handler
+	err := api.RegisterFleaHandlerFromEndpoint(ctx, mux, grpcServerAddress, opts)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = http.ListenAndServe(jsonServerAddress, mux)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
 
 // StartGrpcAndProxyServer - Given a repository storage backend, this function starts a
 // new gRPC and JSON-RPC server in separate threads and waits until a message is received on the stopRequested channel.
@@ -48,7 +68,7 @@ func StartGrpcAndProxyServer(storage storage.FleaStorage,
 	stopRequested <-chan string) {
 	apiServer := NewServer(storage)
 	go startGrpcServer(apiServer, grpcServerAddress)
-	go server.StartProxyServer(grpcServerAddress, jsonServerAddress)
+	go startProxyServer(grpcServerAddress, jsonServerAddress)
 	stopReason := <-stopRequested
 	log.Println("Stopping server due to:", stopReason)
 }

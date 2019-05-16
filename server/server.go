@@ -76,8 +76,7 @@ func startGrpcServer(apiServer api.RepositoryServer, serverAddress string) {
 	log.Println("over")
 }
 
-// StartProxyServer - exposes a JSON interface on top of GRPC.
-func StartProxyServer(grpcServerAddress string, jsonServerAddress string) {
+func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	log.Println("Starting json-rpc on:", jsonServerAddress)
 
 	ctx := context.Background()
@@ -85,6 +84,7 @@ func StartProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	defer cancel()
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
+	// Note the *Repository* handler
 	err := api.RegisterRepositoryHandlerFromEndpoint(ctx, mux, grpcServerAddress, opts)
 	if err != nil {
 		log.Fatalln(err)
@@ -103,7 +103,7 @@ func StartGrpcAndProxyServer(storage storage.RepositoryStorage,
 	stopRequested <-chan string) {
 	apiServer := NewServer(storage)
 	go startGrpcServer(apiServer, grpcServerAddress)
-	go StartProxyServer(grpcServerAddress, jsonServerAddress)
+	go startProxyServer(grpcServerAddress, jsonServerAddress)
 	stopReason := <-stopRequested
 	log.Println("Stopping server due to:", stopReason)
 }
