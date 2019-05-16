@@ -275,6 +275,11 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 func (srv *server) CreateHyperparameters(ctx context.Context, req *api.CreateHyperparametersRequest) (*api.CreateHyperparametersResponse, error) {
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
+	// Check that ModelId and HyperparametersId in request are valid IDs.
+	if !IsValidID(modelID) {
+		grpcErr := status.Error(codes.InvalidArgument, "modelID is invalid")
+		return nil, grpcErr
+	}
 	if !IsValidID(hyperparametersID) {
 		grpcErr := status.Error(codes.InvalidArgument, "hyperparametersID is invalid")
 		return nil, grpcErr
