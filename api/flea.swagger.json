@@ -314,7 +314,7 @@
         "hyperparametersId": {
           "type": "string"
         },
-        "checkpointIds": {
+        "checkpointId": {
           "type": "string",
           "description": "Note that TensorIO supports string ChkPtIds, while doc seems to suggest UTC secs-since-epoch.\nWe would also accept updates based on more recent checkpoints."
         },
@@ -322,7 +322,8 @@
           "type": "string"
         },
         "deadline": {
-          "type": "string"
+          "type": "string",
+          "format": "int64"
         },
         "active": {
           "type": "boolean",
@@ -397,7 +398,8 @@
           "type": "string"
         },
         "deadline": {
-          "type": "string"
+          "type": "string",
+          "format": "int64"
         },
         "active": {
           "type": "boolean",
@@ -440,7 +442,8 @@
           "type": "string"
         },
         "deadline": {
-          "type": "string"
+          "type": "string",
+          "format": "int64"
         },
         "taskId": {
           "type": "string"
