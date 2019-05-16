@@ -373,7 +373,9 @@ func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpoints
 		return nil, grpcErr
 	}
 	resp := &api.ListCheckpointsResponse{
-		CheckpointIds: checkpointIDs,
+		ModelId:           modelID,
+		HyperparametersId: hyperparametersID,
+		CheckpointIds:     checkpointIDs,
 	}
 	return resp, nil
 }

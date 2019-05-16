@@ -855,6 +855,9 @@ func TestListCheckpoints(t *testing.T) {
 		errorMessage := fmt.Sprintf("Test %d: ListCheckpoints response does not contain the expected CheckpointIds", i)
 		assert.Equalf(t, test.ExpectedCheckpointIds, listCkptResponse.CheckpointIds, errorMessage)
 
+		assert.Equal(t, test.ModelId, listCkptResponse.ModelId)
+		assert.Equal(t, test.HyperparametersId, listCkptResponse.HyperparametersId)
+
 		if t.Failed() {
 			break
 		}
