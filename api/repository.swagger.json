@@ -587,6 +587,12 @@
     "apiListCheckpointsResponse": {
       "type": "object",
       "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
         "checkpointIds": {
           "type": "array",
           "items": {

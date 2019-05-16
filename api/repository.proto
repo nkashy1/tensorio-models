@@ -137,6 +137,8 @@ message ListCheckpointsRequest {
 }
 
 message ListCheckpointsResponse {
+    string modelId = 2;
+    string hyperparametersId = 3;
     repeated string checkpointIds = 1;
 }
 
