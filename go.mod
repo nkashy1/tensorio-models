@@ -8,7 +8,7 @@ require (
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
-	github.com/grpc-ecosystem/grpc-gateway v1.8.6
+	github.com/grpc-ecosystem/grpc-gateway v1.9.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/sirupsen/logrus v1.4.1
 	github.com/stretchr/testify v1.3.0
