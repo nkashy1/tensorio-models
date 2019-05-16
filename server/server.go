@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/doc-ai/tensorio-models/api"
@@ -247,12 +248,16 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 		maxItems = 10
 	}
 	log.Printf("ListHyperparameters request - ModelId: %s, Marker: %s, MaxItems: %d", modelID, marker, maxItems)
-	hyperparametersIDs, err := srv.storage.ListHyperparameters(ctx, modelID, marker, maxItems)
+	hyperparametersStoragePaths, err := srv.storage.ListHyperparameters(ctx, modelID, marker, maxItems)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 		message := fmt.Sprintf("Could not list hyperparameters for model (%s) in storage", modelID)
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
+	}
+	hyperparametersIDs := make([]string, len(hyperparametersStoragePaths))
+	for i, path := range hyperparametersStoragePaths {
+		hyperparametersIDs[i] = getTerminalResourceFromStoragePath(path)
 	}
 	resp := &api.ListHyperparametersResponse{
 		ModelId:            modelID,
@@ -365,15 +370,21 @@ func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpoints
 		maxItems = 10
 	}
 	log.Printf("ListCheckpoints request - ModelId: %s, HyperparametersId: %s, Marker: %s, MaxItems: %d", modelID, hyperparametersID, marker, maxItems)
-	checkpointIDs, err := srv.storage.ListCheckpoints(ctx, modelID, hyperparametersID, marker, maxItems)
+	checkpointStoragePaths, err := srv.storage.ListCheckpoints(ctx, modelID, hyperparametersID, marker, maxItems)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 		message := fmt.Sprintf("Could not list checkpoints for model (%s) and hyperparameters (%s) in storage", modelID, hyperparametersID)
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
+	checkpointIDs := make([]string, len(checkpointStoragePaths))
+	for i, path := range checkpointStoragePaths {
+		checkpointIDs[i] = getTerminalResourceFromStoragePath(path)
+	}
 	resp := &api.ListCheckpointsResponse{
-		CheckpointIds: checkpointIDs,
+		ModelId:           modelID,
+		HyperparametersId: hyperparametersID,
+		CheckpointIds:     checkpointIDs,
 	}
 	return resp, nil
 }
@@ -440,4 +451,15 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 func getCheckpointResourcePath(modelID, hyperparametersID, checkpointID string) string {
 	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperparametersID, checkpointID)
 	return resourcePath
+}
+
+// RepositoryStorage implementations return resources in the form:
+// <modelId>, <modelId>:<hyperparametersId>, <modelId>:<hyperparametersId>:<checkpointId>
+// This function takes input in those formats and returns (respectively):
+// <modelId>, <hyperparametersId>, <checkpointId>
+func getTerminalResourceFromStoragePath(storagePath string) string {
+	storageDelimiter := ":"
+	components := strings.Split(storagePath, storageDelimiter)
+	terminalComponent := components[len(components)-1]
+	return terminalComponent
 }
