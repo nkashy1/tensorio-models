@@ -15,38 +15,6 @@
     "application/json"
   ],
   "paths": {
-    "/v1/finish_task/{taskId}": {
-      "post": {
-        "operationId": "FinishTask",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiFinishTaskResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "taskId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apiFinishTaskRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Flea"
-        ]
-      }
-    },
     "/v1/flea/config": {
       "get": {
         "operationId": "Config",
@@ -80,7 +48,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiCreateTaskRequest"
+              "$ref": "#/definitions/apiTaskDetails"
             }
           }
         ],
@@ -269,16 +237,6 @@
       ],
       "default": "INVALID"
     },
-    "FinishTaskRequestTaskStatus": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "COMPLETED",
-        "ERROR",
-        "ABORTED"
-      ],
-      "default": "UNKNOWN"
-    },
     "HealthCheckResponseServingStatus": {
       "type": "string",
       "enum": [
@@ -305,57 +263,6 @@
         }
       }
     },
-    "apiCreateTaskRequest": {
-      "type": "object",
-      "properties": {
-        "modelId": {
-          "type": "string"
-        },
-        "hyperparametersId": {
-          "type": "string"
-        },
-        "checkpointId": {
-          "type": "string",
-          "description": "Note that TensorIO supports string ChkPtIds, while doc seems to suggest UTC secs-since-epoch.\nWe would also accept updates based on more recent checkpoints."
-        },
-        "taskId": {
-          "type": "string"
-        },
-        "deadline": {
-          "type": "string",
-          "format": "int64"
-        },
-        "active": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "task": {
-          "type": "string"
-        }
-      }
-    },
-    "apiFinishTaskRequest": {
-      "type": "object",
-      "properties": {
-        "taskId": {
-          "type": "string"
-        },
-        "status": {
-          "$ref": "#/definitions/FinishTaskRequestTaskStatus"
-        },
-        "error": {
-          "type": "string"
-        }
-      }
-    },
-    "apiFinishTaskResponse": {
-      "type": "object",
-      "properties": {
-        "taskId": {
-          "type": "string"
-        }
-      }
-    },
     "apiHealthCheckResponse": {
       "type": "object",
       "properties": {
@@ -367,15 +274,6 @@
     "apiListTasksResponse": {
       "type": "object",
       "properties": {
-        "modelId": {
-          "type": "string"
-        },
-        "hyperparametersId": {
-          "type": "string"
-        },
-        "checkpointId": {
-          "type": "string"
-        },
         "startTaskId": {
           "type": "string"
         },
@@ -383,11 +281,15 @@
           "type": "integer",
           "format": "int32"
         },
-        "taskIds": {
-          "type": "array",
-          "items": {
+        "tasks": {
+          "type": "object",
+          "additionalProperties": {
             "type": "string"
-          }
+          },
+          "description": "Map from taskId to resourcePath for checkpoint.\ne.g. { \"1001\" : \"/models/modelABC/hyperparameters/hpset13/checkpoints/chkpt-7\",\n       \"1007\" : \"/models/modelXYZ/hyperparameters/hpset4/checkpoints/chkpt-3\" }\nFlea will accept updates based on the specified or later checkpoints."
+        },
+        "repositoryBaseUrl": {
+          "type": "string"
         }
       }
     },
@@ -454,12 +356,9 @@
         },
         "taskSpec": {
           "type": "string"
-        },
-        "resourcePath": {
-          "type": "string"
         }
       },
-      "title": "This is returned by both /create_task, /task/\u003ctaskId\u003e and /modify_task/\u003ctaskId\u003e"
+      "title": "This is used by both /create_task, /task/\u003ctaskId\u003e and /modify_task/\u003ctaskId\u003e"
     }
   }
 }

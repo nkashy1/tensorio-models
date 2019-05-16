@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/doc-ai/tensorio-models/api"
 )
 
 var ModelDoesNotExistError = errors.New("Model does not exist")
@@ -63,4 +65,44 @@ type RepositoryStorage interface {
 	GetCheckpoint(ctx context.Context, modelId, hyperparametersId, checkpointId string) (Checkpoint, error)
 
 	AddCheckpoint(ctx context.Context, checkpoint Checkpoint) error
+}
+
+type Job struct {
+	TaskId    string
+	JobId     string
+	UploadUrl string
+
+	ClientId     string // Get it from AuthToken?
+	AcceptedTime time.Time
+}
+
+type Task struct {
+	ModelId           string
+	HyperparametersId string
+	CheckpointId      string
+	TaskId            string
+	Deadline          int64
+	Active            bool
+	TaskSpec          string
+	CreatedTime       time.Time
+	Jobs              map[string]Job // Map from JobId to Job detail
+}
+
+var ErrDuplicateTaskId = errors.New("TaskId already exists")
+var ErrMissingTaskId = errors.New("Missing TaskId")
+var ErrMissingJobId = errors.New("Missing JobId")
+var ErrMissingModelId = errors.New("Missing ModelId")
+var ErrMissingHyperparametersId = errors.New("Missing HyperparametersId")
+var ErrMissingCheckpointId = errors.New("Missing CheckpointId")
+var ErrInvalidModelHyperparamsCheckpointCombo = errors.New("CheckpointId requires HyperparamsId and HyperparamsId requires ModelId")
+
+type FleaStorage interface {
+	GetStorageType() string
+
+	AddTask(ctx context.Context, req api.TaskDetails) error
+	ModifyTask(ctx context.Context, req api.ModifyTaskRequest) error
+
+	ListTasks(ctx context.Context, req api.ListTasksRequest) (resp api.ListTasksResponse, e error)
+	GetTask(ctx context.Context, taskId string) (api.TaskDetails, error)
+	StartTask(ctx context.Context, taskId string) (api.StartTaskResponse, error)
 }

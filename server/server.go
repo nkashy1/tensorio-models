@@ -76,7 +76,8 @@ func startGrpcServer(apiServer api.RepositoryServer, serverAddress string) {
 	log.Println("over")
 }
 
-func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
+// StartProxyServer - exposes a JSON interface on top of GRPC.
+func StartProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	log.Println("Starting json-rpc on:", jsonServerAddress)
 
 	ctx := context.Background()
@@ -102,7 +103,7 @@ func StartGrpcAndProxyServer(storage storage.RepositoryStorage,
 	stopRequested <-chan string) {
 	apiServer := NewServer(storage)
 	go startGrpcServer(apiServer, grpcServerAddress)
-	go startProxyServer(grpcServerAddress, jsonServerAddress)
+	go StartProxyServer(grpcServerAddress, jsonServerAddress)
 	stopReason := <-stopRequested
 	log.Println("Stopping server due to:", stopReason)
 }
