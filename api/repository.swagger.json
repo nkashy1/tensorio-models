@@ -533,6 +533,15 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "checkpointId": {
+          "type": "string"
         }
       }
     },
