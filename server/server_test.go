@@ -992,7 +992,7 @@ func TestURLEndpoints(t *testing.T) {
 		postRequest(t, baseUrl+"models",
 			map[string]interface{}{"model": map[string]string{
 				"modelId":                  "MyModel",
-				"description":              "Selfie model",
+				"details":                  "Selfie model",
 				"canonicalHyperparameters": "batch-666",
 				"randomTag":                "RandomValue",
 			}}, http.StatusOK))
@@ -1001,7 +1001,7 @@ func TestURLEndpoints(t *testing.T) {
 		postRequest(t, baseUrl+"models",
 			map[string]interface{}{"model": map[string]string{
 				"modelId":                  "BasicModel",
-				"description":              "Basic model",
+				"details":                  "Basic model",
 				"canonicalHyperparameters": "batch-123",
 			}}, http.StatusOK))
 
