@@ -420,14 +420,6 @@ func TestListHyperparameters(t *testing.T) {
 	// NOTE: HyperparametersIDs are sorted lexicographically, not chronologically!
 	sort.Strings(hyperparametersIDs)
 
-	// ListHyperparameters does not return hyperparameters IDs, but rather tags of the form
-	// <modelID>:<hyperparmetersID>
-	// We account for this with hyperparametersTags
-	hyperparametersTags := make([]string, len(hyperparametersIDs))
-	for i, hyperparametersID := range hyperparametersIDs {
-		hyperparametersTags[i] = fmt.Sprintf("%s:%s", modelID, hyperparametersID)
-	}
-
 	type ListHyperparametersTest struct {
 		Server                     *api.RepositoryServer
 		ModelId                    string
@@ -441,28 +433,28 @@ func TestListHyperparameters(t *testing.T) {
 			Server:                     &srv,
 			ModelId:                    modelID,
 			MaxItems:                   int32(5),
-			ExpectedHyperparametersIds: hyperparametersTags[0:5],
+			ExpectedHyperparametersIds: hyperparametersIDs[0:5],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[1],
 			MaxItems:                   int32(5),
-			ExpectedHyperparametersIds: hyperparametersTags[2:7],
+			ExpectedHyperparametersIds: hyperparametersIDs[2:7],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[15],
 			MaxItems:                   int32(5),
-			ExpectedHyperparametersIds: hyperparametersTags[16:21],
+			ExpectedHyperparametersIds: hyperparametersIDs[16:21],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[15],
 			MaxItems:                   int32(6),
-			ExpectedHyperparametersIds: hyperparametersTags[16:21],
+			ExpectedHyperparametersIds: hyperparametersIDs[16:21],
 		},
 		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
 		// not after and including marker. No need to change behaviour, just make the two consistent.
@@ -471,27 +463,27 @@ func TestListHyperparameters(t *testing.T) {
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
 			MaxItems:                   int32(20),
-			ExpectedHyperparametersIds: hyperparametersTags[1:21],
+			ExpectedHyperparametersIds: hyperparametersIDs[1:21],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
-			ExpectedHyperparametersIds: hyperparametersTags[1:11],
+			ExpectedHyperparametersIds: hyperparametersIDs[1:11],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
 			MaxItems:                   0,
-			ExpectedHyperparametersIds: hyperparametersTags[1:11],
+			ExpectedHyperparametersIds: hyperparametersIDs[1:11],
 		},
 		{
 			Server:                     &srv,
 			ModelId:                    modelID,
 			Marker:                     hyperparametersIDs[0],
 			MaxItems:                   -10,
-			ExpectedHyperparametersIds: hyperparametersTags[1:11],
+			ExpectedHyperparametersIds: hyperparametersIDs[1:11],
 		},
 	}
 
@@ -756,14 +748,6 @@ func TestListCheckpoints(t *testing.T) {
 	// NOTE: CheckpointIds are sorted lexicographically, not chronologically!
 	sort.Strings(checkpointIDs)
 
-	// ListCheckpoints does not return checkpoint IDs, but rather tags of the form
-	// <modelID>:<hyperparmetersID>:<checkpointId>
-	// We account for this with hyperparametersTags
-	checkpointTags := make([]string, len(checkpointIDs))
-	for i, checkpointID := range checkpointIDs {
-		checkpointTags[i] = fmt.Sprintf("%s:%s:%s", modelID, hyperparametersID, checkpointID)
-	}
-
 	type ListCheckpointsTest struct {
 		Server                *api.RepositoryServer
 		ModelId               string
@@ -779,7 +763,7 @@ func TestListCheckpoints(t *testing.T) {
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			MaxItems:              int32(5),
-			ExpectedCheckpointIds: checkpointTags[0:5],
+			ExpectedCheckpointIds: checkpointIDs[0:5],
 		},
 		{
 			Server:                &srv,
@@ -787,7 +771,7 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[1],
 			MaxItems:              int32(5),
-			ExpectedCheckpointIds: checkpointTags[2:7],
+			ExpectedCheckpointIds: checkpointIDs[2:7],
 		},
 		{
 			Server:                &srv,
@@ -795,7 +779,7 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[15],
 			MaxItems:              int32(5),
-			ExpectedCheckpointIds: checkpointTags[16:21],
+			ExpectedCheckpointIds: checkpointIDs[16:21],
 		},
 		{
 			Server:                &srv,
@@ -803,7 +787,7 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[15],
 			MaxItems:              int32(6),
-			ExpectedCheckpointIds: checkpointTags[16:21],
+			ExpectedCheckpointIds: checkpointIDs[16:21],
 		},
 		// TODO(frederick): Specification says that list endpoints should return items AFTER marker,
 		// not after and including marker. No need to change behaviour, just make the two consistent.
@@ -813,14 +797,14 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
 			MaxItems:              int32(20),
-			ExpectedCheckpointIds: checkpointTags[1:21],
+			ExpectedCheckpointIds: checkpointIDs[1:21],
 		},
 		{
 			Server:                &srv,
 			ModelId:               modelID,
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
-			ExpectedCheckpointIds: checkpointTags[1:11],
+			ExpectedCheckpointIds: checkpointIDs[1:11],
 		},
 		{
 			Server:                &srv,
@@ -828,7 +812,7 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
 			MaxItems:              0,
-			ExpectedCheckpointIds: checkpointTags[1:11],
+			ExpectedCheckpointIds: checkpointIDs[1:11],
 		},
 		{
 			Server:                &srv,
@@ -836,7 +820,7 @@ func TestListCheckpoints(t *testing.T) {
 			HyperparametersId:     hyperparametersID,
 			Marker:                checkpointIDs[0],
 			MaxItems:              -10,
-			ExpectedCheckpointIds: checkpointTags[1:11],
+			ExpectedCheckpointIds: checkpointIDs[1:11],
 		},
 	}
 
