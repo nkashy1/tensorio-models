@@ -433,14 +433,12 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
-	resourcePath := getCheckpointResourcePath(modelID, hyperparametersID, checkpointID)
 	createdAt, err := ptypes.TimestampProto(storedCheckpoint.CreatedAt)
 	if err != nil {
 		log.Error("unable to serialize CreatedAt")
 		return nil, err
 	}
 	resp := &api.GetCheckpointResponse{
-		ResourcePath:      resourcePath,
 		Link:              storedCheckpoint.Link,
 		CreatedAt:         createdAt,
 		Info:              storedCheckpoint.Info,
