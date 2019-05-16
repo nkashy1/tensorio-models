@@ -174,8 +174,14 @@ func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api
 func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest) (*api.CreateModelResponse, error) {
 	model := req.Model
 	log.Printf("CreateModel request - Model: %v", model)
+	// Check that ModelId is a non-empty string
 	if !IsValidID(model.ModelId) {
 		grpcErr := status.Error(codes.InvalidArgument, "ModelId was invalid")
+		return nil, grpcErr
+	}
+	// Check that Details field in request model is not nil
+	if model.Details == "" {
+		grpcErr := status.Error(codes.InvalidArgument, "Details should be specified in CreateModel request")
 		return nil, grpcErr
 	}
 	storageModel := storage.Model{
