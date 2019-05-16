@@ -518,7 +518,13 @@
     "apiGetCheckpointResponse": {
       "type": "object",
       "properties": {
-        "resourcePath": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "checkpointId": {
           "type": "string"
         },
         "link": {
@@ -533,15 +539,6 @@
           "additionalProperties": {
             "type": "string"
           }
-        },
-        "modelId": {
-          "type": "string"
-        },
-        "hyperparametersId": {
-          "type": "string"
-        },
-        "checkpointId": {
-          "type": "string"
         }
       }
     },

@@ -892,7 +892,7 @@ func TestGetCheckpoint(t *testing.T) {
 		Link:              link,
 		Info:              info,
 	}
-	createCheckpointResponse, err := srv.CreateCheckpoint(ctx, &createCheckpointRequest)
+	_, err = srv.CreateCheckpoint(ctx, &createCheckpointRequest)
 	if err != nil {
 		t.Error(err)
 	}
@@ -906,7 +906,6 @@ func TestGetCheckpoint(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, createCheckpointResponse.ResourcePath, getCheckpointResponse.ResourcePath, "Incorrect ResourcePath in GetCheckpointResponse")
 	assert.Equal(t, link, getCheckpointResponse.Link, "Incorrect Link in GetCheckpointResponse")
 
 	createdAt, err := ptypes.Timestamp(getCheckpointResponse.CreatedAt)
