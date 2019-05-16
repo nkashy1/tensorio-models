@@ -927,6 +927,10 @@ func TestGetCheckpoint(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), createdAt, 2*time.Second)
 
 	assert.Equal(t, info, getCheckpointResponse.Info, "Incorrect Info in GetCheckpointResponse")
+
+	assert.Equal(t, modelID, getCheckpointResponse.ModelId, "Incorrect ModelId in GetCheckpointResponse")
+	assert.Equal(t, hyperparametersID, getCheckpointResponse.HyperparametersId, "Incorrect HyperparametersId in GetCheckpointResponse")
+	assert.Equal(t, checkpointID, getCheckpointResponse.CheckpointId, "Incorrect CheckpointId in GetCheckpointResponse")
 }
 
 func sendGetRequest(t *testing.T, url string, status int) string {

@@ -163,6 +163,9 @@ message GetCheckpointResponse {
     string link = 2;
     google.protobuf.Timestamp createdAt = 3;
     map<string, string> info = 4;
+    string modelId = 5;
+    string hyperparametersId = 6;
+    string checkpointId = 7;
 }
 
 service Repository {

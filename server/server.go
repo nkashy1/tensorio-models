@@ -429,10 +429,13 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 		return nil, err
 	}
 	resp := &api.GetCheckpointResponse{
-		ResourcePath: resourcePath,
-		Link:         storedCheckpoint.Link,
-		CreatedAt:    createdAt,
-		Info:         storedCheckpoint.Info,
+		ResourcePath:      resourcePath,
+		Link:              storedCheckpoint.Link,
+		CreatedAt:         createdAt,
+		Info:              storedCheckpoint.Info,
+		ModelId:           modelID,
+		HyperparametersId: hyperparametersID,
+		CheckpointId:      checkpointID,
 	}
 	return resp, nil
 }
