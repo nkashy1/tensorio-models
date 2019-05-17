@@ -47,7 +47,8 @@ func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	mux := runtime.NewServeMux()
+	// Make the JSON output print default values.
+	mux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName: true, EmitDefaults: true}))
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	// Note the *Flea* handler
 	err := api.RegisterFleaHandlerFromEndpoint(ctx, mux, grpcServerAddress, opts)
