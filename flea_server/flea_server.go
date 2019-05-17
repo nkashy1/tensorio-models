@@ -98,6 +98,7 @@ func (srv *flea_server) Config(ctx context.Context, req *api.ConfigRequest) (*ap
 }
 
 func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*api.TaskDetails, error) {
+	log.Println("CreateTask", req)
 	if req.ModelId == "" {
 		return nil, storage.ErrMissingModelId
 	}
@@ -126,6 +127,7 @@ func (srv *flea_server) ModifyTask(ctx context.Context, req *api.ModifyTaskReque
 }
 
 func (srv *flea_server) ListTasks(ctx context.Context, req *api.ListTasksRequest) (*api.ListTasksResponse, error) {
+	log.Println("List tasks:", req)
 	if req.CheckpointId != "" && req.HyperparametersId == "" {
 		return nil, storage.ErrInvalidModelHyperparamsCheckpointCombo
 	}

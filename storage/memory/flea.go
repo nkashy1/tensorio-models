@@ -24,6 +24,7 @@ func NewMemoryFleaStorage(repositoryBaseURL, uploadReqURL string) storage.FleaSt
 		lock:              &sync.RWMutex{},
 		repositoryBaseURL: repositoryBaseURL,
 		uploadReqURL:      uploadReqURL,
+		tasks:             make(map[string]storage.Task),
 	}
 	return store
 }
@@ -46,6 +47,7 @@ func (s *flea) AddTask(ctx context.Context, req api.TaskDetails) error {
 		Active:            req.Active,
 		TaskSpec:          req.TaskSpec,
 		CreatedTime:       time.Now(),
+		Jobs:              make(map[string]storage.Job),
 	}
 	return nil
 }
@@ -78,10 +80,11 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 		resp.MaxItems = req.MaxItems
 	}
 	resp.StartTaskId = req.StartTaskId
+	resp.Tasks = make(map[string]string)
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	for taskId, task := range s.tasks {
-		if !task.Active {
+		if !req.IncludeInactive && !task.Active {
 			continue
 		}
 		if req.StartTaskId != "" && taskId < req.StartTaskId {
@@ -97,7 +100,7 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 			continue
 		}
 		resp.Tasks[taskId] = getCheckpointResourcePath(
-			req.ModelId, req.HyperparametersId, req.CheckpointId)
+			task.ModelId, task.HyperparametersId, task.CheckpointId)
 		if isLimited && (len(resp.Tasks) >= int(req.MaxItems)) {
 			break
 		}
