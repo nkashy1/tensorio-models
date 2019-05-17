@@ -1,0 +1,712 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "repository.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/repository/config": {
+      "get": {
+        "operationId": "Config",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiConfigResponse"
+            }
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/healthz": {
+      "get": {
+        "operationId": "Healthz",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHealthCheckResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/models": {
+      "get": {
+        "operationId": "ListModels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListModelsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "marker",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxItems",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "CreateModel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateModelResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateModelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/models/{modelId}": {
+      "get": {
+        "operationId": "GetModel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetModelResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateModel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUpdateModelResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateModelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/models/{modelId}/hyperparameters": {
+      "get": {
+        "operationId": "ListHyperparameters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListHyperparametersResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "marker",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxItems",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "CreateHyperparameters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateHyperparametersResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateHyperparametersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}": {
+      "get": {
+        "operationId": "GetHyperparameters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetHyperparametersResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "hyperparametersId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateHyperparameters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUpdateHyperparametersResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "hyperparametersId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateHyperparametersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}/checkpoints": {
+      "get": {
+        "operationId": "ListCheckpoints",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListCheckpointsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "hyperparametersId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "marker",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxItems",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "CreateCheckpoint",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateCheckpointResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "hyperparametersId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateCheckpointRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/v1/repository/models/{modelId}/hyperparameters/{hyperparametersId}/checkpoints/{checkpointId}": {
+      "get": {
+        "operationId": "GetCheckpoint",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetCheckpointResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "hyperparametersId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkpointId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repository"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ConfigResponseBackendType": {
+      "type": "string",
+      "enum": [
+        "INVALID",
+        "MEMORY",
+        "GOOGLE_CLOUD_STORAGE"
+      ],
+      "default": "INVALID"
+    },
+    "HealthCheckResponseServingStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SERVING",
+        "NOT_SERVING"
+      ],
+      "default": "UNKNOWN"
+    },
+    "apiConfigResponse": {
+      "type": "object",
+      "properties": {
+        "backendType": {
+          "$ref": "#/definitions/ConfigResponseBackendType"
+        }
+      }
+    },
+    "apiCreateCheckpointRequest": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "checkpointId": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "info": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiCreateCheckpointResponse": {
+      "type": "object",
+      "properties": {
+        "resourcePath": {
+          "type": "string"
+        }
+      }
+    },
+    "apiCreateHyperparametersRequest": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "canonicalCheckpoint": {
+          "type": "string"
+        },
+        "hyperparameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiCreateHyperparametersResponse": {
+      "type": "object",
+      "properties": {
+        "resourcePath": {
+          "type": "string"
+        }
+      }
+    },
+    "apiCreateModelRequest": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/apiModel"
+        }
+      }
+    },
+    "apiCreateModelResponse": {
+      "type": "object",
+      "properties": {
+        "resourcePath": {
+          "type": "string"
+        }
+      }
+    },
+    "apiGetCheckpointResponse": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "checkpointId": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "info": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiGetHyperparametersResponse": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "upgradeTo": {
+          "type": "string"
+        },
+        "canonicalCheckpoint": {
+          "type": "string"
+        },
+        "hyperparameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiGetModelResponse": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "canonicalHyperparameters": {
+          "type": "string"
+        }
+      }
+    },
+    "apiHealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/HealthCheckResponseServingStatus"
+        }
+      }
+    },
+    "apiListCheckpointsResponse": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "checkpointIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiListHyperparametersResponse": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiListModelsResponse": {
+      "type": "object",
+      "properties": {
+        "modelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiModel": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "canonicalHyperparameters": {
+          "type": "string"
+        }
+      }
+    },
+    "apiUpdateHyperparametersRequest": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "upgradeTo": {
+          "type": "string"
+        },
+        "canonicalCheckpoint": {
+          "type": "string"
+        },
+        "hyperparameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiUpdateHyperparametersResponse": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "upgradeTo": {
+          "type": "string"
+        },
+        "canonicalCheckpoint": {
+          "type": "string"
+        },
+        "hyperparameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiUpdateModelRequest": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/definitions/apiModel"
+        }
+      }
+    },
+    "apiUpdateModelResponse": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/apiModel"
+        }
+      }
+    }
+  }
+}
