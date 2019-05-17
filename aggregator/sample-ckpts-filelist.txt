@@ -1,0 +1,2 @@
+gs://doc-ai-models/aggregator-tests/local_update_1
+gs://doc-ai-models/aggregator-tests/local_update_2
