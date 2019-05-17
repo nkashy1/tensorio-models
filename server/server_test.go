@@ -308,8 +308,9 @@ func TestGetModel(t *testing.T) {
 
 	model := api.CreateModelRequest{
 		Model: &api.Model{
-			ModelId: "test-model",
-			Details: "This is a test",
+			ModelId:                  "test-model",
+			Details:                  "This is a test",
+			CanonicalHyperparameters: "NONE",
 		},
 	}
 	ctx := context.Background()
@@ -323,7 +324,9 @@ func TestGetModel(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, model.Model, getModelResponse.Model, "Did not receive the expected model in GetModel response")
+	assert.Equal(t, model.Model.ModelId, getModelResponse.ModelId, "Did not receive the expected ModelId in GetModel response")
+	assert.Equal(t, model.Model.Details, getModelResponse.Details, "Did not receive the expected Details in GetModel response")
+	assert.Equal(t, model.Model.CanonicalHyperparameters, getModelResponse.CanonicalHyperparameters, "Did not receive the expected CanonicalHyperparameters in GetModel response")
 }
 
 // Tests that hyperparameters are correctly created

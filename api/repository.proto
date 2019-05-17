@@ -66,7 +66,9 @@ message GetModelRequest {
 }
 
 message GetModelResponse {
-    Model model = 1;
+    string modelId = 1;
+    string details = 2;
+    string canonicalHyperparameters = 3;
 }
 
 message UpdateModelRequest {
