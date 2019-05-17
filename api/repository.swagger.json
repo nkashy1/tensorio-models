@@ -568,8 +568,14 @@
     "apiGetModelResponse": {
       "type": "object",
       "properties": {
-        "model": {
-          "$ref": "#/definitions/apiModel"
+        "modelId": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "canonicalHyperparameters": {
+          "type": "string"
         }
       }
     },

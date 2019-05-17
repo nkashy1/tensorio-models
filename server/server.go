@@ -161,13 +161,10 @@ func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
-	respModel := api.Model{
+	resp := &api.GetModelResponse{
 		ModelId:                  model.ModelId,
 		Details:                  model.Details,
 		CanonicalHyperparameters: model.CanonicalHyperparameters,
-	}
-	resp := &api.GetModelResponse{
-		Model: &respModel,
 	}
 	return resp, nil
 }
