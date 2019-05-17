@@ -986,9 +986,9 @@ func TestURLEndpoints(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	assert.Equal(t, "{\"backendType\":\"MEMORY\"}", sendGetRequest(t, baseUrl+"config", http.StatusOK))
-	assert.Equal(t, "{}", sendGetRequest(t, baseUrl+"models", http.StatusOK))
+	assert.Equal(t, "{\"modelIds\":[]}", sendGetRequest(t, baseUrl+"models", http.StatusOK))
 	const invModelErr = "\"Could not retrieve model (InvalidModelName) from storage\""
-	assert.Equal(t, "{\"error\":"+invModelErr+",\"message\":"+invModelErr+",\"code\":14}",
+	assert.Equal(t, "{\"error\":"+invModelErr+",\"message\":"+invModelErr+",\"code\":14,\"details\":[]}",
 		sendGetRequest(t, baseUrl+"models/InvalidModelName", http.StatusServiceUnavailable))
 	// Seems that these requests ignore canonicalHyperparameters or any other extra tags.
 	assert.Equal(t, "{\"resourcePath\":\"/models/MyModel\"}",

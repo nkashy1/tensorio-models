@@ -113,65 +113,8 @@
         ]
       }
     },
-    "/v1/flea/tasks": {
+    "/v1/flea/start_task/{taskId}": {
       "get": {
-        "operationId": "ListTasks",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiListTasksResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "modelId",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "hyperparametersId",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "checkpointId",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "startTaskId",
-            "description": "Tasks are returned lexicographically sorted by taskId\nIf specified only taskIds \u003e= startTaskId will be returned.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "maxItems",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "activeOnly",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          }
-        ],
-        "tags": [
-          "Flea"
-        ]
-      }
-    },
-    "/v1/start_task/{taskId}": {
-      "post": {
         "operationId": "StartTask",
         "responses": {
           "200": {
@@ -187,14 +130,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apiStartTaskRequest"
-            }
           }
         ],
         "tags": [
@@ -202,7 +137,7 @@
         ]
       }
     },
-    "/v1/task/{taskId}": {
+    "/v1/flea/task/{taskId}": {
       "get": {
         "operationId": "GetTask",
         "responses": {
@@ -219,6 +154,32 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "Flea"
+        ]
+      }
+    },
+    "/v1/flea/tasks": {
+      "post": {
+        "operationId": "ListTasks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListTasksResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiListTasksRequest"
+            }
           }
         ],
         "tags": [
@@ -271,6 +232,32 @@
         }
       }
     },
+    "apiListTasksRequest": {
+      "type": "object",
+      "properties": {
+        "modelId": {
+          "type": "string"
+        },
+        "hyperparametersId": {
+          "type": "string"
+        },
+        "checkpointId": {
+          "type": "string"
+        },
+        "startTaskId": {
+          "type": "string",
+          "description": "Tasks are returned lexicographically sorted by taskId\nIf specified only taskIds \u003e= startTaskId will be returned."
+        },
+        "maxItems": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "includeInactive": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "apiListTasksResponse": {
       "type": "object",
       "properties": {
@@ -306,14 +293,6 @@
         "active": {
           "type": "boolean",
           "format": "boolean"
-        }
-      }
-    },
-    "apiStartTaskRequest": {
-      "type": "object",
-      "properties": {
-        "taskId": {
-          "type": "string"
         }
       }
     },

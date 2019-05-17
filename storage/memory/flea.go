@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -24,6 +25,7 @@ func NewMemoryFleaStorage(repositoryBaseURL, uploadReqURL string) storage.FleaSt
 		lock:              &sync.RWMutex{},
 		repositoryBaseURL: repositoryBaseURL,
 		uploadReqURL:      uploadReqURL,
+		tasks:             make(map[string]storage.Task),
 	}
 	return store
 }
@@ -46,6 +48,7 @@ func (s *flea) AddTask(ctx context.Context, req api.TaskDetails) error {
 		Active:            req.Active,
 		TaskSpec:          req.TaskSpec,
 		CreatedTime:       time.Now(),
+		Jobs:              make(map[string]storage.Job),
 	}
 	return nil
 }
@@ -78,10 +81,12 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 		resp.MaxItems = req.MaxItems
 	}
 	resp.StartTaskId = req.StartTaskId
+	resp.Tasks = make(map[string]string)
 	s.lock.RLock()
 	defer s.lock.RUnlock()
+	var taskIds []string
 	for taskId, task := range s.tasks {
-		if !task.Active {
+		if !req.IncludeInactive && !task.Active {
 			continue
 		}
 		if req.StartTaskId != "" && taskId < req.StartTaskId {
@@ -96,12 +101,18 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 		if task.CheckpointId != req.CheckpointId && req.CheckpointId != "" {
 			continue
 		}
-		resp.Tasks[taskId] = getCheckpointResourcePath(
-			req.ModelId, req.HyperparametersId, req.CheckpointId)
-		if isLimited && (len(resp.Tasks) >= int(req.MaxItems)) {
-			break
-		}
+		taskIds = append(taskIds, taskId)
 	}
+	sort.Strings(taskIds)
+	if isLimited && (len(taskIds) >= int(req.MaxItems)) {
+		taskIds = taskIds[:req.MaxItems]
+	}
+	for _, taskId := range taskIds {
+		task, _ := s.tasks[taskId]
+		resp.Tasks[taskId] = getCheckpointResourcePath(
+			task.ModelId, task.HyperparametersId, task.CheckpointId)
+	}
+
 	resp.RepositoryBaseUrl = s.repositoryBaseURL
 	return resp, nil
 }
