@@ -74,7 +74,7 @@ func StartGrpcAndProxyServer(storage storage.FleaStorage,
 }
 
 func (srv *flea_server) Healthz(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
-	log.Println(req)
+	log.Println("Health Request")
 	resp := &api.HealthCheckResponse{
 		Status: api.HealthCheckResponse_SERVING,
 	}
@@ -82,7 +82,7 @@ func (srv *flea_server) Healthz(ctx context.Context, req *api.HealthCheckRequest
 }
 
 func (srv *flea_server) Config(ctx context.Context, req *api.ConfigRequest) (*api.ConfigResponse, error) {
-	log.Println(req)
+	log.Println("Config Request")
 	storageType := srv.storage.GetStorageType()
 	storageTypeEnum := api.ConfigResponse_INVALID
 	switch storageType {
@@ -98,7 +98,7 @@ func (srv *flea_server) Config(ctx context.Context, req *api.ConfigRequest) (*ap
 }
 
 func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*api.TaskDetails, error) {
-	log.Println("CreateTask", req)
+	log.Println("CreateTask:", req)
 	if req.ModelId == "" {
 		return nil, storage.ErrMissingModelId
 	}

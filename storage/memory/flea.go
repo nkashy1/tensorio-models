@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -83,6 +84,7 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 	resp.Tasks = make(map[string]string)
 	s.lock.RLock()
 	defer s.lock.RUnlock()
+	var taskIds []string
 	for taskId, task := range s.tasks {
 		if !req.IncludeInactive && !task.Active {
 			continue
@@ -99,12 +101,18 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 		if task.CheckpointId != req.CheckpointId && req.CheckpointId != "" {
 			continue
 		}
+		taskIds = append(taskIds, taskId)
+	}
+	sort.Strings(taskIds)
+	if isLimited && (len(taskIds) >= int(req.MaxItems)) {
+		taskIds = taskIds[:req.MaxItems]
+	}
+	for _, taskId := range taskIds {
+		task, _ := s.tasks[taskId]
 		resp.Tasks[taskId] = getCheckpointResourcePath(
 			task.ModelId, task.HyperparametersId, task.CheckpointId)
-		if isLimited && (len(resp.Tasks) >= int(req.MaxItems)) {
-			break
-		}
 	}
+
 	resp.RepositoryBaseUrl = s.repositoryBaseURL
 	return resp, nil
 }

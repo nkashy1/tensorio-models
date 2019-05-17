@@ -105,8 +105,7 @@ service Flea {
     };
     rpc StartTask (StartTaskRequest) returns (StartTaskResponse) {
         option (google.api.http) = {
-            post: "/v1/flea/start_task/{taskId}"
-	        body: "*"
+            get: "/v1/flea/start_task/{taskId}"
         };
     };
 }

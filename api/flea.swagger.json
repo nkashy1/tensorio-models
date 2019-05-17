@@ -114,7 +114,7 @@
       }
     },
     "/v1/flea/start_task/{taskId}": {
-      "post": {
+      "get": {
         "operationId": "StartTask",
         "responses": {
           "200": {
@@ -130,14 +130,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apiStartTaskRequest"
-            }
           }
         ],
         "tags": [
@@ -301,14 +293,6 @@
         "active": {
           "type": "boolean",
           "format": "boolean"
-        }
-      }
-    },
-    "apiStartTaskRequest": {
-      "type": "object",
-      "properties": {
-        "taskId": {
-          "type": "string"
         }
       }
     },
