@@ -20,11 +20,11 @@ type flea struct {
 }
 
 // NewMemoryFleaStorage - returns in-memory implementation of FleaStorage interface.
-func NewMemoryFleaStorage(repositoryBaseURL, uploadReqURL string) storage.FleaStorage {
+func NewMemoryFleaStorage(repositoryBaseURL string) storage.FleaStorage {
 	store := &flea{
 		lock:              &sync.RWMutex{},
 		repositoryBaseURL: repositoryBaseURL,
-		uploadReqURL:      uploadReqURL,
+		uploadReqURL:      "gs://example-repo/", // Stub in this implementation.
 		tasks:             make(map[string]storage.Task),
 	}
 	return store
@@ -138,7 +138,7 @@ func (s *flea) StartTask(ctx context.Context, taskId string) (api.StartTaskRespo
 		return api.StartTaskResponse{}, storage.ErrMissingTaskId
 	}
 	jobId := uuid.New().String()
-	uploadTo := "http://example.com/" + jobId // Stub it for now.
+	uploadTo := s.uploadReqURL + jobId // Stub it for now.
 	resp := api.StartTaskResponse{
 		Status:   api.StartTaskResponse_APPROVED,
 		JobId:    jobId,

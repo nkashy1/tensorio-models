@@ -42,6 +42,7 @@ func startGrpcServer(apiServer api.FleaServer, serverAddress string) {
 	}
 	log.Println("over")
 }
+
 func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	log.Println("Starting json-rpc on:", jsonServerAddress)
 
@@ -133,6 +134,7 @@ func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*
 }
 
 func (srv *flea_server) ModifyTask(ctx context.Context, req *api.ModifyTaskRequest) (*api.TaskDetails, error) {
+	log.Println("ModifyTask:", req)
 	err := srv.storage.ModifyTask(ctx, *req)
 	if err != nil {
 		return nil, err
