@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/common"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/doc-ai/tensorio-models/storage/gcs"
 	"github.com/doc-ai/tensorio-models/storage/memory"
@@ -103,14 +104,26 @@ func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*
 	if req.ModelId == "" {
 		return nil, storage.ErrMissingModelId
 	}
+	if !common.IsValidID(req.ModelId) {
+		return nil, storage.ErrInvalidModelId
+	}
 	if req.HyperparametersId == "" {
 		return nil, storage.ErrMissingHyperparametersId
+	}
+	if !common.IsValidID(req.HyperparametersId) {
+		return nil, storage.ErrInvalidHyperparametersId
 	}
 	if req.CheckpointId == "" {
 		return nil, storage.ErrMissingCheckpointId
 	}
+	if !common.IsValidID(req.CheckpointId) {
+		return nil, storage.ErrInvalidCheckpointId
+	}
 	if req.TaskId == "" {
 		return nil, storage.ErrMissingTaskId
+	}
+	if !common.IsValidID(req.TaskId) {
+		return nil, storage.ErrInvalidTaskId
 	}
 	err := srv.storage.AddTask(ctx, *req)
 	if err != nil {
