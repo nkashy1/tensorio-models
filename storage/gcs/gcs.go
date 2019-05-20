@@ -3,9 +3,11 @@ package gcs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	gcs "cloud.google.com/go/storage"
@@ -22,6 +24,25 @@ type gcsStorage struct {
 	bucket *gcs.BucketHandle
 }
 
+// GenerateNewGCSStorageFromEnv - Uses the GOOGLE_APPLICATION_CREDENTIALS and REPOSITORY_GCS_BUCKET
+// environment variables to instantiate a GCS Storage backend for tensorio-models repository
+func GenerateNewGCSStorageFromEnv() storage.RepositoryStorage {
+	bucketName := os.Getenv("REPOSITORY_GCS_BUCKET")
+	if bucketName == "" {
+		err := errors.New("REPOSITORY_GCS_BUCKET environment variable not defined")
+		panic(err)
+	}
+
+	ctx := context.Background()
+	gcsClient, err := gcs.NewClient(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return NewGCSStorage(gcsClient, bucketName)
+}
+
+// NewGCSStorage - Creates a GCS-backed instance of storage.RepositoryStorage interface
 func NewGCSStorage(client *gcs.Client, bucketName string) storage.RepositoryStorage {
 	res := &gcsStorage{}
 	res.client = client

@@ -7,6 +7,7 @@ import (
 
 	"github.com/doc-ai/tensorio-models/server"
 	"github.com/doc-ai/tensorio-models/storage"
+	"github.com/doc-ai/tensorio-models/storage/gcs"
 	"github.com/doc-ai/tensorio-models/storage/memory"
 	log "github.com/sirupsen/logrus"
 )
@@ -16,6 +17,7 @@ func main() {
 	// Backend specification
 	Backends := map[string]func() storage.RepositoryStorage{
 		"memory": memory.NewMemoryRepositoryStorage,
+		"gcs":    gcs.GenerateNewGCSStorageFromEnv,
 	}
 	BackendKeys := make([]string, len(Backends))
 	i := 0

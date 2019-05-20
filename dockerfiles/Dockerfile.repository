@@ -29,8 +29,14 @@ ADD [".", "/root/tensorio-models"]
 RUN make
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-extldflags "-static"' -o /go/bin/repository ./cmd/repository
 
+
+FROM alpine as certs
+RUN apk update && apk add ca-certificates
+
+
 FROM busybox as runtime
 COPY --from=build /go/bin/repository /bin/repository
+COPY --from=certs /etc/ssl/certs /etc/ssl/certs
 EXPOSE 8080/tcp
 EXPOSE 8081/tcp
 ENTRYPOINT ["/bin/repository"]
