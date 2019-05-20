@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/common"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/doc-ai/tensorio-models/storage/gcs"
 	"github.com/doc-ai/tensorio-models/storage/memory"
@@ -28,34 +28,6 @@ type server struct {
 // storage.RepositoryStorage backend
 func NewServer(storage storage.RepositoryStorage) api.RepositoryServer {
 	return &server{storage: storage}
-}
-
-// IsValidIDChar - returns whether c is a valid character - alphanumeric, _ and -
-func IsValidIDChar(c byte) bool {
-	if (c >= 'A') && (c <= 'Z') {
-		return true
-	}
-	if (c >= 'a') && (c <= 'z') {
-		return true
-	}
-	if (c >= '0') && (c <= '9') {
-		return true
-	}
-	if (c == '-') || (c == '_') {
-		return true
-	}
-	return false
-}
-
-// IsValidID - returns whether s is non-empty string of valid characters
-func IsValidID(s string) bool {
-	l := len(s)
-	for i := 0; i < l; i++ {
-		if !IsValidIDChar(s[i]) {
-			return false
-		}
-	}
-	return s != ""
 }
 
 func startGrpcServer(apiServer api.RepositoryServer, serverAddress string) {
@@ -174,7 +146,7 @@ func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest)
 	model := req.Model
 	log.Printf("CreateModel request - Model: %v", model)
 	// Check that ModelId is a non-empty string
-	if !IsValidID(model.ModelId) {
+	if !common.IsValidID(model.ModelId) {
 		grpcErr := status.Error(codes.InvalidArgument, "ModelId was invalid")
 		return nil, grpcErr
 	}
@@ -262,7 +234,7 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 	}
 	hyperparametersIDs := make([]string, len(hyperparametersStoragePaths))
 	for i, path := range hyperparametersStoragePaths {
-		hyperparametersIDs[i] = getTerminalResourceFromStoragePath(path)
+		hyperparametersIDs[i] = common.GetTerminalResourceFromStoragePath(path)
 	}
 	resp := &api.ListHyperparametersResponse{
 		ModelId:            modelID,
@@ -275,11 +247,11 @@ func (srv *server) CreateHyperparameters(ctx context.Context, req *api.CreateHyp
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	// Check that ModelId and HyperparametersId in request are valid IDs.
-	if !IsValidID(modelID) {
+	if !common.IsValidID(modelID) {
 		grpcErr := status.Error(codes.InvalidArgument, "modelID is invalid")
 		return nil, grpcErr
 	}
-	if !IsValidID(hyperparametersID) {
+	if !common.IsValidID(hyperparametersID) {
 		grpcErr := status.Error(codes.InvalidArgument, "hyperparametersID is invalid")
 		return nil, grpcErr
 	}
@@ -389,7 +361,7 @@ func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpoints
 	}
 	checkpointIDs := make([]string, len(checkpointStoragePaths))
 	for i, path := range checkpointStoragePaths {
-		checkpointIDs[i] = getTerminalResourceFromStoragePath(path)
+		checkpointIDs[i] = common.GetTerminalResourceFromStoragePath(path)
 	}
 	resp := &api.ListCheckpointsResponse{
 		ModelId:           modelID,
@@ -403,7 +375,7 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	checkpointID := req.CheckpointId
-	if !IsValidID(checkpointID) {
+	if !common.IsValidID(checkpointID) {
 		grpcErr := status.Error(codes.InvalidArgument, "checkpointId is invalid")
 		return nil, grpcErr
 	}
@@ -425,7 +397,7 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 		grpcErr := status.Error(codes.Unavailable, message)
 		return nil, grpcErr
 	}
-	resourcePath := getCheckpointResourcePath(modelID, hyperparametersID, checkpointID)
+	resourcePath := common.GetCheckpointResourcePath(modelID, hyperparametersID, checkpointID)
 	resp := &api.CreateCheckpointResponse{
 		ResourcePath: resourcePath,
 	}
@@ -458,20 +430,4 @@ func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequ
 		CheckpointId:      checkpointID,
 	}
 	return resp, nil
-}
-
-func getCheckpointResourcePath(modelID, hyperparametersID, checkpointID string) string {
-	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperparametersID, checkpointID)
-	return resourcePath
-}
-
-// RepositoryStorage implementations return resources in the form:
-// <modelId>, <modelId>:<hyperparametersId>, <modelId>:<hyperparametersId>:<checkpointId>
-// This function takes input in those formats and returns (respectively):
-// <modelId>, <hyperparametersId>, <checkpointId>
-func getTerminalResourceFromStoragePath(storagePath string) string {
-	storageDelimiter := ":"
-	components := strings.Split(storagePath, storageDelimiter)
-	terminalComponent := components[len(components)-1]
-	return terminalComponent
 }
