@@ -60,7 +60,7 @@ func (store gcsStorage) GetStorageType() string {
 func (store gcsStorage) ListModels(ctx context.Context, marker string, maxItems int) ([]string, error) {
 	query := &gcs.Query{
 		Delimiter: "/",
-		Prefix:    "",
+		Prefix:    "models/",
 		Versions:  false,
 	}
 	iter := store.bucket.Objects(ctx, query)
@@ -162,7 +162,7 @@ func (store gcsStorage) ListHyperparameters(ctx context.Context, modelId, marker
 
 	query := &gcs.Query{
 		Delimiter: "/",
-		Prefix:    fmt.Sprintf("%s/hyperparameters/", modelId),
+		Prefix:    fmt.Sprintf("models/%s/hyperparameters/", modelId),
 		Versions:  false,
 	}
 	iter := store.bucket.Objects(ctx, query)
@@ -290,7 +290,7 @@ func (store gcsStorage) ListCheckpoints(ctx context.Context, modelId, hyperparam
 
 	query := &gcs.Query{
 		Delimiter: "/",
-		Prefix:    fmt.Sprintf("%s/hyperparameters/%s/checkpoints/", modelId, hyperparametersId),
+		Prefix:    fmt.Sprintf("models/%s/hyperparameters/%s/checkpoints/", modelId, hyperparametersId),
 		Versions:  false,
 	}
 	iter := store.bucket.Objects(ctx, query)

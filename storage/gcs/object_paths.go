@@ -6,17 +6,17 @@ import (
 )
 
 func objModelPath(modelId string) string {
-	objLoc := fmt.Sprintf("%s/model.json", modelId)
+	objLoc := fmt.Sprintf("models/%s/model.json", modelId)
 	return objLoc
 }
 
 func objHyperparametersPath(modelId string, hyperparametersId string) string {
-	objLoc := fmt.Sprintf("%s/hyperparameters/%s/params.json", modelId, hyperparametersId)
+	objLoc := fmt.Sprintf("models/%s/hyperparameters/%s/params.json", modelId, hyperparametersId)
 	return objLoc
 }
 
 func objCheckpointPath(modelId string, hyperparametersId string, checkpointId string) string {
-	objLoc := fmt.Sprintf("%s/hyperparameters/%s/checkpoints/%s/checkpoint.json", modelId, hyperparametersId, checkpointId)
+	objLoc := fmt.Sprintf("models/%s/hyperparameters/%s/checkpoints/%s/checkpoint.json", modelId, hyperparametersId, checkpointId)
 	return objLoc
 }
 

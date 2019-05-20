@@ -2,19 +2,25 @@ package gcs
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"os"
 
 	gcs "cloud.google.com/go/storage"
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/common"
 	"github.com/doc-ai/tensorio-models/storage"
+	"github.com/google/uuid"
+	"google.golang.org/api/iterator"
 )
 
 type flea struct {
-	client            *gcs.Client
-	bucket            *gcs.BucketHandle
-	repositoryBaseURL string
-	bucketName        string
+	client             *gcs.Client
+	bucket             *gcs.BucketHandle
+	repositoryBaseURL  string
+	uploadToBucketName string
 }
 
 // GenerateNewFleaGCSStorageFromEnv - Uses the GOOGLE_APPLICATION_CREDENTIALS and FLEA_GCS_BUCKET
@@ -26,6 +32,12 @@ func GenerateNewFleaGCSStorageFromEnv(repositoryBaseURL string) storage.FleaStor
 		panic(err)
 	}
 
+	uploadBucketName := os.Getenv("FLEA_UPLOAD_GCS_BUCKET")
+	if uploadBucketName == "" {
+		err := errors.New("FLEA_UPLOAD_GCS_BUCKET environment variable not set")
+		panic(err)
+	}
+
 	ctx := context.Background()
 	gcsClient, err := gcs.NewClient(ctx)
 	if err != nil {
@@ -33,374 +45,95 @@ func GenerateNewFleaGCSStorageFromEnv(repositoryBaseURL string) storage.FleaStor
 	}
 	bucket := gcsClient.Bucket(bucketName)
 
-	return &flea{client: gcsClient, bucket: bucket, repositoryBaseURL: repositoryBaseURL, bucketName: bucketName}
+	return &flea{client: gcsClient,
+		bucket:             bucket,
+		repositoryBaseURL:  repositoryBaseURL,
+		uploadToBucketName: uploadBucketName}
 }
 
 func (store flea) GetStorageType() string {
 	return "GCS"
 }
 
+func objTaskPath(taskId string) string {
+	return "/tasks/" + taskId + "/task.json"
+}
+
+func (store flea) GetUploadToURL(taskId, jobId string) string {
+	return fmt.Sprintf("gs://%s/tasksJobs/%s/%s.zip", store.uploadToBucketName, taskId, jobId)
+}
+
 func (store flea) AddTask(ctx context.Context, req api.TaskDetails) error {
-	return nil
-}
-func (store flea) ModifyTask(ctx context.Context, req api.ModifyTaskRequest) error {
-	return nil
-}
-
-func (store flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (resp api.ListTasksResponse, e error) {
-	return api.ListTasksResponse{}, nil
-}
-
-func (store flea) GetTask(ctx context.Context, taskId string) (api.TaskDetails, error) {
-	return api.TaskDetails{}, nil
-}
-
-func (store flea) StartTask(ctx context.Context, taskId string) (api.StartTaskResponse, error) {
-	return api.StartTaskResponse{}, nil
-}
-
-/*
-
-func (store flea) ListTasks(ctx context.Context, marker string, maxItems int) ([]string, error) {
-	query := &gcs.Query{
-		Delimiter: "/",
-		Prefix:    "",
-		Versions:  false,
-	}
-	iter := store.bucket.Objects(ctx, query)
-
-	res, err := listObjects(maxItems, iter, marker)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (store flea) GetTask(ctx context.Context, TaskId string) (storage.Model, error) {
-	objLoc := objModelPath(modelId)
-	object := store.bucket.Object(objLoc)
-	reader, err := object.NewReader(ctx)
-	if err != nil {
-		return storage.Model{}, err
-	}
-
-	// TODO this is dangerous, we should change this eventually to read a limited amount of data
-	bytes, err := ioutil.ReadAll(reader)
-	if err != nil {
-		if err == gcs.ErrObjectNotExist {
-			return storage.Model{}, storage.ModelDoesNotExistError
-		}
-		return storage.Model{}, err
-	}
-
-	model := storage.Model{}
-
-	err = json.Unmarshal(bytes, &model)
-	if err != nil {
-		return storage.Model{}, err
-	}
-
-	return model, nil
-}
-
-func (store gcsStorage) AddModel(ctx context.Context, model storage.Model) error {
-	objLoc := objModelPath(model.ModelId)
+	objLoc := objTaskPath(req.TaskId)
 	object := store.bucket.Object(objLoc)
 
 	_, err := object.Attrs(ctx)
 	if err != gcs.ErrObjectNotExist {
 		if err == nil {
-			return storage.ModelExistsError
+			return storage.ErrDuplicateTaskId
 		}
 		return err
 	}
 
 	writer := object.NewWriter(ctx)
-	bytes, err := json.Marshal(model)
-
-	err = writeObject(ctx, writer, bytes)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	bytes, err := json.Marshal(req)
+	return writeObject(ctx, writer, bytes)
 }
 
-func (store gcsStorage) UpdateModel(ctx context.Context, model storage.Model) (storage.Model, error) {
-	objLoc := objModelPath(model.ModelId)
-	object := store.bucket.Object(objLoc)
-
-	storedModel, err := store.GetModel(ctx, model.ModelId)
-	if err != nil {
-		return storage.Model{}, err
-	}
-
-	if strings.TrimSpace(model.CanonicalHyperparameters) != "" {
-		storedModel.CanonicalHyperparameters = model.CanonicalHyperparameters
-	}
-	if strings.TrimSpace(model.Details) != "" {
-		storedModel.Details = model.Details
-	}
-
-	bytes, err := json.Marshal(storedModel)
-	if err != nil {
-		return storage.Model{}, err
-	}
-
-	writer := object.NewWriter(ctx)
-
-	err = writeObject(ctx, writer, bytes)
-	if err != nil {
-		return storage.Model{}, err
-	}
-
-	return storedModel, nil
-}
-
-func (store gcsStorage) ListHyperparameters(ctx context.Context, modelId, marker string, maxItems int) ([]string, error) {
-	_, err := store.GetModel(ctx, modelId)
-	if err != nil {
-		return nil, err
-	}
-
-	query := &gcs.Query{
-		Delimiter: "/",
-		Prefix:    fmt.Sprintf("%s/hyperparameters/", modelId),
-		Versions:  false,
-	}
-	iter := store.bucket.Objects(ctx, query)
-
-	res, err := listObjects(maxItems, iter, marker)
-
-	for i, name := range res {
-		res[i] = fmt.Sprintf("%s:%s", modelId, name)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (store gcsStorage) GetHyperparameters(ctx context.Context, modelId string, hyperparametersId string) (storage.Hyperparameters, error) {
-	objLoc := objHyperparametersPath(modelId, hyperparametersId)
-	object := store.bucket.Object(objLoc)
-
-	_, err := store.GetModel(ctx, modelId)
-	if err != nil {
-		return storage.Hyperparameters{}, err
-	}
-	reader, err := object.NewReader(ctx)
-	if err != nil {
-		if err == gcs.ErrObjectNotExist {
-			return storage.Hyperparameters{}, storage.HyperparametersDoesNotExistError
-		}
-		return storage.Hyperparameters{}, err
-	}
-
-	// TODO this is dangerous, we should change this eventually to read a limited amount of data
-	bytes, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return storage.Hyperparameters{}, err
-	}
-
-	hyperparameters := storage.Hyperparameters{}
-
-	err = json.Unmarshal(bytes, &hyperparameters)
-	if err != nil {
-		return storage.Hyperparameters{}, err
-	}
-
-	return hyperparameters, nil
-}
-
-func (store gcsStorage) AddHyperparameters(ctx context.Context, hyperparameters storage.Hyperparameters) error {
-	objLoc := objHyperparametersPath(hyperparameters.ModelId, hyperparameters.HyperparametersId)
-	object := store.bucket.Object(objLoc)
-
-	_, err := store.GetModel(ctx, hyperparameters.ModelId)
-	if err != nil {
-		return err
-	}
-
-	_, err = object.Attrs(ctx)
-	if err != gcs.ErrObjectNotExist {
-		if err == nil {
-			return storage.ModelExistsError
-		}
-		return err
-	}
-
-	writer := object.NewWriter(ctx)
-	bytes, err := json.Marshal(hyperparameters)
-
-	err = writeObject(ctx, writer, bytes)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (store gcsStorage) UpdateHyperparameters(ctx context.Context, hyperparameters storage.Hyperparameters) (storage.Hyperparameters, error) {
-	objLoc := objHyperparametersPath(hyperparameters.ModelId, hyperparameters.HyperparametersId)
-	object := store.bucket.Object(objLoc)
-
-	storedHyperparameters, err := store.GetHyperparameters(ctx, hyperparameters.ModelId, hyperparameters.HyperparametersId)
-	if err != nil {
-		return storage.Hyperparameters{}, err
-	}
-
-	if strings.TrimSpace(hyperparameters.CanonicalCheckpoint) != "" {
-		storedHyperparameters.CanonicalCheckpoint = hyperparameters.CanonicalCheckpoint
-	}
-	if strings.TrimSpace(hyperparameters.UpgradeTo) != "" {
-		storedHyperparameters.UpgradeTo = hyperparameters.UpgradeTo
-	}
-
-	if hyperparameters.Hyperparameters != nil {
-		for k, v := range hyperparameters.Hyperparameters {
-			storedHyperparameters.Hyperparameters[k] = v
-		}
-	}
-
-	bytes, err := json.Marshal(storedHyperparameters)
-	if err != nil {
-		return storage.Hyperparameters{}, err
-	}
-
-	writer := object.NewWriter(ctx)
-
-	err = writeObject(ctx, writer, bytes)
-	if err != nil {
-		return storage.Hyperparameters{}, err
-	}
-
-	return storedHyperparameters, nil
-}
-
-func (store gcsStorage) ListCheckpoints(ctx context.Context, modelId, hyperparametersId, marker string, maxItems int) ([]string, error) {
-	_, err := store.GetModel(ctx, modelId)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = store.GetHyperparameters(ctx, modelId, hyperparametersId)
-	if err != nil {
-		return nil, err
-	}
-
-	query := &gcs.Query{
-		Delimiter: "/",
-		Prefix:    fmt.Sprintf("%s/hyperparameters/%s/checkpoints/", modelId, hyperparametersId),
-		Versions:  false,
-	}
-	iter := store.bucket.Objects(ctx, query)
-
-	res, err := listObjects(maxItems, iter, marker)
-
-	for i, name := range res {
-		res[i] = fmt.Sprintf("%s:%s:%s", modelId, hyperparametersId, name)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (store gcsStorage) GetCheckpoint(ctx context.Context, modelId, hyperparametersId, checkpointId string) (storage.Checkpoint, error) {
-	objLoc := objCheckpointPath(modelId, hyperparametersId, checkpointId)
-
-	_, err := store.GetModel(ctx, modelId)
-	if err != nil {
-		return storage.Checkpoint{}, err
-	}
+func (store flea) GetTask(ctx context.Context, taskId string) (api.TaskDetails, error) {
+	task := api.TaskDetails{}
+	objLoc := objTaskPath(taskId)
 	object := store.bucket.Object(objLoc)
 	reader, err := object.NewReader(ctx)
 	if err != nil {
-		if err == gcs.ErrObjectNotExist {
-			return storage.Checkpoint{}, storage.CheckpointDoesNotExistError
-		}
-		return storage.Checkpoint{}, err
+		return task, storage.ErrMissingTaskId
 	}
 
-	// TODO this is dangerous, we should change this eventually to read a limited amount of data
 	bytes, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return storage.Checkpoint{}, err
+		return task, err
 	}
-
-	checkpoint := storage.Checkpoint{}
-
-	err = json.Unmarshal(bytes, &checkpoint)
-	if err != nil {
-		return storage.Checkpoint{}, err
-	}
-
-	return checkpoint, nil
-
+	err = json.Unmarshal(bytes, &task)
+	return task, err
 }
 
-func (store gcsStorage) AddCheckpoint(ctx context.Context, checkpoint storage.Checkpoint) error {
-	objLoc := objCheckpointPath(checkpoint.ModelId, checkpoint.HyperparametersId, checkpoint.CheckpointId)
+func (store flea) ModifyTask(ctx context.Context, req api.ModifyTaskRequest) error {
+	task, err := store.GetTask(ctx, req.TaskId)
+	if err != nil {
+		return err
+	}
+	task.Deadline = req.Deadline
+	task.Active = req.Active
+
+	objLoc := objTaskPath(req.TaskId)
 	object := store.bucket.Object(objLoc)
-
-	_, err := store.GetModel(ctx, checkpoint.ModelId)
-	if err != nil {
-		return err
-	}
-
-	_, err = store.GetHyperparameters(ctx, checkpoint.ModelId, checkpoint.HyperparametersId)
-	if err != nil {
-		return err
-	}
-
-	_, err = object.Attrs(ctx)
-	if err != gcs.ErrObjectNotExist {
-		if err == nil {
-			return storage.ModelExistsError
-		}
-		return err
-	}
-
 	writer := object.NewWriter(ctx)
-	bytes, err := json.Marshal(checkpoint)
+	bytes, err := json.Marshal(task)
+	return writeObject(ctx, writer, bytes)
+}
 
-	err = writeObject(ctx, writer, bytes)
+func (store flea) StartTask(ctx context.Context, taskId string) (api.StartTaskResponse, error) {
+	resp := api.StartTaskResponse{}
+	_, err := store.GetTask(ctx, taskId)
 	if err != nil {
-		return err
+		return resp, err
 	}
-
-	return nil
+	resp.JobId = uuid.New().String()
+	resp.UploadTo = store.GetUploadToURL(taskId, resp.JobId)
+	resp.Status = api.StartTaskResponse_APPROVED
+	return resp, nil
 }
 
-func writeObject(ctx context.Context, writer io.WriteCloser, bytes []byte) error {
-
-	written := 0
-	for written < len(bytes) {
-		n, err := writer.Write(bytes[written:])
-		written += n
-		if err != nil {
-			if ctx.Err() != nil {
-				return ctx.Err()
-			}
-		}
+func (store flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.ListTasksResponse, error) {
+	resp := api.ListTasksResponse{}
+	query := &gcs.Query{
+		Delimiter: "/",
+		Prefix:    "tasks/",
+		Versions:  false,
 	}
-
-	if err := writer.Close(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func listObjects(maxItems int, iter *gcs.ObjectIterator, marker string) ([]string, error) {
-	res := make([]string, 0)
+	iter := store.bucket.Objects(ctx, query)
 	for {
-		if len(res) == maxItems {
+		if req.MaxItems > 0 && len(resp.Tasks) == int(req.MaxItems) {
 			break
 		}
 		obj, err := iter.Next()
@@ -408,18 +141,25 @@ func listObjects(maxItems int, iter *gcs.ObjectIterator, marker string) ([]strin
 			if err == iterator.Done {
 				break
 			}
-			return nil, err
+			return resp, err
 		}
 
-		name := extractObjectName(obj.Prefix)
+		taskId := extractObjectName(obj.Prefix)
 
-		if name <= marker {
+		if req.StartTaskId != "" && taskId < req.StartTaskId {
 			continue
 		}
 
-		res = append(res, name)
+		task, err := store.GetTask(ctx, taskId)
+		if err != nil {
+			return resp, errors.New("Could not get task: " + taskId)
+		}
+		resp.Tasks[taskId] =
+			common.GetCheckpointResourcePath(
+				task.ModelId, task.HyperparametersId, task.CheckpointId)
 	}
-	return res, nil
+	resp.StartTaskId = req.StartTaskId
+	resp.MaxItems = req.MaxItems
+	resp.RepositoryBaseUrl = store.repositoryBaseURL
+	return resp, nil
 }
-
-*/
