@@ -41,12 +41,12 @@ func main() {
 	}
 	/* END cli */
 
-	modelsHostname := os.Getenv("MODELS_HOSTNAME")
-	if modelsHostname == "" {
-		err := errors.New("MODELS_HOSTNAME not set")
+	modelsURI := os.Getenv("MODELS_URI")
+	if modelsURI == "" {
+		err := errors.New("MODELS_URI not set")
 		panic(err)
 	}
-	fleaBackend := backend("http://" + modelsHostname + ":8081/v1/repository")
+	fleaBackend := backend(modelsURI)
 	const grpcAddress = ":8082"
 	const jsonRpcAddress = ":8083"
 	flea_server.StartGrpcAndProxyServer(fleaBackend,

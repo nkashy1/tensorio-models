@@ -37,14 +37,52 @@ arguments.
 
 
 ### Running server against GCS for testing:
-gcloud config configurations activate neuron-dev
+
+First, make sure you have service account credentials available locally for a service account that
+has access to the GCS bucket(s) you would like to use in your tests. Then, expose the JSON file
+containing those service account credentials in your shells as follows:
+```
 export GOOGLE_APPLICATION_CREDENTIALS=$HOME/secrets/<creds-file>.json
+```
+
+Run the tensorio-models backend:
 ```
 make docker-models
 
-docker run -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json -e REPOSITORY_GCS_BUCKET=tensorio-models-backend-dev -p 8080:8080 -p 8081:8081 docai/tensorio-models -backend gcs
+docker run \
+    -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json \
+    -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json \
+    -e REPOSITORY_GCS_BUCKET=tensorio-models-backend-dev \
+    -p 8080:8080 \
+    -p 8081:8081 \
+    docai/tensorio-models \
+    -backend gcs
+```
 
+Run the flea backend:
+```
 make docker-flea
 
-docker run -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json -e FLEA_GCS_BUCKET=tensorio-models-backend-dev -e FLEA_UPLOAD_GCS_BUCKET=tensorio-models-backend-dev -e MODELS_HOSTNAME=localhost -p 8082:8082 -p 8083:8083 docai/tensorio-flea -backend gcs
+docker run \
+    -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json \
+    -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json \
+    -e FLEA_GCS_BUCKET=tensorio-models-backend-dev \
+    -e FLEA_UPLOAD_GCS_BUCKET=tensorio-models-backend-dev \
+    -e MODELS_URI=localhost:8081/v1/repository \
+    -p 8082:8082 \
+    -p 8083:8083 \
+    docai/tensorio-flea \
+    -backend gcs
+```
+
+Run the tests in the [`e2e/`](./e2e/) directory:
+
+```
+# Tests tensorio-models backend
+./e2e/setup.sh
+```
+
+```
+# Tests flea backend
+./e2e/create-sample-tasks.sh
 ```
