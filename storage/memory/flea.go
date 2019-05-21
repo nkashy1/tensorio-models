@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"sync"
 	"time"
@@ -24,7 +25,7 @@ func NewMemoryFleaStorage(repositoryBaseURL string) storage.FleaStorage {
 	store := &flea{
 		lock:              &sync.RWMutex{},
 		repositoryBaseURL: repositoryBaseURL,
-		uploadReqURL:      "gs://example-repo/", // Stub in this implementation.
+		uploadReqURL:      "gs://example-repo", // Stub in this implementation.
 		tasks:             make(map[string]storage.Task),
 	}
 	return store
@@ -138,7 +139,7 @@ func (s *flea) StartTask(ctx context.Context, taskId string) (api.StartTaskRespo
 		return api.StartTaskResponse{}, storage.ErrMissingTaskId
 	}
 	jobId := uuid.New().String()
-	uploadTo := s.uploadReqURL + jobId // Stub it for now.
+	uploadTo := fmt.Sprintf("%s/tasksJobs/%s/%s.zip", s.uploadReqURL, taskId, jobId)
 	resp := api.StartTaskResponse{
 		Status:   api.StartTaskResponse_APPROVED,
 		JobId:    jobId,

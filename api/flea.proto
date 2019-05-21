@@ -41,7 +41,7 @@ message GetTaskRequest {
 message TaskDetails {
     string modelId = 1;
     string hyperparametersId = 2;
-    string checkpointId = 3;  // We would also accept updates based on more recent checkpints.
+    string checkpointId = 3;  // We would also accept updates based on more recent checkpoints.
     int64 deadline = 4;       // UTC seconds since epoch when task expires
     string taskId = 5;
     bool active = 6;

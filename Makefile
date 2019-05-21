@@ -19,7 +19,7 @@ run-models: docker-models
 	docker run -p 8080:8080 -p 8081:8081 docai/tensorio-models ${RUN_ARGS}
 
 run-flea: docker-flea
-	docker run -p 8082:8082 -p 8083:8083 docai/tensorio-flea ${RUN_ARGS}
+	docker run -e MODELS_URI=http://example.com:8081/v1/repository -p 8082:8082 -p 8083:8083 docai/tensorio-flea ${RUN_ARGS}
 
 api/repository.pb.go: api/repository.proto
 	cd api && protoc -I . repository.proto --go_out=plugins=grpc:. --proto_path=${GOPATH}/src --proto_path=$(GOPATH)/pkg/mod --proto_path=$(GRPC_GATEWAY_PROTO_DIR)
