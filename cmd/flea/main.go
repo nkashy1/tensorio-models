@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -40,12 +41,12 @@ func main() {
 	}
 	/* END cli */
 
-	// For now assume Repository server is on the same machine.
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatalf(err.Error())
+	modelsHostname := os.Getenv("MODELS_HOSTNAME")
+	if modelsHostname == "" {
+		err := errors.New("MODELS_HOSTNAME not set")
+		panic(err)
 	}
-	fleaBackend := backend("http://" + hostname + ":8081/v1/repository")
+	fleaBackend := backend("http://" + modelsHostname + ":8081/v1/repository")
 	const grpcAddress = ":8082"
 	const jsonRpcAddress = ":8083"
 	flea_server.StartGrpcAndProxyServer(fleaBackend,

@@ -56,7 +56,7 @@ func (store flea) GetStorageType() string {
 }
 
 func objTaskPath(taskId string) string {
-	return "/tasks/" + taskId + "/task.json"
+	return "tasks/" + taskId + "/task.json"
 }
 
 func (store flea) GetUploadToURL(taskId, jobId string) string {
@@ -132,6 +132,7 @@ func (store flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.
 		Versions:  false,
 	}
 	iter := store.bucket.Objects(ctx, query)
+	resp.Tasks = make(map[string]string)
 	for {
 		if req.MaxItems > 0 && len(resp.Tasks) == int(req.MaxItems) {
 			break
