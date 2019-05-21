@@ -95,6 +95,11 @@ var ErrMissingModelId = errors.New("Missing ModelId")
 var ErrMissingHyperparametersId = errors.New("Missing HyperparametersId")
 var ErrMissingCheckpointId = errors.New("Missing CheckpointId")
 var ErrInvalidModelHyperparamsCheckpointCombo = errors.New("CheckpointId requires HyperparamsId and HyperparamsId requires ModelId")
+var ErrInvalidTaskId = errors.New("Invalid TaskId")
+var ErrInvalidJobId = errors.New("Invalid JobId")
+var ErrInvalidModelId = errors.New("Invalid ModelId")
+var ErrInvalidHyperparametersId = errors.New("Invalid HyperparametersId")
+var ErrInvalidCheckpointId = errors.New("Invalid CheckpointId")
 
 type FleaStorage interface {
 	GetStorageType() string

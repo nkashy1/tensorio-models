@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/common"
 	"github.com/doc-ai/tensorio-models/server"
+
 	"github.com/doc-ai/tensorio-models/storage/memory"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/assert"
@@ -964,12 +966,12 @@ func postRequest(t *testing.T, url string, jsonStruct map[string]interface{}, st
 }
 
 func TestIsValidID(t *testing.T) {
-	assert.True(t, server.IsValidID("dii-ZZ12_"))
-	assert.False(t, server.IsValidID(""))
-	assert.False(t, server.IsValidID(" X"))
-	assert.True(t, server.IsValidID("---"))
-	assert.False(t, server.IsValidID("1&2"))
-	assert.True(t, server.IsValidID("123"))
+	assert.True(t, common.IsValidID("dii-ZZ12_"))
+	assert.False(t, common.IsValidID(""))
+	assert.False(t, common.IsValidID(" X"))
+	assert.True(t, common.IsValidID("---"))
+	assert.False(t, common.IsValidID("1&2"))
+	assert.True(t, common.IsValidID("123"))
 }
 
 func TestURLEndpoints(t *testing.T) {

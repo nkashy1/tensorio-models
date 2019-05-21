@@ -2,12 +2,12 @@ package memory
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/common"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/google/uuid"
 )
@@ -20,11 +20,11 @@ type flea struct {
 }
 
 // NewMemoryFleaStorage - returns in-memory implementation of FleaStorage interface.
-func NewMemoryFleaStorage(repositoryBaseURL, uploadReqURL string) storage.FleaStorage {
+func NewMemoryFleaStorage(repositoryBaseURL string) storage.FleaStorage {
 	store := &flea{
 		lock:              &sync.RWMutex{},
 		repositoryBaseURL: repositoryBaseURL,
-		uploadReqURL:      uploadReqURL,
+		uploadReqURL:      "gs://example-repo/", // Stub in this implementation.
 		tasks:             make(map[string]storage.Task),
 	}
 	return store
@@ -66,12 +66,6 @@ func (s *flea) ModifyTask(ctx context.Context, req api.ModifyTaskRequest) error 
 	return nil
 }
 
-// TODO: Extract this and some other function in common package.
-func getCheckpointResourcePath(modelID, hyperparametersID, checkpointID string) string {
-	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperparametersID, checkpointID)
-	return resourcePath
-}
-
 // Expects that the input sanity checks are done by the caller.
 func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.ListTasksResponse, error) {
 	resp := api.ListTasksResponse{}
@@ -109,7 +103,7 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 	}
 	for _, taskId := range taskIds {
 		task, _ := s.tasks[taskId]
-		resp.Tasks[taskId] = getCheckpointResourcePath(
+		resp.Tasks[taskId] = common.GetCheckpointResourcePath(
 			task.ModelId, task.HyperparametersId, task.CheckpointId)
 	}
 
@@ -144,7 +138,7 @@ func (s *flea) StartTask(ctx context.Context, taskId string) (api.StartTaskRespo
 		return api.StartTaskResponse{}, storage.ErrMissingTaskId
 	}
 	jobId := uuid.New().String()
-	uploadTo := "http://example.com/" + jobId // Stub it for now.
+	uploadTo := s.uploadReqURL + jobId // Stub it for now.
 	resp := api.StartTaskResponse{
 		Status:   api.StartTaskResponse_APPROVED,
 		JobId:    jobId,

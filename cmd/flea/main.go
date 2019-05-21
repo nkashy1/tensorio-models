@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/doc-ai/tensorio-models/flea_server"
 	"github.com/doc-ai/tensorio-models/storage"
+	"github.com/doc-ai/tensorio-models/storage/gcs"
 	"github.com/doc-ai/tensorio-models/storage/memory"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,8 +17,9 @@ import (
 func main() {
 	/* BEGIN cli */
 	// Backend specification
-	Backends := map[string]func(string, string) storage.FleaStorage{
+	Backends := map[string]func(string) storage.FleaStorage{
 		"memory": memory.NewMemoryFleaStorage,
+		"gcs":    gcs.GenerateNewFleaGCSStorageFromEnv,
 	}
 	BackendKeys := make([]string, len(Backends))
 	i := 0
@@ -38,13 +41,12 @@ func main() {
 	}
 	/* END cli */
 
-	// For now assume Repository server is on the same machine.
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatalf(err.Error())
+	modelsHostname := os.Getenv("MODELS_HOSTNAME")
+	if modelsHostname == "" {
+		err := errors.New("MODELS_HOSTNAME not set")
+		panic(err)
 	}
-	fleaBackend := backend("http://"+hostname+":8081/v1/repository",
-		"http://googleapi.google.com/gcs") // Stubbed out
+	fleaBackend := backend("http://" + modelsHostname + ":8081/v1/repository")
 	const grpcAddress = ":8082"
 	const jsonRpcAddress = ":8083"
 	flea_server.StartGrpcAndProxyServer(fleaBackend,

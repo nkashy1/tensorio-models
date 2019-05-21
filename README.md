@@ -34,3 +34,17 @@ RUN_ARGS="-backend memory" make run
 
 Without this argument, `make run` fails -- simply because the `repository` binary has required
 arguments.
+
+
+### Running server against GCS for testing:
+gcloud config configurations activate neuron-dev
+export GOOGLE_APPLICATION_CREDENTIALS=$HOME/secrets/<creds-file>.json
+```
+make docker-models
+
+docker run -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json -e REPOSITORY_GCS_BUCKET=tensorio-models-backend-dev -p 8080:8080 -p 8081:8081 docai/tensorio-models -backend gcs
+
+make docker-flea
+
+docker run -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json -e FLEA_GCS_BUCKET=tensorio-models-backend-dev -e FLEA_UPLOAD_GCS_BUCKET=tensorio-models-backend-dev -e MODELS_HOSTNAME=localhost -p 8082:8082 -p 8083:8083 docai/tensorio-flea -backend gcs
+```
