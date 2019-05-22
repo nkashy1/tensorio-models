@@ -24,9 +24,22 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.deployment.repository }}:{{ .Values.deployment.tag }}"
           imagePullPolicy: {{ .Values.deployment.pullPolicy }}
+          volumeMounts:
+            {{- if .Values.deployment.serviceAccount }}
+            - name: sacred
+              mountPath: {{ .Values.deployment.serviceAccount.mountPath }}
+            {{- end }}
           env:
             - name: BACKEND
               value: {{ .Values.deployment.backend }}
+            {{- if .Values.deployment.repositoryGcsBucket }}
+            - name: REPOSITORY_GCS_BUCKET
+              value: {{ .Values.deployment.repositoryGcsBucket }}
+            {{- end }}
+            {{- if .Values.deployment.serviceAccount }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "{{ .Values.deployment.serviceAccount.mountPath }}/{{ .Values.deployment.serviceAccount.key }}"
+            {{- end }}
           args: ["-backend", "$(BACKEND)"]
           ports:
             - name: grpc
@@ -43,3 +56,9 @@ spec:
             httpGet:
               path: /v1/repository/healthz
               port: rest
+      volumes:
+        {{- if .Values.deployment.serviceAccount }}
+        - name: sacred
+          secret:
+            secretName: {{ .Values.deployment.serviceAccount.secret }}
+        {{- end }}

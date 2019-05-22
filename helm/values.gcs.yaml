@@ -1,0 +1,24 @@
+# This values file shows how to configure tensorio-models to use a GCS backend.
+# The service account whose credentials are available under the sacred.json key of the
+# tensorio-models secret is assumed to have administrative access to the
+# .Values.deployment.repositoryGcsBucket bucket.
+
+namespace: default
+
+deployment:
+  replicas: 1
+  repository: docai/tensorio-models
+  tag: latest
+  pullPolicy: Always
+  backend: memory
+  serviceAccount:
+    secret: tensorio-models
+    key: sacred.json
+    mountPath: /etc/auth
+  repositoryGcsBucket: tensorio-models-backend-dev
+
+service:
+  type: ClusterIP
+  grpcPort: 7316
+  restPort: 7317
+  hostname: tensorio-models.default
