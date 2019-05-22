@@ -3,3 +3,8 @@ steps:
   - name: 'golang:1.12'
     id: "go-tests"
     args: ["go", "test", "./..."]
+    waitFor: ['-']
+  - name: 'gcr.io/docai-neuron/helm'
+    id: "helm-tests"
+    entrypoint: ["./test-helm.sh"]
+    waitFor: ['-']
