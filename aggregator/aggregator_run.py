@@ -39,8 +39,9 @@ def create_aggregator_argument_parser():
 
 
 def parse_ckpt_paths_file(ckpt_filelist):
-    df = pd.read_csv(ckpt_filelist, header=None, index_col=False)
-    return df[0].tolist()
+    with tf.gfile.Open(ckpt_filelist, 'r') as ckpt_filelist_fp:
+        df = pd.read_csv(ckpt_filelist_fp, header=None, index_col=False)
+        return df[0].tolist()
 
 
 # python aggregator_run.py \

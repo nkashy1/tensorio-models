@@ -4,15 +4,15 @@ import aggregator
 
 
 MODEL_DIRECTORY_NAMES_LOCAL = [
-    "/Users/axelsly/Downloads/federated_checkpoints/local_update_1",
-    "/Users/axelsly/Downloads/federated_checkpoints/local_update_2"
+    "/tmp/federated_checkpoints/local_update_1",
+    "/tmp/federated_checkpoints/local_update_2"
 ]
 MODEL_DIRECTORY_NAMES_GCS = [
     "gs://path/to/gcs/local_update_1",
     "gs://path/to/gcs/local_update_2"
 ]
-OUTPUT_PATH_CMA_LOCAL = "/Users/axelsly/Downloads/federated_checkpoints/aggregated-cma"
-OUTPUT_PATH_WCMA_LOCAL = "/Users/axelsly/Downloads/federated_checkpoints/aggregated-wcma"
+OUTPUT_PATH_CMA_LOCAL = "/tmp/federated_checkpoints/aggregated-cma"
+OUTPUT_PATH_WCMA_LOCAL = "/tmp/federated_checkpoints/aggregated-wcma"
 OUTPUT_PATH_CMA_GCS = "gs://path/to/gcs/aggregated-cma"
 OUTPUT_PATH_WCMA_GCS = "gs://path/to/gcs/aggregated-wcma"
 

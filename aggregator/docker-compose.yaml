@@ -11,4 +11,4 @@ services:
       - AGGREGATION_TYPE=${AGGREGATION_TYPE:-cma}
       - AGGREGATION_OUTPUT_PATH=${AGGREGATION_OUTPUT_PATH}
     volumes:
-      - ${GOOGLE_CREDENTIALS_FILE}:/etc/access/sacred.json
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/etc/access/sacred.json

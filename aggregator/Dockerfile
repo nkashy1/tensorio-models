@@ -5,8 +5,7 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
-RUN chmod 777 run.sh \
-    && ln -s run.sh /
+RUN chmod 777 run.sh
 
-ENTRYPOINT ["bash", "run.sh"]
+ENTRYPOINT ["bash", "/aggregator/run.sh"]
 CMD []
