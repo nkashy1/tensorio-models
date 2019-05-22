@@ -8,8 +8,8 @@ MODEL_DIRECTORY_NAMES_LOCAL = [
     "/Users/axelsly/Downloads/federated_checkpoints/local_update_2"
 ]
 MODEL_DIRECTORY_NAMES_GCS = [
-    "gs://doc-ai-models/aggregator-tests/local_update_1",
-    "gs://doc-ai-models/aggregator-tests/local_update_2"
+    "gs://path/to/gcs/local_update_1",
+    "gs://path/to/gcs/local_update_2"
 ]
 OUTPUT_PATH_CMA_LOCAL = "/Users/axelsly/Downloads/federated_checkpoints/aggregated-cma"
 OUTPUT_PATH_WCMA_LOCAL = "/Users/axelsly/Downloads/federated_checkpoints/aggregated-wcma"
