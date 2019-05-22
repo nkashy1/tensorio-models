@@ -4,12 +4,6 @@
 
 namespace: default
 
-checkSecrets:
-  - name: tensorio-models
-    namespace: default
-    keys:
-      - key: sacred.json
-
 deployment:
   replicas: 1
   repository: docai/tensorio-models
