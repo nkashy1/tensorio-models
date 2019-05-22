@@ -10,7 +10,7 @@ deployment:
   repository: docai/tensorio-models
   tag: latest
   pullPolicy: Always
-  backend: memory
+  backend: gcs
   serviceAccount:
     secret: tensorio-models
     key: sacred.json
