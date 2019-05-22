@@ -1,6 +1,7 @@
 import aggregator
 import argparse
 import pandas as pd
+import tensorflow as tf
 
 
 
@@ -10,7 +11,7 @@ def create_aggregator_argument_parser():
         '--aggregation-type',
         type=str,
         required=True,
-        choices=list(aggregator.AGGREGATOR_FUNCTIONS.keys()),
+        choices=['cma', 'wcma'], # TODO: read from aggregator function dict
         help=(
             'Type of running aggregation to be performed.',
             '   cma: cumulative moving average',
@@ -52,6 +53,6 @@ if __name__ == '__main__':
     aggregator_argument_parser = create_aggregator_argument_parser()
     aggregator_args = aggregator_argument_parser.parse_args()
     ckpt_filelist = parse_ckpt_paths_file(aggregator_args.ckpt_paths_file)
-    print (ckpt_filelist)
     agrgtr = aggregator.Aggregator(aggregator_args.aggregation_type, debug=aggregator_args.debug)
     agrgtr.aggregate(ckpt_filelist, aggregator_args.output_path)
+

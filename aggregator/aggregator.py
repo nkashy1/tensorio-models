@@ -94,7 +94,7 @@ class Aggregator(object):
 
 
     @staticmethod
-    def _aggregate_ckpts(ckpt_merge_dict, aggregation_function=aggregation_fn._aggregate_cumulative_moving_average, debug=False):
+    def _aggregate_ckpts(ckpt_merge_dict, aggregation_function=_aggregate_cumulative_moving_average, debug=False):
         # Grab variables/weights from one of the ckpts
         var_list = tf.contrib.framework.list_variables(list(ckpt_merge_dict.keys())[0])
         var_values, var_dtypes = {}, {}

@@ -7,8 +7,10 @@ services:
     container_name: "aggregator"
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/etc/access/sacred.json
-      - AGGREGATION_CKPTS_FILELIST=${AGGREGATION_CKPTS_FILELIST:-sample-ckpts-filelist.txt}
+      # - AGGREGATION_CKPTS_FILELIST=${AGGREGATION_CKPTS_FILELIST:-sample-ckpts-filelist.txt}
+      - AGGREGATION_CKPTS_FILELIST=/ckpts-filelist.txt
       - AGGREGATION_TYPE=${AGGREGATION_TYPE:-cma}
       - AGGREGATION_OUTPUT_PATH=${AGGREGATION_OUTPUT_PATH}
     volumes:
       - ${GOOGLE_APPLICATION_CREDENTIALS}:/etc/access/sacred.json
+      - ${AGGREGATION_CKPTS_FILELIST}:/ckpts-filelist.txt
