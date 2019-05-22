@@ -43,6 +43,9 @@ build: api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.json 
 	go test ./... -cover
 	go build ./...
 
+test-helm:
+	./test-helm.sh
+
 coverage: api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.json api/flea.pb.go api/flea.pb.gw.go api/flea.swagger.json
 	go test -coverprofile=test.out ./...
 	go tool cover -html=test.out -o coverage-$(TIMESTAMP).html
