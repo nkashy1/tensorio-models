@@ -18,6 +18,7 @@ steps:
       - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
     args:
       - 'upgrade'
+      - '--atomic'
       - '--install'
       - '-f'
       - 'values.yaml'
