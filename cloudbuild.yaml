@@ -6,5 +6,5 @@ steps:
     waitFor: ['-']
   - name: 'gcr.io/docai-neuron/helm'
     id: "helm-tests"
-    entrypoint: ["./test-helm.sh"]
+    entrypoint: "./test-helm.sh"
     waitFor: ['-']
