@@ -1,0 +1,2 @@
+gs://path/to/gcs/local_update_1
+gs://path/to/gcs/local_update_2
