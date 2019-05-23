@@ -63,11 +63,16 @@ Run the flea backend:
 ```
 make docker-flea
 
+# Check your environmemt PRIVATE_PEM_KEY by doing:
+go test github.com/doc-ai/tensorio-models/signed_url -test.v -count=1
+
 docker run \
     -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json \
     -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json \
     -e FLEA_GCS_BUCKET=tensorio-models-backend-dev \
     -e FLEA_UPLOAD_GCS_BUCKET=tensorio-models-backend-dev \
+    -e GOOGLE_ACCESS_ID="$GOOGLE_ACCESS_ID" \
+    -e PRIVATE_PEM_KEY="$PRIVATE_PEM_KEY" \
     -e MODELS_URI=localhost:8081/v1/repository \
     -p 8082:8082 \
     -p 8083:8083 \

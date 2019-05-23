@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	gcs "cloud.google.com/go/storage"
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/common"
+	signedURL "github.com/doc-ai/tensorio-models/signed_url"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/google/uuid"
 	"google.golang.org/api/iterator"
@@ -21,10 +23,13 @@ type flea struct {
 	bucket             *gcs.BucketHandle
 	repositoryBaseURL  string
 	uploadToBucketName string
+	urlSigner          signedURL.URLSigner
 }
 
-// GenerateNewFleaGCSStorageFromEnv - Uses the GOOGLE_APPLICATION_CREDENTIALS and FLEA_GCS_BUCKET
-// environment variables to instantiate a GCS Storage backend for tensorio-models repository
+// GenerateNewFleaGCSStorageFromEnv - Uses the GOOGLE_APPLICATION_CREDENTIALS, FLEA_GCS_BUCKET
+// and FLEA_UPLOAD_GCS_BUCKET environment variables to instantiate a GCS Storage backend.
+// Note that the GOOGLE_APPLICATION_CREDENTIALS must be for the FLEA_GCS_BUCKET repo.
+// The URLSigner also requires GOOGLE_ACCESS_ID and PRIVATE_PEM_KEY for the UPLOAD bucket.
 func GenerateNewFleaGCSStorageFromEnv(repositoryBaseURL string) storage.FleaStorage {
 	bucketName := os.Getenv("FLEA_GCS_BUCKET")
 	if bucketName == "" {
@@ -45,10 +50,14 @@ func GenerateNewFleaGCSStorageFromEnv(repositoryBaseURL string) storage.FleaStor
 	}
 	bucket := gcsClient.Bucket(bucketName)
 
+	urlSigner := signedURL.NewURLSignerFromEnvVar(uploadBucketName)
+
 	return &flea{client: gcsClient,
 		bucket:             bucket,
 		repositoryBaseURL:  repositoryBaseURL,
-		uploadToBucketName: uploadBucketName}
+		uploadToBucketName: uploadBucketName,
+		urlSigner:          urlSigner,
+	}
 }
 
 func (store flea) GetStorageType() string {
@@ -59,8 +68,9 @@ func objTaskPath(taskId string) string {
 	return "tasks/" + taskId + "/task.json"
 }
 
-func (store flea) GetUploadToURL(taskId, jobId string) string {
-	return fmt.Sprintf("gs://%s/tasksJobs/%s/%s.zip", store.uploadToBucketName, taskId, jobId)
+func (store flea) GetUploadToURL(taskId, jobId string, deadline_epoch_sec int64) (string, error) {
+	filePath := fmt.Sprintf("tasksJobs/%s/%s.zip", taskId, jobId)
+	return store.urlSigner.GetSignedURL("PUT", filePath, time.Unix(deadline_epoch_sec, 0), "application/zip")
 }
 
 func (store flea) AddTask(ctx context.Context, req api.TaskDetails) error {
@@ -114,12 +124,17 @@ func (store flea) ModifyTask(ctx context.Context, req api.ModifyTaskRequest) err
 
 func (store flea) StartTask(ctx context.Context, taskId string) (api.StartTaskResponse, error) {
 	resp := api.StartTaskResponse{}
-	_, err := store.GetTask(ctx, taskId)
+	task, err := store.GetTask(ctx, taskId)
 	if err != nil {
 		return resp, err
 	}
-	resp.JobId = uuid.New().String()
-	resp.UploadTo = store.GetUploadToURL(taskId, resp.JobId)
+	jobId := uuid.New().String()
+	signedURL, err := store.GetUploadToURL(taskId, jobId, task.Deadline)
+	if err != nil {
+		return resp, err
+	}
+	resp.JobId = jobId
+	resp.UploadTo = signedURL
 	resp.Status = api.StartTaskResponse_APPROVED
 	return resp, nil
 }
