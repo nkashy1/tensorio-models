@@ -8,17 +8,51 @@
 # - _RELEASE_NAME : Name for helm release (default: tio-models)
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    id: "docker-build-image"
-    args: ["build", "-t", "us.gcr.io/docai-neuron/tensorio/models", "-f", "dockerfiles/Dockerfile.repository", "."]
+    id: "repository-build-image"
+    args: ["build", "-t", "us.gcr.io/docai-neuron/tensorio-models/repository", "-f", "dockerfiles/Dockerfile.repository", "."]
+    waitFor: ['-']
   - name: 'gcr.io/cloud-builders/docker'
-    id: "docker-apply-tag"
-    args: ["tag", "us.gcr.io/docai-neuron/tensorio/models:latest", "us.gcr.io/docai-neuron/tensorio/models:sha-$SHORT_SHA"]
+    id: "repository-apply-tag"
+    args: ["tag", "us.gcr.io/docai-neuron/tensorio-models/repository:latest", "us.gcr.io/docai-neuron/tensorio-models/repository:sha-$SHORT_SHA"]
+    waitFor:
+      - "repository-build-image"
   - name: 'gcr.io/cloud-builders/docker'
-    id: "docker-push"
-    args: ["push", "us.gcr.io/docai-neuron/tensorio/models"]
+    id: "repository-push"
+    args: ["push", "us.gcr.io/docai-neuron/tensorio-models/repository"]
+    waitFor:
+      - "repository-apply-tag"
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "flea-build-image"
+    args: ["build", "-t", "us.gcr.io/docai-neuron/tensorio-models/flea", "-f", "dockerfiles/Dockerfile.flea", "."]
+    waitFor: ['-']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "flea-apply-tag"
+    args: ["tag", "us.gcr.io/docai-neuron/tensorio-models/flea:latest", "us.gcr.io/docai-neuron/tensorio-models/flea:sha-$SHORT_SHA"]
+    waitFor:
+      - "flea-build-image"
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "flea-push"
+    args: ["push", "us.gcr.io/docai-neuron/tensorio-models/flea"]
+    waitFor:
+      - "flea-apply-tag"
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "aggregator-build-image"
+    args: ["build", "-t", "us.gcr.io/docai-neuron/tensorio-models/aggregator", "-f", "aggregator/Dockerfile", "aggregator/"]
+    waitFor: ['-']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "aggregator-apply-tag"
+    args: ["tag", "us.gcr.io/docai-neuron/tensorio-models/aggregator:latest", "us.gcr.io/docai-neuron/tensorio-models/aggregator:sha-$SHORT_SHA"]
+    waitFor:
+      - "aggregator-build-image"
+  - name: 'gcr.io/cloud-builders/docker'
+    id: "aggregator-push"
+    args: ["push", "us.gcr.io/docai-neuron/tensorio-models/aggregator"]
+    waitFor:
+      - "aggregator-apply-tag"
   - name: 'gcr.io/cloud-builders/gsutil'
     id: "values-yaml-download"
     args: ['cp', '${_VALUES_FILE}', 'values.yaml']
+    waitFor: ['-']
   - name: 'gcr.io/docai-neuron/helm'
     id: "helm-release"
     env:
@@ -35,5 +69,12 @@ steps:
       - 'deployment.tag=sha-$SHORT_SHA'
       - '${_RELEASE_NAME}'
       - 'helm/'
+    waitFor:
+      - "repository-push"
+      - "flea-push"
+      - "aggregator-push"
+      - "values-yaml-download"
 substitutions:
   _RELEASE_NAME: tio-models
+options:
+  machineType: N1_HIGHCPU_8
