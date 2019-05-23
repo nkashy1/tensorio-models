@@ -14,7 +14,7 @@ Create a environment variables `.env` as provided in `sample.env`, or just
 copy and fill in the correct values. The environment variables are defined as
 follows:
 
-1. `GOOGLE_CREDENTIALS_FILE` - Google Cloud service account credential file
+1. `GOOGLE_APPLICATION_CREDENTIALS` - Google Cloud service account credential file
 (json or P12) with the appropriate permissions to read/write to a project's
 GCS buckets.
 1. `AGGREGATION_CKPTS_FILELIST` - Path to a local or GCS single-column csv/tsv/txt
