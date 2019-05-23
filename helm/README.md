@@ -31,6 +31,12 @@ In this section, we expand on some of the deployment functionality this helm cha
 
 ### Repository
 
+[`values.gcs.yaml`](./values.gcs.yaml) shows how to deploy the `tensorio-models`
+[`repository`](../cmd/repository) APIs with a GCS backend.
+
+[`values.basic.yaml`](./values.basic.yaml) shows how to make the same deployment with a memory
+backend (for testing purposes).
+
 ### Flea
 
 ### Aggregators
