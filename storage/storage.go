@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
 var ModelDoesNotExistError = errors.New("Model does not exist")
@@ -81,7 +82,7 @@ type Task struct {
 	HyperparametersId string
 	CheckpointId      string
 	TaskId            string
-	Deadline          int64
+	Deadline          *timestamp.Timestamp
 	Active            bool
 	TaskSpec          string
 	CreatedTime       time.Time

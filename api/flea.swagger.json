@@ -293,7 +293,7 @@
         },
         "deadline": {
           "type": "string",
-          "format": "int64"
+          "format": "date-time"
         },
         "active": {
           "type": "boolean",
@@ -329,7 +329,7 @@
         },
         "deadline": {
           "type": "string",
-          "format": "int64"
+          "format": "date-time"
         },
         "taskId": {
           "type": "string"

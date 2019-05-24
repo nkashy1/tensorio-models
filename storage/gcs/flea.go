@@ -129,7 +129,7 @@ func (store flea) StartTask(ctx context.Context, taskId string) (api.StartTaskRe
 		return resp, err
 	}
 	jobId := uuid.New().String()
-	signedURL, err := store.GetUploadToURL(taskId, jobId, task.Deadline)
+	signedURL, err := store.GetUploadToURL(taskId, jobId, task.Deadline.GetSeconds())
 	if err != nil {
 		return resp, err
 	}

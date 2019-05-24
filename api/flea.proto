@@ -2,12 +2,14 @@ syntax = "proto3";
 
 package api;
 
+
+import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "repository.proto";  // For HealthCheck and Config messages.
 
 message ModifyTaskRequest {
    string taskId = 1;   // Auto-populated from endpoint URL
-   int64 deadline = 2;  // In UTC seconds since epoch
+   google.protobuf.Timestamp deadline = 2;  // In UTC seconds since epoch
    bool active = 3;
 }
 
@@ -42,7 +44,7 @@ message TaskDetails {
     string modelId = 1;
     string hyperparametersId = 2;
     string checkpointId = 3;  // We would also accept updates based on more recent checkpoints.
-    int64 deadline = 4;       // UTC seconds since epoch when task expires
+    google.protobuf.Timestamp deadline = 4;       // UTC seconds since epoch when task expires
     string taskId = 5;
     bool active = 6;
     string taskSpec = 7;  // URL to download task details
