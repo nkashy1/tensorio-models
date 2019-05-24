@@ -60,7 +60,7 @@ func (s *memory) ListModels(ctx context.Context, marker string, maxItems int) ([
 		firstIndex = firstIndex + 1
 	}
 
-	// check if the updated marker index is past the end of the list
+	// check if the updated marker index is past the end of the listGert
 	if firstIndex == len(s.modelList) {
 		return make([]string, 0), nil
 	}

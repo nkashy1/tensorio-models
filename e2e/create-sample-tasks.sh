@@ -26,94 +26,80 @@ echo ""
 echo "Create Task: 101"
 curl -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"modelId\": \"Model17\", \"hyperparametersId\": \"hpset5\", \"checkpointId\": \"ckpt-7\", \"taskId\": \"task101\", \"deadline\": 1558047280, \"active\": false, \"taskSpec\": \"http://goo.gl/T1.zip\"}" \
+    -d "{\"modelId\": \"Model17\", \"hyperparametersId\": \"hpset5\", \"checkpointId\": \"ckpt-7\", \"taskId\": \"task101\", \"deadline\": \"2019-12-31T23:59:59Z\", \"active\": false, \"link\": \"http://goo.gl/T1.zip\"}" \
     $FLEA_URL/create_task
 
 echo ""
 echo "Create Task: 102"
 curl -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"modelId\": \"Model3\", \"hyperparametersId\": \"hpset3\", \"checkpointId\": \"ckpt-3\", \"taskId\": \"task102\", \"deadline\": 1558087280, \"active\": true, \"taskSpec\": \"http://goo.gl/T2.zip\"}" \
+    -d "{\"modelId\": \"Model3\", \"hyperparametersId\": \"hpset3\", \"checkpointId\": \"ckpt-3\", \"taskId\": \"task102\", \"deadline\": \"2019-07-31T23:59:59Z\", \"active\": true, \"link\": \"http://goo.gl/T2.zip\"}" \
     $FLEA_URL/create_task
 
 echo ""
 echo "Create Task: aaa"
 curl -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"modelId\": \"Model5\", \"hyperparametersId\": \"hpset13\", \"checkpointId\": \"ckpt-2\", \"taskId\": \"aaa\", \"deadline\": 1553087280, \"active\": true, \"taskSpec\": \"http://goo.gl/T3.zip\"}" \
+    -d "{\"modelId\": \"Model5\", \"hyperparametersId\": \"hpset13\", \"checkpointId\": \"ckpt-2\", \"taskId\": \"aaa\", \"deadline\": \"2019-12-14T23:59:59Z\", \"active\": true, \"link\": \"http://goo.gl/T3.zip\"}" \
     $FLEA_URL/create_task
 
 
 echo ""
 echo "List all tasks:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?includeInactive=true"
 
 echo ""
 echo "List all ACTIVE tasks:"
-curl -X POST \
-     -H "Content-Type: application/json" \
-     $FLEA_URL/tasks
+curl $FLEA_URL/tasks
 
 echo ""
 echo "Create Task: x3"
 curl -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"modelId\": \"Model5\", \"hyperparametersId\": \"hpset3\", \"checkpointId\": \"ckpt-5\", \"taskId\": \"x3\", \"deadline\": 1453087280, \"active\": true, \"taskSpec\": \"http://goo.gl/Tx3.zip\"}" \
+    -d "{\"modelId\": \"Model5\", \"hyperparametersId\": \"hpset3\", \"checkpointId\": \"ckpt-5\", \"taskId\": \"x3\", \"deadline\": \"2023-12-31T23:59:00Z\", \"active\": true, \"link\": \"http://goo.gl/Tx3.zip\"}" \
     $FLEA_URL/create_task
 
 echo ""
 echo "Create Task: y5"
 curl -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"modelId\": \"Model15\", \"hyperparametersId\": \"hpset1\", \"checkpointId\": \"ckpt-42\", \"taskId\": \"y5\", \"deadline\": 1553087280, \"active\": true, \"taskSpec\": \"http://goo.gl/Tx5.zip\"}" \
+    -d "{\"modelId\": \"Model15\", \"hyperparametersId\": \"hpset1\", \"checkpointId\": \"ckpt-42\", \"taskId\": \"y5\", \"deadline\": \"2019-12-21T23:59:59Z\", \"active\": true, \"link\": \"http://goo.gl/Tx5.zip\"}" \
     $FLEA_URL/create_task
 
 echo ""
 echo "Create Task: b7"
 curl -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"modelId\": \"Model-bozo5\", \"hyperparametersId\": \"hpset1\", \"checkpointId\": \"ckpt-52\", \"taskId\": \"b7\", \"deadline\": 1557087280, \"active\": true, \"taskSpec\": \"http://goo.gl/Tzxe3.zip\"}" \
+    -d "{\"modelId\": \"Model-bozo5\", \"hyperparametersId\": \"hpset1\", \"checkpointId\": \"ckpt-52\", \"taskId\": \"b7\", \"deadline\": \"2029-12-31T23:59:59Z\", \"active\": true, \"link\": \"http://goo.gl/Tzxe3.zip\"}" \
     $FLEA_URL/create_task
 
 
 echo ""
 echo "List first 3 tasks:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true, \"maxItems\": 3}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?inludeInactive=true&maxItems=3"
 
 echo ""
 echo "List tasks starting from b7:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true, \"startTaskId\": \"b7\"}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?includeInactive=true&startTaskId=b7"
 
 echo ""
 echo "List 2 tasks starting from task101:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true, \"startTaskId\": \"task101\", \"maxItems\": 2}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?includeInactive=true&startTaskId=task101&maxItems=2"
 
 echo ""
 echo "Get details for task x3:"
-curl $FLEA_URL/task/x3
+curl $FLEA_URL/tasks/x3
 
 echo ""
 echo "Modify task x3:"
 curl -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"deadline\": 1553080000, \"active\": false}" \
+    -d "{\"deadline\": \"2020-02-12T23:00:00Z\", \"active\": false}" \
     $FLEA_URL/modify_task/x3
 
 echo ""
 echo "Get details for task x3: (NOTE: Missing active => inactive)"
-curl $FLEA_URL/task/x3
+curl $FLEA_URL/tasks/x3
 
 echo ""
 echo "Start task b7:"

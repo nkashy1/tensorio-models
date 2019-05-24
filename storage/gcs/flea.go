@@ -104,6 +104,8 @@ func (store flea) GetTask(ctx context.Context, taskId string) (api.TaskDetails, 
 		return task, err
 	}
 	err = json.Unmarshal(bytes, &task)
+	task.CheckpointLink = store.repositoryBaseURL + common.GetCheckpointResourcePath(
+		task.ModelId, task.HyperparametersId, task.CheckpointId)
 	return task, err
 }
 
@@ -129,7 +131,7 @@ func (store flea) StartTask(ctx context.Context, taskId string) (api.StartTaskRe
 		return resp, err
 	}
 	jobId := uuid.New().String()
-	signedURL, err := store.GetUploadToURL(taskId, jobId, task.Deadline)
+	signedURL, err := store.GetUploadToURL(taskId, jobId, task.Deadline.GetSeconds())
 	if err != nil {
 		return resp, err
 	}
@@ -147,9 +149,9 @@ func (store flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.
 		Versions:  false,
 	}
 	iter := store.bucket.Objects(ctx, query)
-	resp.Tasks = make(map[string]string)
+	var taskIds []string
 	for {
-		if req.MaxItems > 0 && len(resp.Tasks) == int(req.MaxItems) {
+		if req.MaxItems > 0 && len(taskIds) == int(req.MaxItems) {
 			break
 		}
 		obj, err := iter.Next()
@@ -165,17 +167,10 @@ func (store flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.
 		if req.StartTaskId != "" && taskId < req.StartTaskId {
 			continue
 		}
-
-		task, err := store.GetTask(ctx, taskId)
-		if err != nil {
-			return resp, errors.New("Could not get task: " + taskId)
-		}
-		resp.Tasks[taskId] =
-			common.GetCheckpointResourcePath(
-				task.ModelId, task.HyperparametersId, task.CheckpointId)
+		taskIds = append(taskIds, taskId)
 	}
+	resp.TaskIds = taskIds
 	resp.StartTaskId = req.StartTaskId
 	resp.MaxItems = req.MaxItems
-	resp.RepositoryBaseUrl = store.repositoryBaseURL
 	return resp, nil
 }
