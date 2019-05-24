@@ -47,7 +47,7 @@ message TaskDetails {
     google.protobuf.Timestamp deadline = 4;       // UTC seconds since epoch when task expires
     string taskId = 5;
     bool active = 6;
-    string taskSpec = 7;  // URL to download task details
+    string link = 7;  // URL to download task details
 }
 
 message StartTaskRequest {

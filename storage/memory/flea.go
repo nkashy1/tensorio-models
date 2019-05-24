@@ -47,7 +47,7 @@ func (s *flea) AddTask(ctx context.Context, req api.TaskDetails) error {
 		TaskId:            req.TaskId,
 		Deadline:          req.Deadline,
 		Active:            req.Active,
-		TaskSpec:          req.TaskSpec,
+		Link:              req.Link,
 		CreatedTime:       time.Now(),
 		Jobs:              make(map[string]storage.Job),
 	}
@@ -126,7 +126,7 @@ func (s *flea) GetTask(ctx context.Context, taskId string) (api.TaskDetails, err
 		TaskId:            task.TaskId,
 		Deadline:          task.Deadline,
 		Active:            task.Active,
-		TaskSpec:          task.TaskSpec,
+		Link:              task.Link,
 	}
 	return resp, nil
 }

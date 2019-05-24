@@ -84,7 +84,7 @@ type Task struct {
 	TaskId            string
 	Deadline          *timestamp.Timestamp
 	Active            bool
-	TaskSpec          string
+	Link              string
 	CreatedTime       time.Time
 	Jobs              map[string]Job // Map from JobId to Job detail
 }
