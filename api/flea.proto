@@ -94,13 +94,12 @@ service Flea {
 
     rpc ListTasks (ListTasksRequest) returns (ListTasksResponse) {
         option (google.api.http) = {
-            post: "/v1/flea/tasks"
-            body: "*"
+            get: "/v1/flea/tasks"
         };
     };
     rpc GetTask (GetTaskRequest) returns (TaskDetails) {
         option (google.api.http) = {
-            get: "/v1/flea/task/{taskId}"
+            get: "/v1/flea/tasks/{taskId}"
         };
     };
     rpc StartTask (StartTaskRequest) returns (StartTaskResponse) {

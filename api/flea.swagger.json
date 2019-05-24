@@ -137,7 +137,64 @@
         ]
       }
     },
-    "/v1/flea/task/{taskId}": {
+    "/v1/flea/tasks": {
+      "get": {
+        "operationId": "ListTasks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListTasksResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "hyperparametersId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "checkpointId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "startTaskId",
+            "description": "Tasks are returned lexicographically sorted by taskId\nIf specified only taskIds \u003e= startTaskId will be returned.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "maxItems",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
+        "tags": [
+          "Flea"
+        ]
+      }
+    },
+    "/v1/flea/tasks/{taskId}": {
       "get": {
         "operationId": "GetTask",
         "responses": {
@@ -154,32 +211,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "tags": [
-          "Flea"
-        ]
-      }
-    },
-    "/v1/flea/tasks": {
-      "post": {
-        "operationId": "ListTasks",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiListTasksResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apiListTasksRequest"
-            }
           }
         ],
         "tags": [
@@ -229,32 +260,6 @@
       "properties": {
         "status": {
           "$ref": "#/definitions/HealthCheckResponseServingStatus"
-        }
-      }
-    },
-    "apiListTasksRequest": {
-      "type": "object",
-      "properties": {
-        "modelId": {
-          "type": "string"
-        },
-        "hyperparametersId": {
-          "type": "string"
-        },
-        "checkpointId": {
-          "type": "string"
-        },
-        "startTaskId": {
-          "type": "string",
-          "description": "Tasks are returned lexicographically sorted by taskId\nIf specified only taskIds \u003e= startTaskId will be returned."
-        },
-        "maxItems": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "includeInactive": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },

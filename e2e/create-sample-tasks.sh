@@ -46,16 +46,11 @@ curl -X POST \
 
 echo ""
 echo "List all tasks:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?includeInactive=true"
 
 echo ""
 echo "List all ACTIVE tasks:"
-curl -X POST \
-     -H "Content-Type: application/json" \
-     $FLEA_URL/tasks
+curl $FLEA_URL/tasks
 
 echo ""
 echo "Create Task: x3"
@@ -81,28 +76,19 @@ curl -X POST \
 
 echo ""
 echo "List first 3 tasks:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true, \"maxItems\": 3}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?inludeInactive=true&maxItems=3"
 
 echo ""
 echo "List tasks starting from b7:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true, \"startTaskId\": \"b7\"}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?includeInactive=true&startTaskId=b7"
 
 echo ""
 echo "List 2 tasks starting from task101:"
-curl -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"includeInactive\": true, \"startTaskId\": \"task101\", \"maxItems\": 2}" \
-    $FLEA_URL/tasks
+curl "$FLEA_URL/tasks?includeInactive=true&startTaskId=task101&maxItems=2"
 
 echo ""
 echo "Get details for task x3:"
-curl $FLEA_URL/task/x3
+curl $FLEA_URL/tasks/x3
 
 echo ""
 echo "Modify task x3:"
@@ -113,7 +99,7 @@ curl -X POST \
 
 echo ""
 echo "Get details for task x3: (NOTE: Missing active => inactive)"
-curl $FLEA_URL/task/x3
+curl $FLEA_URL/tasks/x3
 
 echo ""
 echo "Start task b7:"
