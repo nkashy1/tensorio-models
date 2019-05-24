@@ -273,15 +273,11 @@
           "type": "integer",
           "format": "int32"
         },
-        "tasks": {
-          "type": "object",
-          "additionalProperties": {
+        "taskIds": {
+          "type": "array",
+          "items": {
             "type": "string"
-          },
-          "description": "Map from taskId to resourcePath for checkpoint.\ne.g. { \"1001\" : \"/models/modelABC/hyperparameters/hpset13/checkpoints/chkpt-7\",\n       \"1007\" : \"/models/modelXYZ/hyperparameters/hpset4/checkpoints/chkpt-3\" }\nFlea will accept updates based on the specified or later checkpoints."
-        },
-        "repositoryBaseUrl": {
-          "type": "string"
+          }
         }
       }
     },
@@ -339,6 +335,9 @@
           "format": "boolean"
         },
         "link": {
+          "type": "string"
+        },
+        "checkpointLink": {
           "type": "string"
         }
       },

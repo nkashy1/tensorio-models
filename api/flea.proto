@@ -27,12 +27,7 @@ message ListTasksRequest {
 message ListTasksResponse {
     string startTaskId = 1;
     int32 maxItems = 2;
-    // Map from taskId to resourcePath for checkpoint.
-    // e.g. { "1001" : "/models/modelABC/hyperparameters/hpset13/checkpoints/chkpt-7",
-    //        "1007" : "/models/modelXYZ/hyperparameters/hpset4/checkpoints/chkpt-3" }
-    // Flea will accept updates based on the specified or later checkpoints.
-    map<string, string> tasks = 3; 
-    string repositoryBaseUrl = 4;   // Base URL to be prepended to resourcePath-s
+    repeated string taskIds = 3; 
 }
 
 message GetTaskRequest {
@@ -48,6 +43,7 @@ message TaskDetails {
     string taskId = 5;
     bool active = 6;
     string link = 7;  // URL to download task details
+    string checkpointLink = 8; // URL to download model checkpoint, optional in CreateTask
 }
 
 message StartTaskRequest {

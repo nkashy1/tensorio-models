@@ -76,7 +76,6 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 		resp.MaxItems = req.MaxItems
 	}
 	resp.StartTaskId = req.StartTaskId
-	resp.Tasks = make(map[string]string)
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	var taskIds []string
@@ -102,13 +101,7 @@ func (s *flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.Lis
 	if isLimited && (len(taskIds) >= int(req.MaxItems)) {
 		taskIds = taskIds[:req.MaxItems]
 	}
-	for _, taskId := range taskIds {
-		task, _ := s.tasks[taskId]
-		resp.Tasks[taskId] = common.GetCheckpointResourcePath(
-			task.ModelId, task.HyperparametersId, task.CheckpointId)
-	}
-
-	resp.RepositoryBaseUrl = s.repositoryBaseURL
+	resp.TaskIds = taskIds
 	return resp, nil
 }
 
@@ -127,6 +120,8 @@ func (s *flea) GetTask(ctx context.Context, taskId string) (api.TaskDetails, err
 		Deadline:          task.Deadline,
 		Active:            task.Active,
 		Link:              task.Link,
+		CheckpointLink: s.repositoryBaseURL + common.GetCheckpointResourcePath(
+			task.ModelId, task.HyperparametersId, task.CheckpointId),
 	}
 	return resp, nil
 }
