@@ -5,20 +5,20 @@
 
 namespace: default
 
-deployment:
-  replicas: 1
-  repository: docai/tensorio-models
-  tag: latest
-  pullPolicy: Always
-  backend: gcs
-  serviceAccount:
-    secret: tensorio-models
-    key: sacred.json
-    mountPath: /etc/auth
-  repositoryGcsBucket: tensorio-models-backend-dev
-
-service:
-  type: ClusterIP
-  grpcPort: 7316
-  restPort: 7317
-  hostname: tensorio-models.default
+repository:
+  deployment:
+    replicas: 1
+    repository: docai/tensorio-models
+    tag: latest
+    pullPolicy: Always
+    backend: gcs
+    serviceAccount:
+      secret: tensorio-models
+      key: sacred.json
+      mountPath: /etc/auth
+    repositoryGcsBucket: tensorio-models-backend-dev
+  service:
+    type: ClusterIP
+    grpcPort: 7316
+    restPort: 7317
+    hostname: tensorio-models.default

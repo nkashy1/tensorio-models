@@ -41,6 +41,21 @@ backend (for testing purposes).
 
 ### Aggregators
 
+To trigger an aggregation job on a given kubernetes cluster, use helm from project root:
+```
+helm upgrade --install \
+    flea-aggregator \
+    --set aggregator.tag=$DOCKER_TAG \
+    --set aggregator.aggregationId=aggregation-$(date -u +%Y%m%d-%H%M) \
+    --set aggregator.checkpointsFilePath=$CHECKPOINTS_FILEPATH \
+    --set aggregator.outputPath=$OUTPUT_PATH \
+    -f values.aggregator.yaml \
+    helm/
+```
+
+Here, `values.aggregator.yaml` should look like `helm/values.aggregator.yaml` with perhaps modified
+`aggregator.repository`.
+
 ### Secrets
 
 Certain configurations of `tensorio-models` backend components will require access to secrets (for

@@ -1,0 +1,91 @@
+---
+# Source: tensorio-models/templates/aggregator-job.yaml
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: release-name-790fbe4a-57b3-43cc-af84-fdfd517a9792
+  namespace: default
+  annotations:
+    app.kubernetes.io/name: tensorio-models
+    helm.sh/chart: tensorio-models-0.1.0
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Tiller
+spec:
+  backoffLimit: 1
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      restartPolicy: "Never"
+      containers:
+        - name: aggregator
+          image: "docai/flea-aggregator:latest"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: sacred
+              mountPath: /etc/auth
+          env:
+            - name: AGGREGATION_TYPE
+              value: cma
+            - name: AGGREGATION_CKPTS_FILELIST
+              value: gs://job-bucket/test-job/aggregation-checkpoints.txt
+            - name: AGGREGATION_OUTPUT_PATH
+              value: gs://job-bucket/test-job/final-aggregate
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/auth/sacred.json"
+      volumes:
+        - name: sacred
+          secret:
+            secretName: flea-aggregator
+
+---
+# Source: tensorio-models/templates/preinstall-check-secrets.yaml
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: release-name-preinstall-check-secrets-flea-aggregator
+  namespace: default
+  annotations:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Tiller
+    
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+    
+spec:
+  backoffLimit: 1
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      restartPolicy: "Never"
+      containers:
+        - name: check-secret-sacred-json
+          image: "alpine:3.9"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: secret-under-test
+              mountPath: /etc/secret
+          command: ["stat", "/etc/secret/sacred.json"]
+      volumes:
+        - name: secret-under-test
+          secret:
+            secretName: flea-aggregator
+
+---
+# Source: tensorio-models/templates/repository-deployment.yaml
+
+
+---
+# Source: tensorio-models/templates/repository-service.yaml
+
+
+---
+# Source: tensorio-models/templates/tests/test-connection.yaml
+
+

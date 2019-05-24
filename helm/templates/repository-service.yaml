@@ -1,3 +1,5 @@
+{{- if .Values.repository }}
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,29 +17,30 @@ metadata:
       kind:  Mapping
       name: {{ include "tensorio-models.fullname" . }}-rest-mapping
       prefix: /rest/
-      host: {{ .Values.service.hostname }}
+      host: {{ .Values.repository.service.hostname }}
       timeout_ms: 5000
-      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.service.restPort }}
+      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.repository.service.restPort }}
       ---
       apiVersion: ambassador/v1
       kind:  Mapping
       name: {{ include "tensorio-models.fullname" . }}-grpc-mapping
       prefix: /grpc/
-      host: {{ .Values.service.hostname }}
+      host: {{ .Values.repository.service.hostname }}
       timeout_ms: 5000
-      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.service.grpcPort }}
+      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.repository.service.grpcPort }}
 
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.repository.service.type }}
   ports:
-    - port: {{ .Values.service.restPort }}
+    - port: {{ .Values.repository.service.restPort }}
       targetPort: rest
       protocol: TCP
       name: rest
-    - port: {{ .Values.service.grpcPort }}
+    - port: {{ .Values.repository.service.grpcPort }}
       targetPort: grpc
       protocol: TCP
       name: grpc
   selector:
     app.kubernetes.io/name: {{ include "tensorio-models.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

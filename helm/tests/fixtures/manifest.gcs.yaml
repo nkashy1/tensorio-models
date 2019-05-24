@@ -1,5 +1,7 @@
 ---
-# Source: tensorio-models/templates/service.yaml
+# Source: tensorio-models/templates/repository-service.yaml
+
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -46,6 +48,8 @@ spec:
 
 ---
 # Source: tensorio-models/templates/tests/test-connection.yaml
+
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -66,7 +70,9 @@ spec:
   restartPolicy: Never
 
 ---
-# Source: tensorio-models/templates/deployment.yaml
+# Source: tensorio-models/templates/repository-deployment.yaml
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -123,6 +129,10 @@ spec:
         - name: sacred
           secret:
             secretName: tensorio-models
+
+---
+# Source: tensorio-models/templates/aggregator-job.yaml
+
 
 ---
 # Source: tensorio-models/templates/preinstall-check-secrets.yaml

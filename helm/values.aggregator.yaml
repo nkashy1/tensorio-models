@@ -1,0 +1,21 @@
+# This values file shows how to specify an aggregator job.
+namespace: default
+
+checkSecrets:
+  - name: flea-aggregator
+    namespace: default
+    keys:
+      - key: sacred.json
+        displayName: sacred-json
+
+aggregator:
+  repository: docai/flea-aggregator
+  tag: latest
+  aggregationId: 790fbe4a-57b3-43cc-af84-fdfd517a9792
+  checkpointsFilePath: gs://job-bucket/test-job/aggregation-checkpoints.txt
+  outputPath: gs://job-bucket/test-job/final-aggregate
+  aggregationType: cma
+  serviceAccount:
+    secret: flea-aggregator
+    key: sacred.json
+    mountPath: /etc/auth

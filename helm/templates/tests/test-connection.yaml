@@ -1,3 +1,5 @@
+{{- if .Values.repository }}
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -14,5 +16,6 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args:  ['{{ include "tensorio-models.fullname" . }}:{{ .Values.service.restPort }}/v1/repository/healthz']
+      args:  ['{{ include "tensorio-models.fullname" . }}:{{ .Values.repository.service.restPort }}/v1/repository/healthz']
   restartPolicy: Never
+{{- end }}

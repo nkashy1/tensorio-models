@@ -1,3 +1,5 @@
+{{- if .Values.repository }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,7 +11,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: {{ .Values.deployment.replicas }}
+  replicas: {{ .Values.repository.deployment.replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "tensorio-models.name" . }}
@@ -22,23 +24,23 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.deployment.repository }}:{{ .Values.deployment.tag }}"
-          imagePullPolicy: {{ .Values.deployment.pullPolicy }}
+          image: "{{ .Values.repository.deployment.repository }}:{{ .Values.repository.deployment.tag }}"
+          imagePullPolicy: {{ .Values.repository.deployment.pullPolicy }}
           volumeMounts:
-            {{- if .Values.deployment.serviceAccount }}
+            {{- if .Values.repository.deployment.serviceAccount }}
             - name: sacred
-              mountPath: {{ .Values.deployment.serviceAccount.mountPath }}
+              mountPath: {{ .Values.repository.deployment.serviceAccount.mountPath }}
             {{- end }}
           env:
             - name: BACKEND
-              value: {{ .Values.deployment.backend }}
-            {{- if .Values.deployment.repositoryGcsBucket }}
+              value: {{ .Values.repository.deployment.backend }}
+            {{- if .Values.repository.deployment.repositoryGcsBucket }}
             - name: REPOSITORY_GCS_BUCKET
-              value: {{ .Values.deployment.repositoryGcsBucket }}
+              value: {{ .Values.repository.deployment.repositoryGcsBucket }}
             {{- end }}
-            {{- if .Values.deployment.serviceAccount }}
+            {{- if .Values.repository.deployment.serviceAccount }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "{{ .Values.deployment.serviceAccount.mountPath }}/{{ .Values.deployment.serviceAccount.key }}"
+              value: "{{ .Values.repository.deployment.serviceAccount.mountPath }}/{{ .Values.repository.deployment.serviceAccount.key }}"
             {{- end }}
           args: ["-backend", "$(BACKEND)"]
           ports:
@@ -57,8 +59,9 @@ spec:
               path: /v1/repository/healthz
               port: rest
       volumes:
-        {{- if .Values.deployment.serviceAccount }}
+        {{- if .Values.repository.deployment.serviceAccount }}
         - name: sacred
           secret:
-            secretName: {{ .Values.deployment.serviceAccount.secret }}
+            secretName: {{ .Values.repository.deployment.serviceAccount.secret }}
         {{- end }}
+{{- end }}

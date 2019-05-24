@@ -1,0 +1,40 @@
+{{- if .Values.aggregator }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.aggregator.aggregationId }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}
+    helm.sh/chart: {{ include "tensorio-models.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  backoffLimit: 1
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      restartPolicy: "Never"
+      containers:
+        - name: aggregator
+          image: "{{ .Values.aggregator.repository }}:{{ .Values.aggregator.tag }}"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: sacred
+              mountPath: {{ .Values.aggregator.serviceAccount.mountPath }}
+          env:
+            - name: AGGREGATION_TYPE
+              value: {{ .Values.aggregator.aggregationType }}
+            - name: AGGREGATION_CKPTS_FILELIST
+              value: {{ .Values.aggregator.checkpointsFilePath }}
+            - name: AGGREGATION_OUTPUT_PATH
+              value: {{ .Values.aggregator.outputPath }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "{{ .Values.aggregator.serviceAccount.mountPath }}/{{ .Values.aggregator.serviceAccount.key }}"
+      volumes:
+        - name: sacred
+          secret:
+            secretName: {{ .Values.aggregator.serviceAccount.secret }}
+{{- end }}
