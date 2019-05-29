@@ -2,10 +2,13 @@ package flea_server
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/authentication"
 	"github.com/doc-ai/tensorio-models/common"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/doc-ai/tensorio-models/storage/gcs"
@@ -16,13 +19,49 @@ import (
 )
 
 type flea_server struct {
-	storage storage.FleaStorage
+	storage       storage.FleaStorage
+	authenticator authentication.Authenticator
 }
+
+const (
+	FLEA_ADMIN    authentication.AuthenticationTokenType = "FleaAdmin"
+	FLEA_CLIENT   authentication.AuthenticationTokenType = "FleaClient"
+	FLEA_TASK_GEN authentication.AuthenticationTokenType = "FleaTaskGen"
+)
 
 // NewServer - Creates an api.RepositoryServer which handles gRPC requests using a given
 // storage.RepositoryStorage backend
 func NewServer(storage storage.FleaStorage) api.FleaServer {
-	return &flea_server{storage: storage}
+	tokenFilePath := os.Getenv("AUTH_TOKENS_FILE")
+	if tokenFilePath == "" {
+		err := errors.New("AUTH_TOKENS_FILE must be provided.")
+		panic(err)
+	}
+
+	tokenTypeToSet := &authentication.AuthenticationTokenTypeToSet{
+		FLEA_ADMIN:    authentication.AuthenticationTokenSet{},
+		FLEA_CLIENT:   authentication.AuthenticationTokenSet{},
+		FLEA_TASK_GEN: authentication.AuthenticationTokenSet{},
+	}
+	var auth authentication.Authenticator
+	bucketName := storage.GetBucketName()
+	if bucketName == "" {
+		auth = authentication.NewAuthenticator(&authentication.FileSystemAuthentication{
+			TokenFilePath:  tokenFilePath,
+			TokenTypeToSet: tokenTypeToSet,
+		})
+	} else {
+		auth = authentication.NewAuthenticator(&authentication.GCSAuthentication{
+			BucketName:     bucketName,
+			TokenFilePath:  tokenFilePath,
+			TokenTypeToSet: tokenTypeToSet,
+		})
+	}
+	return &flea_server{
+		storage:       storage,
+		authenticator: auth,
+	}
+
 }
 
 func startGrpcServer(apiServer api.FleaServer, serverAddress string) {
@@ -45,7 +84,6 @@ func startGrpcServer(apiServer api.FleaServer, serverAddress string) {
 
 func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	log.Println("Starting json-rpc on:", jsonServerAddress)
-
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -100,7 +138,26 @@ func (srv *flea_server) Config(ctx context.Context, req *api.ConfigRequest) (*ap
 	return resp, nil
 }
 
+func (srv *flea_server) Admin(ctx context.Context, req *api.AdminRequest) (*api.AdminResponse, error) {
+	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_ADMIN)
+	if auth_err != nil {
+		return nil, auth_err
+	}
+	if req.Type != api.AdminRequest_RELOAD_TOKENS {
+		return nil, errors.New("Unknown admin request type!")
+	}
+	err := srv.authenticator.ReloadAuthenticationTokens(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &api.AdminResponse{Info: "Updated Authentication Tokens"}, nil
+}
+
 func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*api.TaskDetails, error) {
+	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
+	if auth_err != nil {
+		return nil, auth_err
+	}
 	log.Println("CreateTask:", req)
 	if req.ModelId == "" {
 		return nil, storage.ErrMissingModelId
@@ -130,19 +187,30 @@ func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*
 	if err != nil {
 		return nil, err
 	}
-	return req, nil
+	resp, err := srv.storage.GetTask(ctx, req.TaskId)
+	return &resp, err
 }
 
 func (srv *flea_server) ModifyTask(ctx context.Context, req *api.ModifyTaskRequest) (*api.TaskDetails, error) {
+	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
+	if auth_err != nil {
+		return nil, auth_err
+	}
 	log.Println("ModifyTask:", req)
 	err := srv.storage.ModifyTask(ctx, *req)
 	if err != nil {
 		return nil, err
 	}
-	return srv.GetTask(ctx, &api.GetTaskRequest{TaskId: req.TaskId})
+	// Can't call srv.GetTask because it authenticates against a diff token.
+	resp, err := srv.storage.GetTask(ctx, req.TaskId)
+	return &resp, err
 }
 
 func (srv *flea_server) ListTasks(ctx context.Context, req *api.ListTasksRequest) (*api.ListTasksResponse, error) {
+	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
+	if auth_err != nil {
+		return nil, auth_err
+	}
 	log.Println("List tasks:", req)
 	if req.CheckpointId != "" && req.HyperparametersId == "" {
 		return nil, storage.ErrInvalidModelHyperparamsCheckpointCombo
@@ -155,11 +223,19 @@ func (srv *flea_server) ListTasks(ctx context.Context, req *api.ListTasksRequest
 }
 
 func (srv *flea_server) GetTask(ctx context.Context, req *api.GetTaskRequest) (*api.TaskDetails, error) {
+	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
+	if auth_err != nil {
+		return nil, auth_err
+	}
 	resp, err := srv.storage.GetTask(ctx, req.TaskId)
 	return &resp, err
 }
 
 func (srv *flea_server) StartTask(ctx context.Context, req *api.StartTaskRequest) (*api.StartTaskResponse, error) {
+	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
+	if auth_err != nil {
+		return nil, auth_err
+	}
 	resp, err := srv.storage.StartTask(ctx, req.TaskId)
 	return &resp, err
 }

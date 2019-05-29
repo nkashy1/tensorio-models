@@ -1,15 +1,17 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"strings"
-
+	"github.com/doc-ai/tensorio-models/authentication"
 	"github.com/doc-ai/tensorio-models/server"
 	"github.com/doc-ai/tensorio-models/storage"
 	"github.com/doc-ai/tensorio-models/storage/gcs"
 	"github.com/doc-ai/tensorio-models/storage/memory"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"strings"
 )
 
 func main() {
@@ -40,8 +42,33 @@ func main() {
 	/* END cli */
 
 	repositoryBackend := backend()
+
+	tokenTypeToSet := &authentication.AuthenticationTokenTypeToSet{
+		server.MODELS_ADMIN:  authentication.AuthenticationTokenSet{},
+		server.MODELS_READER: authentication.AuthenticationTokenSet{},
+		server.MODELS_WRITER: authentication.AuthenticationTokenSet{},
+	}
+	filePath := os.Getenv("AUTH_TOKENS_FILE")
+	if filePath == "" {
+		err := errors.New("AUTH_TOKENS_FILE must be defined")
+		panic(err)
+	}
+	bucketName := repositoryBackend.GetBucketName()
+	var auth authentication.Authenticator
+	if bucketName == "" {
+		auth = authentication.NewAuthenticator(&authentication.FileSystemAuthentication{
+			TokenFilePath:  filePath,
+			TokenTypeToSet: tokenTypeToSet,
+		})
+	} else {
+		auth = authentication.NewAuthenticator(&authentication.GCSAuthentication{
+			BucketName:     bucketName,
+			TokenFilePath:  filePath,
+			TokenTypeToSet: tokenTypeToSet,
+		})
+	}
 	const grpcAddress = ":8080"
 	const jsonRpcAddress = ":8081"
 	server.StartGrpcAndProxyServer(repositoryBackend,
-		grpcAddress, jsonRpcAddress, make(chan string))
+		grpcAddress, jsonRpcAddress, auth, make(chan string))
 }

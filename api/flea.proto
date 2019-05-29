@@ -61,6 +61,18 @@ message StartTaskResponse {
    string uploadTo = 3;  // URL to upload task output
 }
 
+message AdminRequest {
+    enum AdminRequestType {
+        UNKNOWN = 0;
+        RELOAD_TOKENS = 1;
+    }
+    AdminRequestType type = 1;
+}
+
+message AdminResponse {
+    string info = 1;
+}
+
 service Flea {
     rpc Healthz (HealthCheckRequest) returns (HealthCheckResponse) {
         option (google.api.http) = {
@@ -105,4 +117,12 @@ service Flea {
             get: "/v1/flea/start_task/{taskId}"
         };
     };
+
+    // Admin
+    rpc Admin (AdminRequest) returns (AdminResponse) {
+        option (google.api.http) = {
+            post: "/v1/flea/admin"
+            body: "*"
+        }; 
+    }
 }

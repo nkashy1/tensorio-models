@@ -43,6 +43,7 @@ type Checkpoint struct {
 
 type RepositoryStorage interface {
 	GetStorageType() string
+	GetBucketName() string
 
 	// MODELS
 
@@ -104,6 +105,7 @@ var ErrInvalidCheckpointId = errors.New("Invalid CheckpointId")
 
 type FleaStorage interface {
 	GetStorageType() string
+	GetBucketName() string
 
 	AddTask(ctx context.Context, req api.TaskDetails) error
 	ModifyTask(ctx context.Context, req api.ModifyTaskRequest) error

@@ -1,0 +1,22 @@
+{"status":"SERVING"}
+{"backendType":"MEMORY"}
+{"modelId":"Model17","hyperparametersId":"hpset5","checkpointId":"ckpt-7","deadline":"2019-12-31T23:59:59.001Z","taskId":"task101","active":false,"link":"http://goo.gl/T1.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model17/hyperparameters/hpset5/checkpoints/ckpt-7"}
+{"modelId":"Model3","hyperparametersId":"hpset3","checkpointId":"ckpt-3","deadline":"2019-07-31T23:59:59.002Z","taskId":"task102","active":true,"link":"http://goo.gl/T2.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model3/hyperparameters/hpset3/checkpoints/ckpt-3"}
+{"modelId":"Model5","hyperparametersId":"hpset13","checkpointId":"ckpt-2","deadline":"2019-12-14T23:59:59.003Z","taskId":"aaa","active":true,"link":"http://goo.gl/T3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model5/hyperparameters/hpset13/checkpoints/ckpt-2"}
+{"startTaskId":"","maxItems":0,"taskIds":["aaa","task101","task102"]}
+{"startTaskId":"","maxItems":0,"taskIds":["aaa","task102"]}
+{"modelId":"Model5","hyperparametersId":"hpset3","checkpointId":"ckpt-5","deadline":"2023-12-31T23:59:00.004Z","taskId":"x3","active":true,"link":"http://goo.gl/Tx3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model5/hyperparameters/hpset3/checkpoints/ckpt-5"}
+{"modelId":"Model15","hyperparametersId":"hpset1","checkpointId":"ckpt-42","deadline":"2019-12-21T23:59:59.005Z","taskId":"y5","active":true,"link":"http://goo.gl/Tx5.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model15/hyperparameters/hpset1/checkpoints/ckpt-42"}
+{"modelId":"Model-bozo5","hyperparametersId":"hpset1","checkpointId":"ckpt-52","deadline":"2029-12-31T23:59:59.006Z","taskId":"b7","active":true,"link":"http://goo.gl/Tzxe3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model-bozo5/hyperparameters/hpset1/checkpoints/ckpt-52"}
+{"startTaskId":"","maxItems":3,"taskIds":["aaa","b7","task102"]}
+{"startTaskId":"b7","maxItems":0,"taskIds":["b7","task101","task102","x3","y5"]}
+{"startTaskId":"task101","maxItems":2,"taskIds":["task101","task102"]}
+{"modelId":"Model5","hyperparametersId":"hpset3","checkpointId":"ckpt-5","deadline":"2023-12-31T23:59:00.004Z","taskId":"x3","active":true,"link":"http://goo.gl/Tx3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model5/hyperparameters/hpset3/checkpoints/ckpt-5"}
+{"modelId":"Model5","hyperparametersId":"hpset3","checkpointId":"ckpt-5","deadline":"2020-02-12T23:00:00.888888Z","taskId":"x3","active":false,"link":"http://goo.gl/Tx3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model5/hyperparameters/hpset3/checkpoints/ckpt-5"}
+{"modelId":"Model5","hyperparametersId":"hpset3","checkpointId":"ckpt-5","deadline":"2020-02-12T23:00:00.888888Z","taskId":"x3","active":false,"link":"http://goo.gl/Tx3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model5/hyperparameters/hpset3/checkpoints/ckpt-5"}
+{"info":"Updated Authentication Tokens"}
+{"modelId":"Model5","hyperparametersId":"hpset3","checkpointId":"ckpt-5","deadline":"2020-02-12T23:00:00.888888Z","taskId":"x3","active":false,"link":"http://goo.gl/Tx3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model5/hyperparameters/hpset3/checkpoints/ckpt-5"}
+{"status":"APPROVED","jobId":"f395d719-f2fb-45b6-a296-bff8f21ff016","uploadTo":"gs://example-repo/tasksJobs/b7/f395d719-f2fb-45b6-a296-bff8f21ff016.zip"}
+{"status":"APPROVED","jobId":"ce7dab37-155b-499a-acf1-4cbc2cac1e26","uploadTo":"gs://example-repo/tasksJobs/b7/ce7dab37-155b-499a-acf1-4cbc2cac1e26.zip"}
+{"error":"Unauthorized. Invalid Authorization token","message":"Unauthorized. Invalid Authorization token","code":2,"details":[]}
+{"error":"Unauthorized. Missing Authorization header","message":"Unauthorized. Missing Authorization header","code":2,"details":[]}

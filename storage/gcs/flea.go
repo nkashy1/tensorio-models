@@ -21,6 +21,7 @@ import (
 type flea struct {
 	client             *gcs.Client
 	bucket             *gcs.BucketHandle
+	bucketName         string
 	repositoryBaseURL  string
 	uploadToBucketName string
 	urlSigner          signedURL.URLSigner
@@ -57,11 +58,16 @@ func GenerateNewFleaGCSStorageFromEnv(repositoryBaseURL string) storage.FleaStor
 		repositoryBaseURL:  repositoryBaseURL,
 		uploadToBucketName: uploadBucketName,
 		urlSigner:          urlSigner,
+		bucketName:         bucketName,
 	}
 }
 
 func (store flea) GetStorageType() string {
 	return "GCS"
+}
+
+func (s *flea) GetBucketName() string {
+	return s.bucketName
 }
 
 func objTaskPath(taskId string) string {

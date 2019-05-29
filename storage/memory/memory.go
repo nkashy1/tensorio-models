@@ -15,7 +15,8 @@ const (
 )
 
 type memory struct {
-	lock      *sync.RWMutex
+	lock *sync.RWMutex
+
 	modelList []string
 	models    map[string]storage.Model
 
@@ -45,6 +46,8 @@ func NewMemoryRepositoryStorage() storage.RepositoryStorage {
 func (s *memory) GetStorageType() string {
 	return StorageType
 }
+
+func (s *memory) GetBucketName() string { return "" }
 
 func (s *memory) ListModels(ctx context.Context, marker string, maxItems int) ([]string, error) {
 	s.lock.RLock()

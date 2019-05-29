@@ -24,17 +24,21 @@ go install github.com/golang/protobuf/protoc-gen-go
 
 ## Running server
 
-The server can be run with `make run`, but there is a caveat -- `make run` requires a
-`RUN_ARGS` argument.
+To bring up memory backends, just do `make run-flea` for FLEA and `make run-models` for Repo/Models.
 
-For example:
+With `make run-flea` running in another window, run:
 ```
-RUN_ARGS="-backend memory" make run
+e2e/create-sample-tasks.sh
+```
+or to test output (requires a fresh `make run-flea`):
+```
+e2e/diff-flea-task-output.sh
 ```
 
-Without this argument, `make run` fails -- simply because the `repository` binary has required
-arguments.
-
+To create sample models and/or test Repo/Models backend run:
+```
+e2e/setup.sh
+```
 
 ### Running server against GCS for testing:
 
@@ -53,6 +57,7 @@ docker run \
     -v $GOOGLE_APPLICATION_CREDENTIALS:/etc/sacred.json \
     -e GOOGLE_APPLICATION_CREDENTIALS=/etc/sacred.json \
     -e REPOSITORY_GCS_BUCKET=tensorio-models-backend-dev \
+    -e AUTH_TOKENS_FILE=AuthTokens.txt \
     -p 8080:8080 \
     -p 8081:8081 \
     docai/tensorio-models \
@@ -74,6 +79,7 @@ docker run \
     -e GOOGLE_ACCESS_ID="$GOOGLE_ACCESS_ID" \
     -e PRIVATE_PEM_KEY="$PRIVATE_PEM_KEY" \
     -e MODELS_URI=localhost:8081/v1/repository \
+    -e AUTH_TOKENS_FILE=AuthTokens.txt \
     -p 8082:8082 \
     -p 8083:8083 \
     docai/tensorio-flea \

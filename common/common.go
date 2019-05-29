@@ -33,11 +33,13 @@ func IsValidID(s string) bool {
 	return s != ""
 }
 
+// GetCheckpointResourcePath - returns path of resource
 func GetCheckpointResourcePath(modelID, hyperparametersID, checkpointID string) string {
 	resourcePath := fmt.Sprintf("/models/%s/hyperparameters/%s/checkpoints/%s", modelID, hyperparametersID, checkpointID)
 	return resourcePath
 }
 
+// GetTerminalResourceFromStoragePath -
 // RepositoryStorage implementations return resources in the form:
 // <modelId>, <modelId>:<hyperparametersId>, <modelId>:<hyperparametersId>:<checkpointId>
 // This function takes input in those formats and returns (respectively):

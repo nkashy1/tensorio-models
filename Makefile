@@ -3,6 +3,7 @@ GRPC_LIST:=$(shell go list -m -f "{{.Dir}}" github.com/grpc-ecosystem/grpc-gatew
 GRPC_GATEWAY_PROTO_DIR:="${GRPC_LIST}/third_party/googleapis"
 TIMESTAMP:=$(shell date -u +%s)
 RUN_ARGS=-backend memory
+CWD:=$(shell pwd)
 
 default: fmt build
 
@@ -16,10 +17,10 @@ docker-flea:
 	docker build -t docai/tensorio-flea -f dockerfiles/Dockerfile.flea .
 
 run-models: docker-models
-	docker run -p 8080:8080 -p 8081:8081 docai/tensorio-models ${RUN_ARGS}
+	docker run -v $(CWD)/common/fixtures/AuthTokens.txt:/tmp/AuthTokens.txt -e AUTH_TOKENS_FILE=/tmp/AuthTokens.txt -p 8080:8080 -p 8081:8081 docai/tensorio-models ${RUN_ARGS}
 
 run-flea: docker-flea
-	docker run -e MODELS_URI=http://example.com:8081/v1/repository -p 8082:8082 -p 8083:8083 docai/tensorio-flea ${RUN_ARGS}
+	docker run -v $(CWD)/common/fixtures/AuthTokens.txt:/tmp/AuthTokens.txt -e MODELS_URI=http://example.com:8081/v1/repository -e AUTH_TOKENS_FILE=/tmp/AuthTokens.txt -p 8082:8082 -p 8083:8083 docai/tensorio-flea ${RUN_ARGS}
 
 api/repository.pb.go: api/repository.proto
 	cd api && protoc -I . repository.proto --go_out=plugins=grpc:. --proto_path=${GOPATH}/src --proto_path=$(GOPATH)/pkg/mod --proto_path=$(GRPC_GATEWAY_PROTO_DIR)

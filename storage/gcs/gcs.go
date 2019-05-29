@@ -20,8 +20,9 @@ const (
 )
 
 type gcsStorage struct {
-	client *gcs.Client
-	bucket *gcs.BucketHandle
+	bucketName string
+	client     *gcs.Client
+	bucket     *gcs.BucketHandle
 }
 
 // GenerateNewGCSStorageFromEnv - Uses the GOOGLE_APPLICATION_CREDENTIALS and REPOSITORY_GCS_BUCKET
@@ -44,17 +45,19 @@ func GenerateNewGCSStorageFromEnv() storage.RepositoryStorage {
 
 // NewGCSStorage - Creates a GCS-backed instance of storage.RepositoryStorage interface
 func NewGCSStorage(client *gcs.Client, bucketName string) storage.RepositoryStorage {
-	res := &gcsStorage{}
-	res.client = client
-
-	bucket := client.Bucket(bucketName)
-	res.bucket = bucket
-
-	return res
+	return &gcsStorage{
+		client:     client,
+		bucket:     client.Bucket(bucketName),
+		bucketName: bucketName,
+	}
 }
 
 func (store gcsStorage) GetStorageType() string {
 	return StorageType
+}
+
+func (store gcsStorage) GetBucketName() string {
+	return store.bucketName
 }
 
 func (store gcsStorage) ListModels(ctx context.Context, marker string, maxItems int) ([]string, error) {

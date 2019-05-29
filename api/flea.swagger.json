@@ -15,6 +15,33 @@
     "application/json"
   ],
   "paths": {
+    "/v1/flea/admin": {
+      "post": {
+        "summary": "Admin",
+        "operationId": "Admin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiAdminResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiAdminRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Flea"
+        ]
+      }
+    },
     "/v1/flea/config": {
       "get": {
         "operationId": "Config",
@@ -220,6 +247,14 @@
     }
   },
   "definitions": {
+    "AdminRequestAdminRequestType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "RELOAD_TOKENS"
+      ],
+      "default": "UNKNOWN"
+    },
     "ConfigResponseBackendType": {
       "type": "string",
       "enum": [
@@ -246,6 +281,22 @@
         "APPROVED"
       ],
       "default": "UNKNOWN"
+    },
+    "apiAdminRequest": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/AdminRequestAdminRequestType"
+        }
+      }
+    },
+    "apiAdminResponse": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "type": "string"
+        }
+      }
     },
     "apiConfigResponse": {
       "type": "object",

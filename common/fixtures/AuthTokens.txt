@@ -1,0 +1,7 @@
+FleaClient     ClientToken
+FleaTaskGen    TaskGenToken
+FleaAdmin      AdminToken
+random xddd
+ModelsAdmin     ModelsAdminToken
+ModelsReader ReaderToken
+ModelsWriter      WriterToken

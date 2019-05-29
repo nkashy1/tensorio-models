@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sort"
 	"testing"
 	"time"
 
 	"github.com/doc-ai/tensorio-models/api"
+	"github.com/doc-ai/tensorio-models/authentication"
 	"github.com/doc-ai/tensorio-models/common"
 	"github.com/doc-ai/tensorio-models/server"
 
@@ -20,9 +22,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var CWD, _ = os.Getwd()
+
 func testingServer() api.RepositoryServer {
 	storage := memory.NewMemoryRepositoryStorage()
-	srv := server.NewServer(storage)
+	srv := server.NewServer(storage, authentication.NewFakeAuthenticator())
 	return srv
 }
 
@@ -979,7 +983,8 @@ func TestURLEndpoints(t *testing.T) {
 	const grpcAddress = ":9300" // Use diff ports.
 	const jsonAddress = ":9301"
 	stopRequestChannel := make(chan string)
-	go server.StartGrpcAndProxyServer(storage, grpcAddress, jsonAddress, stopRequestChannel)
+	go server.StartGrpcAndProxyServer(storage, grpcAddress, jsonAddress, authentication.NewFakeAuthenticator(),
+		stopRequestChannel)
 	baseUrl := fmt.Sprintf("http://localhost%s/v1/repository/", jsonAddress)
 	healthzUrl := baseUrl + "healthz"
 	response := ""

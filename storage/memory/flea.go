@@ -33,6 +33,8 @@ func NewMemoryFleaStorage(repositoryBaseURL string) storage.FleaStorage {
 
 func (s *flea) GetStorageType() string { return "MEMORY" }
 
+func (s *flea) GetBucketName() string { return "" }
+
 func (s *flea) AddTask(ctx context.Context, req api.TaskDetails) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
