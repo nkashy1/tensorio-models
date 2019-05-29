@@ -1,0 +1,88 @@
+{{- if .Values.flea }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Release.Name }}-flea
+  labels:
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-flea
+    helm.sh/chart: {{ include "tensorio-models.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}-flea
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.flea.deployment.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-flea
+      app.kubernetes.io/instance: {{ .Release.Name }}-flea
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-flea
+        app.kubernetes.io/instance: {{ .Release.Name }}-flea
+    spec:
+      containers:
+        - name: flea
+          image: "{{ .Values.flea.deployment.repository }}:{{ .Values.flea.deployment.tag }}"
+          imagePullPolicy: {{ .Values.flea.deployment.pullPolicy }}
+          volumeMounts:
+            {{- if .Values.flea.deployment.serviceAccount }}
+            - name: sacred
+              mountPath: {{ .Values.flea.deployment.serviceAccount.mountPath }}
+            {{- end }}
+          env:
+            - name: BACKEND
+              value: {{ .Values.flea.deployment.backend }}
+            - name: MODELS_URI
+              value: {{ .Values.repository.service.hostname }}/v1/repository
+            {{- if .Values.flea.deployment.fleaGcsBucket }}
+            - name: FLEA_GCS_BUCKET
+              value: {{ .Values.flea.deployment.fleaGcsBucket }}
+            {{- end }}
+            {{- if .Values.flea.deployment.fleaUploadGcsBucket }}
+            - name: FLEA_UPLOAD_GCS_BUCKET
+              value: {{ .Values.flea.deployment.fleaUploadGcsBucket }}
+            {{- end }}
+            {{- if .Values.flea.deployment.serviceAccount }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "{{ .Values.flea.deployment.serviceAccount.mountPath }}/{{ .Values.flea.deployment.serviceAccount.key }}"
+            {{- end }}
+            {{- if .Values.flea.deployment.serviceAccount }}
+            - name: PRIVATE_PEM_KEY
+              value: "{{ .Values.flea.deployment.serviceAccount.mountPath }}/{{ .Values.flea.deployment.serviceAccount.pemFile }}"
+            {{- end }}
+            {{- if .Values.flea.deployment.serviceAccount }}
+            - name: GOOGLE_ACCESS_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.flea.deployment.serviceAccount.secret }}
+                  key: {{ .Values.flea.deployment.serviceAccount.googleAccessId }}
+            {{- end }}
+            {{- if .Values.flea.deployment.authTokensFile }}
+            - name: AUTH_TOKENS_FILE
+              value: {{ .Values.flea.deployment.authTokensFile }}
+            {{- end }}
+          args: ["-backend", "$(BACKEND)"]
+          ports:
+            - name: grpc
+              containerPort: 8082
+              protocol: TCP
+            - name: rest
+              containerPort: 8083
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /v1/flea/healthz
+              port: rest
+          readinessProbe:
+            httpGet:
+              path: /v1/flea/healthz
+              port: rest
+      volumes:
+        {{- if .Values.flea.deployment.serviceAccount }}
+        - name: sacred
+          secret:
+            secretName: {{ .Values.flea.deployment.serviceAccount.secret }}
+        {{- end }}
+{{- end }}

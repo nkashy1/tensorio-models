@@ -4,30 +4,30 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: {{ .Values.namespace }}
-  name: {{ include "tensorio-models.fullname" . }}
+  name: {{ include "tensorio-models.fullname" . }}-repository
   labels:
-    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-repository
     helm.sh/chart: {{ include "tensorio-models.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}-repository
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     getambassador.io/config: |
       ---
       apiVersion: ambassador/v1
       kind:  Mapping
-      name: {{ include "tensorio-models.fullname" . }}-rest-mapping
+      name: {{ include "tensorio-models.fullname" . }}-repository-rest-mapping
       prefix: /rest/
       host: {{ .Values.repository.service.hostname }}
       timeout_ms: 5000
-      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.repository.service.restPort }}
+      service: {{ include "tensorio-models.fullname" . }}-repository.{{ .Values.namespace }}:{{ .Values.repository.service.restPort }}
       ---
       apiVersion: ambassador/v1
       kind:  Mapping
-      name: {{ include "tensorio-models.fullname" . }}-grpc-mapping
+      name: {{ include "tensorio-models.fullname" . }}-repository-grpc-mapping
       prefix: /grpc/
       host: {{ .Values.repository.service.hostname }}
       timeout_ms: 5000
-      service: {{ include "tensorio-models.fullname" . }}.{{ .Values.namespace }}:{{ .Values.repository.service.grpcPort }}
+      service: {{ include "tensorio-models.fullname" . }}-repository.{{ .Values.namespace }}:{{ .Values.repository.service.grpcPort }}
 
 spec:
   type: {{ .Values.repository.service.type }}
@@ -41,6 +41,6 @@ spec:
       protocol: TCP
       name: grpc
   selector:
-    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-repository
+    app.kubernetes.io/instance: {{ .Release.Name }}-repository
 {{- end }}

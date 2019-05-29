@@ -1,0 +1,46 @@
+{{- if .Values.flea }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ include "tensorio-models.fullname" . }}-flea
+  labels:
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-flea
+    helm.sh/chart: {{ include "tensorio-models.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}-flea
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind:  Mapping
+      name: {{ include "tensorio-models.fullname" . }}-flea-rest-mapping
+      prefix: /rest/
+      host: {{ .Values.flea.service.hostname }}
+      timeout_ms: 5000
+      service: {{ include "tensorio-models.fullname" . }}-flea.{{ .Values.namespace }}:{{ .Values.flea.service.restPort }}
+      ---
+      apiVersion: ambassador/v1
+      kind:  Mapping
+      name: {{ include "tensorio-models.fullname" . }}-flea-grpc-mapping
+      prefix: /grpc/
+      host: {{ .Values.flea.service.hostname }}
+      timeout_ms: 5000
+      service: {{ include "tensorio-models.fullname" . }}-flea.{{ .Values.namespace }}:{{ .Values.flea.service.grpcPort }}
+
+spec:
+  type: {{ .Values.flea.service.type }}
+  ports:
+    - port: {{ .Values.flea.service.restPort }}
+      targetPort: rest
+      protocol: TCP
+      name: rest
+    - port: {{ .Values.flea.service.grpcPort }}
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-flea
+    app.kubernetes.io/instance: {{ .Release.Name }}-flea
+{{- end }}

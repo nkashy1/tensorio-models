@@ -78,6 +78,14 @@ spec:
             secretName: flea-aggregator
 
 ---
+# Source: tensorio-models/templates/flea-deployment.yaml
+
+
+---
+# Source: tensorio-models/templates/flea-service.yaml
+
+
+---
 # Source: tensorio-models/templates/repository-deployment.yaml
 
 

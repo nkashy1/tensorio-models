@@ -17,8 +17,30 @@ repository:
       key: sacred.json
       mountPath: /etc/auth
     repositoryGcsBucket: tensorio-models-backend-dev
+    authTokensFile: AuthTokens.txt
   service:
     type: ClusterIP
     grpcPort: 7316
     restPort: 7317
     hostname: tensorio-models.default
+flea:
+  deployment:
+    replicas: 1
+    repository: docai/flea
+    tag: latest
+    pullPolicy: Always
+    backend: gcs
+    serviceAccount:
+      secret: tensorio-models
+      key: sacred.json
+      pemFile: sacred.pem
+      googleAccessId: googleAccessId
+      mountPath: /etc/auth
+    fleaGcsBucket: tensorio-models-backend-dev
+    authTokensFile: AuthTokens.txt
+    fleaUploadGcsBucket: tensorio-models-jobs-docai-neuron-dev
+  service:
+    type: ClusterIP
+    grpcPort: 7318
+    restPort: 7319
+    hostname: flea.default

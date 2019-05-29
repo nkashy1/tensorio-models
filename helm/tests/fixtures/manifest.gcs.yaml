@@ -1,4 +1,52 @@
 ---
+# Source: tensorio-models/templates/flea-service.yaml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  name: release-name-tensorio-models-flea
+  labels:
+    app.kubernetes.io/name: tensorio-models-flea
+    helm.sh/chart: tensorio-models-0.1.0
+    app.kubernetes.io/instance: release-name-flea
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind:  Mapping
+      name: release-name-tensorio-models-flea-rest-mapping
+      prefix: /rest/
+      host: flea.default
+      timeout_ms: 5000
+      service: release-name-tensorio-models-flea.default:7319
+      ---
+      apiVersion: ambassador/v1
+      kind:  Mapping
+      name: release-name-tensorio-models-flea-grpc-mapping
+      prefix: /grpc/
+      host: flea.default
+      timeout_ms: 5000
+      service: release-name-tensorio-models-flea.default:7318
+
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7319
+      targetPort: rest
+      protocol: TCP
+      name: rest
+    - port: 7318
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app.kubernetes.io/name: tensorio-models-flea
+    app.kubernetes.io/instance: release-name-flea
+
+---
 # Source: tensorio-models/templates/repository-service.yaml
 
 ---
@@ -6,30 +54,30 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: default
-  name: release-name-tensorio-models
+  name: release-name-tensorio-models-repository
   labels:
-    app.kubernetes.io/name: tensorio-models
+    app.kubernetes.io/name: tensorio-models-repository
     helm.sh/chart: tensorio-models-0.1.0
-    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/instance: release-name-repository
     app.kubernetes.io/managed-by: Tiller
   annotations:
     getambassador.io/config: |
       ---
       apiVersion: ambassador/v1
       kind:  Mapping
-      name: release-name-tensorio-models-rest-mapping
+      name: release-name-tensorio-models-repository-rest-mapping
       prefix: /rest/
       host: tensorio-models.default
       timeout_ms: 5000
-      service: release-name-tensorio-models.default:7317
+      service: release-name-tensorio-models-repository.default:7317
       ---
       apiVersion: ambassador/v1
       kind:  Mapping
-      name: release-name-tensorio-models-grpc-mapping
+      name: release-name-tensorio-models-repository-grpc-mapping
       prefix: /grpc/
       host: tensorio-models.default
       timeout_ms: 5000
-      service: release-name-tensorio-models.default:7316
+      service: release-name-tensorio-models-repository.default:7316
 
 spec:
   type: ClusterIP
@@ -43,8 +91,8 @@ spec:
       protocol: TCP
       name: grpc
   selector:
-    app.kubernetes.io/name: tensorio-models
-    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: tensorio-models-repository
+    app.kubernetes.io/instance: release-name-repository
 
 ---
 # Source: tensorio-models/templates/tests/test-connection.yaml
@@ -70,6 +118,80 @@ spec:
   restartPolicy: Never
 
 ---
+# Source: tensorio-models/templates/flea-deployment.yaml
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: release-name-flea
+  labels:
+    app.kubernetes.io/name: tensorio-models-flea
+    helm.sh/chart: tensorio-models-0.1.0
+    app.kubernetes.io/instance: release-name-flea
+    app.kubernetes.io/managed-by: Tiller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tensorio-models-flea
+      app.kubernetes.io/instance: release-name-flea
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tensorio-models-flea
+        app.kubernetes.io/instance: release-name-flea
+    spec:
+      containers:
+        - name: flea
+          image: "docai/flea:latest"
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: sacred
+              mountPath: /etc/auth
+          env:
+            - name: BACKEND
+              value: gcs
+            - name: MODELS_URI
+              value: tensorio-models.default/v1/repository
+            - name: FLEA_GCS_BUCKET
+              value: tensorio-models-backend-dev
+            - name: FLEA_UPLOAD_GCS_BUCKET
+              value: tensorio-models-jobs-docai-neuron-dev
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/auth/sacred.json"
+            - name: PRIVATE_PEM_KEY
+              value: "/etc/auth/sacred.pem"
+            - name: GOOGLE_ACCESS_ID
+              valueFrom:
+                secretKeyRef:
+                  name: tensorio-models
+                  key: googleAccessId
+            - name: AUTH_TOKENS_FILE
+              value: AuthTokens.txt
+          args: ["-backend", "$(BACKEND)"]
+          ports:
+            - name: grpc
+              containerPort: 8082
+              protocol: TCP
+            - name: rest
+              containerPort: 8083
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /v1/flea/healthz
+              port: rest
+          readinessProbe:
+            httpGet:
+              path: /v1/flea/healthz
+              port: rest
+      volumes:
+        - name: sacred
+          secret:
+            secretName: tensorio-models
+
+---
 # Source: tensorio-models/templates/repository-deployment.yaml
 
 ---
@@ -77,26 +199,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
-  name: release-name-tensorio-models
+  name: release-name-repository
   labels:
-    app.kubernetes.io/name: tensorio-models
+    app.kubernetes.io/name: tensorio-models-repository
     helm.sh/chart: tensorio-models-0.1.0
-    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/instance: release-name-repository
     app.kubernetes.io/managed-by: Tiller
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: tensorio-models
-      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: tensorio-models-repository
+      app.kubernetes.io/instance: release-name-repository
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: tensorio-models
-        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/name: tensorio-models-repository
+        app.kubernetes.io/instance: release-name-repository
     spec:
       containers:
-        - name: tensorio-models
+        - name: repository
           image: "docai/tensorio-models:latest"
           imagePullPolicy: Always
           volumeMounts:
@@ -109,6 +231,8 @@ spec:
               value: tensorio-models-backend-dev
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/auth/sacred.json"
+            - name: AUTH_TOKENS_FILE
+              value: AuthTokens.txt
           args: ["-backend", "$(BACKEND)"]
           ports:
             - name: grpc
