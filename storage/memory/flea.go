@@ -147,7 +147,25 @@ func (s *flea) StartTask(ctx context.Context, taskId string) (api.StartTaskRespo
 		JobId:        jobId,
 		UploadUrl:    uploadTo,
 		AcceptedTime: time.Now(),
+		Errors:       make([]string, 0),
 	}
 	s.tasks[taskId] = task
 	return resp, nil
+}
+
+func (s *flea) AddJobError(ctx context.Context, req api.JobErrorRequest) error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	task, exists := s.tasks[req.TaskId]
+	if !exists {
+		return storage.ErrMissingTaskId
+	}
+	job, exists := task.Jobs[req.JobId]
+	if !exists {
+		return storage.ErrMissingJobId
+	}
+	job.Errors = append(job.Errors, req.ErrorMessage)
+	task.Jobs[req.JobId] = job
+	s.tasks[req.TaskId] = task
+	return nil
 }

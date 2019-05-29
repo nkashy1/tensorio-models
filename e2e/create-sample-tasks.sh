@@ -128,3 +128,12 @@ curl -s  -H "Authorization: ClientToken" $FLEA_URL/start_task/b7
 echo ""
 echo "Unauthorized 2:"
 curl -s  $FLEA_URL/start_task/b7
+
+JOBID=$(curl -s  -H "Authorization: Bearer ClientToken" $FLEA_URL/start_task/x3 | jq .jobId | tr -d \")
+
+echo
+echo "Add Task Error Report"
+curl -s -X POST -H "Authorization: Bearer ClientToken" \
+     -H "Content-Type: application/json" \
+     -d "{\"errorMessage\": \"Save this error!\"}" \
+     $FLEA_URL/job_error/x3/$JOBID

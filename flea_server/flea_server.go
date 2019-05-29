@@ -138,10 +138,10 @@ func (srv *flea_server) Config(ctx context.Context, req *api.ConfigRequest) (*ap
 	return resp, nil
 }
 
-func (srv *flea_server) Admin(ctx context.Context, req *api.AdminRequest) (*api.AdminResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_ADMIN)
-	if auth_err != nil {
-		return nil, auth_err
+func (srv *flea_server) Admin(ctx context.Context, req *api.AdminRequest) (*api.GenericResponse, error) {
+	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_ADMIN)
+	if authErr != nil {
+		return nil, authErr
 	}
 	if req.Type != api.AdminRequest_RELOAD_TOKENS {
 		return nil, errors.New("Unknown admin request type!")
@@ -150,13 +150,29 @@ func (srv *flea_server) Admin(ctx context.Context, req *api.AdminRequest) (*api.
 	if err != nil {
 		return nil, err
 	}
-	return &api.AdminResponse{Info: "Updated Authentication Tokens"}, nil
+	return &api.GenericResponse{Message: "Updated Authentication Tokens"}, nil
+}
+
+func (srv *flea_server) JobError(ctx context.Context, req *api.JobErrorRequest) (*api.GenericResponse, error) {
+	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
+	if authErr != nil {
+		return nil, authErr
+	}
+	if req.ErrorMessage == "" {
+		err := errors.New("Expected non-empty errorMessage")
+		return nil, err
+	}
+	err := srv.storage.AddJobError(ctx, *req)
+	if err != nil {
+		return nil, err
+	}
+	return &api.GenericResponse{Message: "Thank you for the error report."}, nil
 }
 
 func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*api.TaskDetails, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
-	if auth_err != nil {
-		return nil, auth_err
+	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
+	if authErr != nil {
+		return nil, authErr
 	}
 	log.Println("CreateTask:", req)
 	if req.ModelId == "" {
@@ -192,9 +208,9 @@ func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*
 }
 
 func (srv *flea_server) ModifyTask(ctx context.Context, req *api.ModifyTaskRequest) (*api.TaskDetails, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
-	if auth_err != nil {
-		return nil, auth_err
+	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
+	if authErr != nil {
+		return nil, authErr
 	}
 	log.Println("ModifyTask:", req)
 	err := srv.storage.ModifyTask(ctx, *req)
@@ -207,9 +223,9 @@ func (srv *flea_server) ModifyTask(ctx context.Context, req *api.ModifyTaskReque
 }
 
 func (srv *flea_server) ListTasks(ctx context.Context, req *api.ListTasksRequest) (*api.ListTasksResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
-	if auth_err != nil {
-		return nil, auth_err
+	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
+	if authErr != nil {
+		return nil, authErr
 	}
 	log.Println("List tasks:", req)
 	if req.CheckpointId != "" && req.HyperparametersId == "" {
@@ -223,18 +239,18 @@ func (srv *flea_server) ListTasks(ctx context.Context, req *api.ListTasksRequest
 }
 
 func (srv *flea_server) GetTask(ctx context.Context, req *api.GetTaskRequest) (*api.TaskDetails, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
-	if auth_err != nil {
-		return nil, auth_err
+	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
+	if authErr != nil {
+		return nil, authErr
 	}
 	resp, err := srv.storage.GetTask(ctx, req.TaskId)
 	return &resp, err
 }
 
 func (srv *flea_server) StartTask(ctx context.Context, req *api.StartTaskRequest) (*api.StartTaskResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
-	if auth_err != nil {
-		return nil, auth_err
+	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
+	if authErr != nil {
+		return nil, authErr
 	}
 	resp, err := srv.storage.StartTask(ctx, req.TaskId)
 	return &resp, err

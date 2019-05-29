@@ -74,8 +74,8 @@ type Job struct {
 	JobId     string
 	UploadUrl string
 
-	ClientId     string // Get it from AuthToken?
 	AcceptedTime time.Time
+	Errors       []string
 }
 
 type Task struct {
@@ -113,4 +113,6 @@ type FleaStorage interface {
 	ListTasks(ctx context.Context, req api.ListTasksRequest) (resp api.ListTasksResponse, e error)
 	GetTask(ctx context.Context, taskId string) (api.TaskDetails, error)
 	StartTask(ctx context.Context, taskId string) (api.StartTaskResponse, error)
+
+	AddJobError(ctx context.Context, req api.JobErrorRequest) error
 }

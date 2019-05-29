@@ -17,13 +17,12 @@
   "paths": {
     "/v1/flea/admin": {
       "post": {
-        "summary": "Admin",
         "operationId": "Admin",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiAdminResponse"
+              "$ref": "#/definitions/apiGenericResponse"
             }
           }
         },
@@ -101,6 +100,44 @@
             "in": "query",
             "required": false,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "Flea"
+        ]
+      }
+    },
+    "/v1/flea/job_error/{taskId}/{jobId}": {
+      "post": {
+        "operationId": "JobError",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGenericResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiJobErrorRequest"
+            }
           }
         ],
         "tags": [
@@ -290,14 +327,6 @@
         }
       }
     },
-    "apiAdminResponse": {
-      "type": "object",
-      "properties": {
-        "info": {
-          "type": "string"
-        }
-      }
-    },
     "apiConfigResponse": {
       "type": "object",
       "properties": {
@@ -306,11 +335,33 @@
         }
       }
     },
+    "apiGenericResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
     "apiHealthCheckResponse": {
       "type": "object",
       "properties": {
         "status": {
           "$ref": "#/definitions/HealthCheckResponseServingStatus"
+        }
+      }
+    },
+    "apiJobErrorRequest": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "jobId": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
         }
       }
     },

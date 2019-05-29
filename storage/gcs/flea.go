@@ -74,6 +74,10 @@ func objTaskPath(taskId string) string {
 	return "tasks/" + taskId + "/task.json"
 }
 
+func objJobErrorPath(taskId string, jobId string) string {
+	return "tasks/" + taskId + "/errors/" + jobId + ".json"
+}
+
 func (store flea) GetUploadToURL(taskId, jobId string, deadline_epoch_sec int64) (string, error) {
 	filePath := fmt.Sprintf("tasksJobs/%s/%s.zip", taskId, jobId)
 	return store.urlSigner.GetSignedURL("PUT", filePath, time.Unix(deadline_epoch_sec, 0), "application/zip")
@@ -179,4 +183,25 @@ func (store flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.
 	resp.StartTaskId = req.StartTaskId
 	resp.MaxItems = req.MaxItems
 	return resp, nil
+}
+
+func (store *flea) AddJobError(ctx context.Context, req api.JobErrorRequest) error {
+	// This really belongs in a database.
+
+	// Sanity check that task exists.
+	_, err := store.GetTask(ctx, req.TaskId)
+	if err != nil {
+		return err
+	}
+
+	if !common.IsValidID(req.JobId) {
+		return storage.ErrInvalidJobId
+	}
+
+	// We only store the last error.
+	objLoc := objJobErrorPath(req.TaskId, req.JobId)
+	object := store.bucket.Object(objLoc)
+	writer := object.NewWriter(ctx)
+	bytes, err := json.Marshal(req)
+	return writeObject(ctx, writer, bytes)
 }

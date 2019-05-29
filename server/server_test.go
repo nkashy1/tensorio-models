@@ -928,6 +928,7 @@ func TestGetCheckpoint(t *testing.T) {
 	assert.Equal(t, checkpointID, getCheckpointResponse.CheckpointId, "Incorrect CheckpointId in GetCheckpointResponse")
 }
 
+// Send 0 for status to avoid status check.
 func sendGetRequest(t *testing.T, url string, status int) string {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -935,7 +936,7 @@ func sendGetRequest(t *testing.T, url string, status int) string {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != status {
+	if status != 0 && resp.StatusCode != status {
 		t.Errorf("Expected: %d Got: %d for URL: %s", status, resp.StatusCode, url)
 	}
 
@@ -988,7 +989,7 @@ func TestURLEndpoints(t *testing.T) {
 	baseUrl := fmt.Sprintf("http://localhost%s/v1/repository/", jsonAddress)
 	healthzUrl := baseUrl + "healthz"
 	response := ""
-	for ; response != "{\"status\":\"SERVING\"}"; response = sendGetRequest(t, healthzUrl, http.StatusOK) {
+	for ; response != "{\"status\":\"SERVING\"}"; response = sendGetRequest(t, healthzUrl, 0) {
 		fmt.Println("Waiting for server to become healthy")
 		time.Sleep(100 * time.Millisecond)
 	}

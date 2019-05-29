@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package api;
 
-
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "repository.proto";  // For HealthCheck and Config messages.
@@ -69,8 +68,14 @@ message AdminRequest {
     AdminRequestType type = 1;
 }
 
-message AdminResponse {
-    string info = 1;
+message GenericResponse {
+    string message = 1;
+}
+
+message JobErrorRequest {
+    string taskId = 1;
+    string jobId = 2;
+    string errorMessage = 3;
 }
 
 service Flea {
@@ -117,9 +122,16 @@ service Flea {
             get: "/v1/flea/start_task/{taskId}"
         };
     };
+    rpc JobError (JobErrorRequest) returns (GenericResponse) {
+        option (google.api.http) = {
+            post: "/v1/flea/job_error/{taskId}/{jobId}"
+            body: "*"
+        };
+    };
 
     // Admin
-    rpc Admin (AdminRequest) returns (AdminResponse) {
+
+    rpc Admin (AdminRequest) returns (GenericResponse) {
         option (google.api.http) = {
             post: "/v1/flea/admin"
             body: "*"
