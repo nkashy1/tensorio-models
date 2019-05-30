@@ -160,7 +160,10 @@ spec:
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/auth/sacred.json"
             - name: PRIVATE_PEM_KEY
-              value: "/etc/auth/sacred.pem"
+              valueFrom:
+                secretKeyRef:
+                  name: tensorio-models
+                  key: sacred.pem
             - name: GOOGLE_ACCESS_ID
               valueFrom:
                 secretKeyRef:

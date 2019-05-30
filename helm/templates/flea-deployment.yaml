@@ -50,7 +50,10 @@ spec:
             {{- end }}
             {{- if .Values.flea.deployment.serviceAccount }}
             - name: PRIVATE_PEM_KEY
-              value: "{{ .Values.flea.deployment.serviceAccount.mountPath }}/{{ .Values.flea.deployment.serviceAccount.pemFile }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.flea.deployment.serviceAccount.secret }}
+                  key: {{ .Values.flea.deployment.serviceAccount.pemFile }}
             {{- end }}
             {{- if .Values.flea.deployment.serviceAccount }}
             - name: GOOGLE_ACCESS_ID
