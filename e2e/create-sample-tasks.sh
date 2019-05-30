@@ -137,3 +137,17 @@ curl -s -X POST -H "Authorization: Bearer ClientToken" \
      -H "Content-Type: application/json" \
      -d "{\"errorMessage\": \"Save this error!\"}" \
      $FLEA_URL/job_error/x3/$JOBID
+
+echo
+echo "Unauthenticated log request"
+curl -s -X POST \
+     -H "Content-Type: application/json" \
+     -d "{\"message\": \"Ignore me \"}" \
+     $FLEA_URL/log/client1
+
+echo
+echo "Valid log request"
+curl -s -X POST -H "Authorization: Bearer ClientToken" \
+     -H "Content-Type: application/json" \
+     -d "{\"message\": \"Only besties make it into the log.\"}" \
+     $FLEA_URL/log/BestClient

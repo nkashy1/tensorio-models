@@ -78,6 +78,12 @@ message JobErrorRequest {
     string errorMessage = 3;
 }
 
+// Generic log request that just gets echoed in the server logs.
+message LogRequest {
+    string clientId = 1;
+    string message = 2;
+}
+
 service Flea {
     rpc Healthz (HealthCheckRequest) returns (HealthCheckResponse) {
         option (google.api.http) = {
@@ -128,6 +134,13 @@ service Flea {
             body: "*"
         };
     };
+    rpc Log (LogRequest) returns (GenericResponse) {
+        option (google.api.http) = {
+            post: "/v1/flea/log/{clientId}"
+            body: "*"
+        };
+    };
+
 
     // Admin
 

@@ -145,6 +145,38 @@
         ]
       }
     },
+    "/v1/flea/log/{clientId}": {
+      "post": {
+        "operationId": "Log",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGenericResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiLogRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Flea"
+        ]
+      }
+    },
     "/v1/flea/modify_task/{taskId}": {
       "post": {
         "operationId": "ModifyTask",
@@ -382,6 +414,18 @@
           }
         }
       }
+    },
+    "apiLogRequest": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "description": "Generic log request that just gets echoed in the server logs."
     },
     "apiModifyTaskRequest": {
       "type": "object",

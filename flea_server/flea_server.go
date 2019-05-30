@@ -90,6 +90,7 @@ func CreateMethodToTokenTypeMap() authentication.MethodToAuthenticationTokenType
 		"/api.Flea/ListTasks": FleaClient,
 		"/api.Flea/StartTask": FleaClient,
 		"/api.Flea/JobError":  FleaClient,
+		"/api.Flea/Log":       FleaClient,
 	}
 }
 
@@ -216,4 +217,9 @@ func (srv *flea_server) GetTask(ctx context.Context, req *api.GetTaskRequest) (*
 func (srv *flea_server) StartTask(ctx context.Context, req *api.StartTaskRequest) (*api.StartTaskResponse, error) {
 	resp, err := srv.storage.StartTask(ctx, req.TaskId)
 	return &resp, err
+}
+
+// This does nothing, except that if authenticated, dump the message in the server log.
+func (srv *flea_server) Log(ctx context.Context, req *api.LogRequest) (*api.GenericResponse, error) {
+	return &api.GenericResponse{Message: "Ok"}, nil
 }
