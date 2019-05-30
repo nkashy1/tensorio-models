@@ -11,13 +11,21 @@ import (
 
 	gcs "cloud.google.com/go/storage"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 // Basically a set of valid tokens. Note that the tokens have "Bearer " prepended to them for faster checking.
 type AuthenticationTokenSet map[string]struct{}
 type AuthenticationTokenType string
 type AuthenticationTokenTypeToSet map[AuthenticationTokenType]AuthenticationTokenSet
+
+const NoAuthentication AuthenticationTokenType = "ALLOW-ALL"
+
+type FullMethodName string
+type MethodToAuthenticationTokenType map[FullMethodName]AuthenticationTokenType
 
 type GCSAuthentication struct {
 	BucketName     string
@@ -43,7 +51,48 @@ var (
 	ErrInvalidAuthorizationToken  = errors.New("Unauthorized. Invalid Authorization token")
 	ErrMalformedTokenFile         = errors.New("Malformed token file")
 	ErrNoTokensOfSpecifiedType    = errors.New("Unauthorized. No tokens configured")
+	ErrNooneIsAuthorized          = errors.New("Unauthorized. Noone is authorized")
 )
+
+// LogMethodNameServerInterceptor - do nothing interceptor that just prints the nmethod names for debugging.
+// Can be used instead of the output of CreateGRPCServerInterceptor.
+func LogMethodNameServerInterceptor(ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+	log.Println(info.FullMethod, req)
+	return handler(ctx, req)
+}
+
+// CreateGRPCInterceptor - given an authenticator and a mapping between methods and token types,
+// creates a GRPC middleware interceptor.
+// To enable authentication just pass the output or this function to grpc.NewServer() like so:
+//   grpc.NewServer(grpc.UnaryInterceptor(authInterceptor))
+func CreateGRPCInterceptor(authenticator Authenticator,
+	methodToTokenType MethodToAuthenticationTokenType) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler) (interface{}, error) {
+
+		tokenType, exists := methodToTokenType[FullMethodName(info.FullMethod)]
+		if !exists {
+			// Returns error code 401.
+			return nil, status.Errorf(codes.Unauthenticated, "Unauthorized. No one is authorized")
+		}
+		if tokenType == NoAuthentication {
+			log.Println(info.FullMethod, req)
+			return handler(ctx, req)
+		}
+		err := authenticator.CheckAuthentication(ctx, tokenType)
+		if err != nil {
+			// Error code 401
+			return nil, status.Errorf(codes.Unauthenticated, err.Error())
+		}
+		log.Println(info.FullMethod, req)
+		return handler(ctx, req)
+	}
+}
 
 // NewAuthenticator - returns an authenticator object. All valid keys in the TokenTypeToSet must be
 // specified in template. Panics on failure to load objects.

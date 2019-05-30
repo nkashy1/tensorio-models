@@ -26,12 +26,6 @@ type server struct {
 	authenticator authentication.Authenticator
 }
 
-const (
-	MODELS_ADMIN  authentication.AuthenticationTokenType = "ModelsAdmin"
-	MODELS_WRITER authentication.AuthenticationTokenType = "ModelsWriter"
-	MODELS_READER authentication.AuthenticationTokenType = "ModelsReader"
-)
-
 // NewServer - Creates an api.RepositoryServer which handles gRPC requests using a given
 // storage.RepositoryStorage backend
 func NewServer(storage storage.RepositoryStorage, authenticator authentication.Authenticator) api.RepositoryServer {
@@ -41,10 +35,10 @@ func NewServer(storage storage.RepositoryStorage, authenticator authentication.A
 		authenticator: authenticator}
 }
 
-func startGrpcServer(apiServer api.RepositoryServer, serverAddress string) {
+func startGrpcServer(apiServer api.RepositoryServer, serverAddress string, authInterceptor grpc.UnaryServerInterceptor) {
 	log.Println("Starting grpc on:", serverAddress)
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(authInterceptor))
 	lis, err := net.Listen("tcp", serverAddress)
 	if err != nil {
 		log.Fatalln(err)
@@ -80,6 +74,33 @@ func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	}
 }
 
+const (
+	MODELS_ADMIN  authentication.AuthenticationTokenType = "ModelsAdmin"
+	MODELS_WRITER authentication.AuthenticationTokenType = "ModelsWriter"
+	MODELS_READER authentication.AuthenticationTokenType = "ModelsReader"
+)
+
+// CreateMethodToTokenTypeMap - must include a token type or NoAuthentication for all RPC methods.
+func CreateMethodToTokenTypeMap() authentication.MethodToAuthenticationTokenType {
+	return authentication.MethodToAuthenticationTokenType{
+		"/api.Repository/Healthz": authentication.NoAuthentication,
+		"/api.Repository/Config":  authentication.NoAuthentication,
+
+		"/api.Repository/CreateModel":           MODELS_WRITER,
+		"/api.Repository/UpdateModel":           MODELS_WRITER,
+		"/api.Repository/CreateHyperparameters": MODELS_WRITER,
+		"/api.Repository/UpdateHyperparameters": MODELS_WRITER,
+		"/api.Repository/CreateCheckpoint":      MODELS_WRITER,
+
+		"/api.Repository/ListModels":          MODELS_READER,
+		"/api.Repository/GetModel":            MODELS_READER,
+		"/api.Repository/ListCheckpoints":     MODELS_READER,
+		"/api.Repository/GetCheckpoint":       MODELS_READER,
+		"/api.Repository/ListHyperparameters": MODELS_READER,
+		"/api.Repository/GetHyperparamters":   MODELS_READER,
+	}
+}
+
 // StartGrpcAndProxyServer - Given a repository storage backend, this function starts a
 // new gRPC and JSON-RPC server in separate threads and waits until a message is received on the stopRequested channel.
 func StartGrpcAndProxyServer(storage storage.RepositoryStorage,
@@ -87,7 +108,10 @@ func StartGrpcAndProxyServer(storage storage.RepositoryStorage,
 	authenticator authentication.Authenticator,
 	stopRequested <-chan string) {
 	apiServer := NewServer(storage, authenticator)
-	go startGrpcServer(apiServer, grpcServerAddress)
+	authInterceptor := authentication.CreateGRPCInterceptor(authenticator,
+		CreateMethodToTokenTypeMap(),
+	)
+	go startGrpcServer(apiServer, grpcServerAddress, authInterceptor)
 	go startProxyServer(grpcServerAddress, jsonServerAddress)
 	stopReason := <-stopRequested
 	log.Println("Stopping server due to:", stopReason)
@@ -118,10 +142,6 @@ func (srv *server) Config(ctx context.Context, req *api.ConfigRequest) (*api.Con
 }
 
 func (srv *server) ListModels(ctx context.Context, req *api.ListModelsRequest) (*api.ListModelsResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_READER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
 	if maxItems <= 0 {
@@ -141,10 +161,6 @@ func (srv *server) ListModels(ctx context.Context, req *api.ListModelsRequest) (
 }
 
 func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api.GetModelResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_READER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	log.Printf("GetModel request - ModelId: %s", modelID)
 	model, err := srv.storage.GetModel(ctx, modelID)
@@ -163,10 +179,6 @@ func (srv *server) GetModel(ctx context.Context, req *api.GetModelRequest) (*api
 }
 
 func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest) (*api.CreateModelResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_WRITER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	model := req.Model
 	log.Printf("CreateModel request - Model: %v", model)
 	// Check that ModelId is a non-empty string
@@ -196,10 +208,6 @@ func (srv *server) CreateModel(ctx context.Context, req *api.CreateModelRequest)
 }
 
 func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest) (*api.UpdateModelResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_WRITER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	model := req.Model
 	if modelID == "" {
@@ -246,10 +254,6 @@ func (srv *server) UpdateModel(ctx context.Context, req *api.UpdateModelRequest)
 }
 
 func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperparametersRequest) (*api.ListHyperparametersResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_READER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	marker := req.Marker
 	maxItems := int(req.MaxItems)
@@ -276,10 +280,6 @@ func (srv *server) ListHyperparameters(ctx context.Context, req *api.ListHyperpa
 }
 
 func (srv *server) CreateHyperparameters(ctx context.Context, req *api.CreateHyperparametersRequest) (*api.CreateHyperparametersResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_WRITER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	// Check that ModelId and HyperparametersId in request are valid IDs.
@@ -315,10 +315,6 @@ func (srv *server) CreateHyperparameters(ctx context.Context, req *api.CreateHyp
 }
 
 func (srv *server) GetHyperparameters(ctx context.Context, req *api.GetHyperparametersRequest) (*api.GetHyperparametersResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_READER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	log.Printf("GetHyperparameters request - ModelId: %s, HyperparametersId: %s", modelID, hyperparametersID)
@@ -340,10 +336,6 @@ func (srv *server) GetHyperparameters(ctx context.Context, req *api.GetHyperpara
 }
 
 func (srv *server) UpdateHyperparameters(ctx context.Context, req *api.UpdateHyperparametersRequest) (*api.UpdateHyperparametersResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_WRITER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	upgradeTo := req.UpgradeTo
@@ -388,10 +380,6 @@ func (srv *server) UpdateHyperparameters(ctx context.Context, req *api.UpdateHyp
 }
 
 func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpointsRequest) (*api.ListCheckpointsResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_READER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	marker := req.Marker
@@ -420,10 +408,6 @@ func (srv *server) ListCheckpoints(ctx context.Context, req *api.ListCheckpoints
 }
 
 func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpointRequest) (*api.CreateCheckpointResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_WRITER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	checkpointID := req.CheckpointId
@@ -457,10 +441,6 @@ func (srv *server) CreateCheckpoint(ctx context.Context, req *api.CreateCheckpoi
 }
 
 func (srv *server) GetCheckpoint(ctx context.Context, req *api.GetCheckpointRequest) (*api.GetCheckpointResponse, error) {
-	auth_err := srv.authenticator.CheckAuthentication(ctx, MODELS_READER)
-	if auth_err != nil {
-		return nil, auth_err
-	}
 	modelID := req.ModelId
 	hyperparametersID := req.HyperparametersId
 	checkpointID := req.CheckpointId

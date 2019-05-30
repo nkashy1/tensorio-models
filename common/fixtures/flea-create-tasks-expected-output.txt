@@ -18,6 +18,6 @@
 {"modelId":"Model5","hyperparametersId":"hpset3","checkpointId":"ckpt-5","deadline":"2020-02-12T23:00:00.888888Z","taskId":"x3","active":false,"link":"http://goo.gl/Tx3.zip","checkpointLink":"http://example.com:8081/v1/repository/models/Model5/hyperparameters/hpset3/checkpoints/ckpt-5"}
 {"status":"APPROVED","jobId":"f395d719-f2fb-45b6-a296-bff8f21ff016","uploadTo":"gs://example-repo/tasksJobs/b7/f395d719-f2fb-45b6-a296-bff8f21ff016.zip"}
 {"status":"APPROVED","jobId":"ce7dab37-155b-499a-acf1-4cbc2cac1e26","uploadTo":"gs://example-repo/tasksJobs/b7/ce7dab37-155b-499a-acf1-4cbc2cac1e26.zip"}
-{"error":"Unauthorized. Invalid Authorization token","message":"Unauthorized. Invalid Authorization token","code":2,"details":[]}
-{"error":"Unauthorized. Missing Authorization header","message":"Unauthorized. Missing Authorization header","code":2,"details":[]}
+{"error":"Unauthorized. Invalid Authorization token","message":"Unauthorized. Invalid Authorization token","code":16,"details":[]}
+{"error":"Unauthorized. Missing Authorization header","message":"Unauthorized. Missing Authorization header","code":16,"details":[]}
 {"message":"Thank you for the error report."}

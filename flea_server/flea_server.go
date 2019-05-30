@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"os"
 
 	"github.com/doc-ai/tensorio-models/api"
 	"github.com/doc-ai/tensorio-models/authentication"
@@ -23,51 +22,19 @@ type flea_server struct {
 	authenticator authentication.Authenticator
 }
 
-const (
-	FLEA_ADMIN    authentication.AuthenticationTokenType = "FleaAdmin"
-	FLEA_CLIENT   authentication.AuthenticationTokenType = "FleaClient"
-	FLEA_TASK_GEN authentication.AuthenticationTokenType = "FleaTaskGen"
-)
-
-// NewServer - Creates an api.RepositoryServer which handles gRPC requests using a given
-// storage.RepositoryStorage backend
-func NewServer(storage storage.FleaStorage) api.FleaServer {
-	tokenFilePath := os.Getenv("AUTH_TOKENS_FILE")
-	if tokenFilePath == "" {
-		err := errors.New("AUTH_TOKENS_FILE must be provided.")
-		panic(err)
-	}
-
-	tokenTypeToSet := &authentication.AuthenticationTokenTypeToSet{
-		FLEA_ADMIN:    authentication.AuthenticationTokenSet{},
-		FLEA_CLIENT:   authentication.AuthenticationTokenSet{},
-		FLEA_TASK_GEN: authentication.AuthenticationTokenSet{},
-	}
-	var auth authentication.Authenticator
-	bucketName := storage.GetBucketName()
-	if bucketName == "" {
-		auth = authentication.NewAuthenticator(&authentication.FileSystemAuthentication{
-			TokenFilePath:  tokenFilePath,
-			TokenTypeToSet: tokenTypeToSet,
-		})
-	} else {
-		auth = authentication.NewAuthenticator(&authentication.GCSAuthentication{
-			BucketName:     bucketName,
-			TokenFilePath:  tokenFilePath,
-			TokenTypeToSet: tokenTypeToSet,
-		})
-	}
+// NewServer - Creates an api.FleaServer which handles gRPC requests using a given
+// storage.FleaStorage backend
+func NewServer(storage storage.FleaStorage, authenticator authentication.Authenticator) api.FleaServer {
 	return &flea_server{
 		storage:       storage,
-		authenticator: auth,
+		authenticator: authenticator,
 	}
-
 }
 
-func startGrpcServer(apiServer api.FleaServer, serverAddress string) {
+func startGrpcServer(apiServer api.FleaServer, serverAddress string, authInterceptor grpc.UnaryServerInterceptor) {
 	log.Println("Starting FLEA gRPC on:", serverAddress)
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(authInterceptor))
 	lis, err := net.Listen("tcp", serverAddress)
 	if err != nil {
 		log.Fatalln(err)
@@ -102,20 +69,47 @@ func startProxyServer(grpcServerAddress string, jsonServerAddress string) {
 	}
 }
 
+const (
+	FleaAdmin   authentication.AuthenticationTokenType = "FleaAdmin"
+	FleaClient  authentication.AuthenticationTokenType = "FleaClient"
+	FleaTaskGen authentication.AuthenticationTokenType = "FleaTaskGen"
+)
+
+// CreateMethodToTokenTypeMap - must include a token type or NoAuthentication for all RPC methods.
+func CreateMethodToTokenTypeMap() authentication.MethodToAuthenticationTokenType {
+	return authentication.MethodToAuthenticationTokenType{
+		"/api.Flea/Healthz": authentication.NoAuthentication,
+		"/api.Flea/Config":  authentication.NoAuthentication,
+
+		"/api.Flea/CreateTask": FleaTaskGen,
+		"/api.Flea/ModifyTask": FleaTaskGen,
+
+		"/api.Flea/Admin": FleaAdmin,
+
+		"/api.Flea/GetTask":   FleaClient,
+		"/api.Flea/ListTasks": FleaClient,
+		"/api.Flea/StartTask": FleaClient,
+		"/api.Flea/JobError":  FleaClient,
+	}
+}
+
 // StartGrpcAndProxyServer - Given a repository storage backend, this function starts a
 // new gRPC and JSON-RPC server in separate threads and waits until a message is received on the stopRequested channel.
 func StartGrpcAndProxyServer(storage storage.FleaStorage,
 	grpcServerAddress string, jsonServerAddress string,
+	authenticator authentication.Authenticator,
 	stopRequested <-chan string) {
-	apiServer := NewServer(storage)
-	go startGrpcServer(apiServer, grpcServerAddress)
+	apiServer := NewServer(storage, authenticator)
+	authInterceptor := authentication.CreateGRPCInterceptor(authenticator,
+		CreateMethodToTokenTypeMap(),
+	)
+	go startGrpcServer(apiServer, grpcServerAddress, authInterceptor)
 	go startProxyServer(grpcServerAddress, jsonServerAddress)
 	stopReason := <-stopRequested
 	log.Println("Stopping server due to:", stopReason)
 }
 
 func (srv *flea_server) Healthz(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
-	log.Println("Health Request")
 	resp := &api.HealthCheckResponse{
 		Status: api.HealthCheckResponse_SERVING,
 	}
@@ -123,7 +117,6 @@ func (srv *flea_server) Healthz(ctx context.Context, req *api.HealthCheckRequest
 }
 
 func (srv *flea_server) Config(ctx context.Context, req *api.ConfigRequest) (*api.ConfigResponse, error) {
-	log.Println("Config Request")
 	storageType := srv.storage.GetStorageType()
 	storageTypeEnum := api.ConfigResponse_INVALID
 	switch storageType {
@@ -139,10 +132,6 @@ func (srv *flea_server) Config(ctx context.Context, req *api.ConfigRequest) (*ap
 }
 
 func (srv *flea_server) Admin(ctx context.Context, req *api.AdminRequest) (*api.GenericResponse, error) {
-	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_ADMIN)
-	if authErr != nil {
-		return nil, authErr
-	}
 	if req.Type != api.AdminRequest_RELOAD_TOKENS {
 		return nil, errors.New("Unknown admin request type!")
 	}
@@ -154,10 +143,6 @@ func (srv *flea_server) Admin(ctx context.Context, req *api.AdminRequest) (*api.
 }
 
 func (srv *flea_server) JobError(ctx context.Context, req *api.JobErrorRequest) (*api.GenericResponse, error) {
-	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
-	if authErr != nil {
-		return nil, authErr
-	}
 	if req.ErrorMessage == "" {
 		err := errors.New("Expected non-empty errorMessage")
 		return nil, err
@@ -170,11 +155,6 @@ func (srv *flea_server) JobError(ctx context.Context, req *api.JobErrorRequest) 
 }
 
 func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*api.TaskDetails, error) {
-	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
-	if authErr != nil {
-		return nil, authErr
-	}
-	log.Println("CreateTask:", req)
 	if req.ModelId == "" {
 		return nil, storage.ErrMissingModelId
 	}
@@ -208,11 +188,6 @@ func (srv *flea_server) CreateTask(ctx context.Context, req *api.TaskDetails) (*
 }
 
 func (srv *flea_server) ModifyTask(ctx context.Context, req *api.ModifyTaskRequest) (*api.TaskDetails, error) {
-	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_TASK_GEN)
-	if authErr != nil {
-		return nil, authErr
-	}
-	log.Println("ModifyTask:", req)
 	err := srv.storage.ModifyTask(ctx, *req)
 	if err != nil {
 		return nil, err
@@ -223,11 +198,6 @@ func (srv *flea_server) ModifyTask(ctx context.Context, req *api.ModifyTaskReque
 }
 
 func (srv *flea_server) ListTasks(ctx context.Context, req *api.ListTasksRequest) (*api.ListTasksResponse, error) {
-	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
-	if authErr != nil {
-		return nil, authErr
-	}
-	log.Println("List tasks:", req)
 	if req.CheckpointId != "" && req.HyperparametersId == "" {
 		return nil, storage.ErrInvalidModelHyperparamsCheckpointCombo
 	}
@@ -239,19 +209,11 @@ func (srv *flea_server) ListTasks(ctx context.Context, req *api.ListTasksRequest
 }
 
 func (srv *flea_server) GetTask(ctx context.Context, req *api.GetTaskRequest) (*api.TaskDetails, error) {
-	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
-	if authErr != nil {
-		return nil, authErr
-	}
 	resp, err := srv.storage.GetTask(ctx, req.TaskId)
 	return &resp, err
 }
 
 func (srv *flea_server) StartTask(ctx context.Context, req *api.StartTaskRequest) (*api.StartTaskResponse, error) {
-	authErr := srv.authenticator.CheckAuthentication(ctx, FLEA_CLIENT)
-	if authErr != nil {
-		return nil, authErr
-	}
 	resp, err := srv.storage.StartTask(ctx, req.TaskId)
 	return &resp, err
 }
