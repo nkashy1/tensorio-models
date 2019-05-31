@@ -177,6 +177,22 @@ func (store flea) ListTasks(ctx context.Context, req api.ListTasksRequest) (api.
 		if req.StartTaskId != "" && taskId < req.StartTaskId {
 			continue
 		}
+		if req.ModelId != "" {
+			task, err := store.GetTask(ctx, taskId)
+			if err != nil {
+				return resp, err
+			}
+			if task.ModelId != req.ModelId {
+				continue
+			}
+			if task.HyperparametersId != req.HyperparametersId && req.HyperparametersId != "" {
+				continue
+			}
+			if task.CheckpointId != req.CheckpointId && req.CheckpointId != "" {
+				continue
+			}
+		}
+
 		taskIds = append(taskIds, taskId)
 	}
 	resp.TaskIds = taskIds
