@@ -62,10 +62,10 @@ steps:
     args:
       - 'upgrade'
       - '--install'
-      - '-f'
-      - 'values.yaml'
       - '--set'
       - 'deployment.tag=sha-$SHORT_SHA'
+      - '-f'
+      - 'values.yaml'
       - '${_RELEASE_NAME}'
       - 'helm/'
     waitFor:

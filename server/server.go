@@ -97,7 +97,7 @@ func CreateMethodToTokenTypeMap() authentication.MethodToAuthenticationTokenType
 		"/api.Repository/ListCheckpoints":     MODELS_READER,
 		"/api.Repository/GetCheckpoint":       MODELS_READER,
 		"/api.Repository/ListHyperparameters": MODELS_READER,
-		"/api.Repository/GetHyperparamters":   MODELS_READER,
+		"/api.Repository/GetHyperparameters":  MODELS_READER,
 	}
 }
 

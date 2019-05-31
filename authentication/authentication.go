@@ -78,6 +78,7 @@ func CreateGRPCInterceptor(authenticator Authenticator,
 		tokenType, exists := methodToTokenType[FullMethodName(info.FullMethod)]
 		if !exists {
 			// Returns error code 401.
+			log.Println(info.FullMethod, req)
 			return nil, status.Errorf(codes.Unauthenticated, "Unauthorized. No one is authorized")
 		}
 		if tokenType == NoAuthentication {
