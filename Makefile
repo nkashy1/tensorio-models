@@ -62,5 +62,8 @@ coverage: api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.js
 coverage-cleanup:
 	rm -f test.out coverage-*.html
 
-clean: coverage-cleanup
+client-python-cleanup:
+	rm -f clients/python/tensorio_models/*.bak
+
+clean: coverage-cleanup client-python-cleanup
 	rm -f api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.json api/flea.pb.go api/flea.pb.gw.go api/flea.swagger.json
