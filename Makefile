@@ -4,6 +4,8 @@ GRPC_GATEWAY_PROTO_DIR:="${GRPC_LIST}/third_party/googleapis"
 TIMESTAMP:=$(shell date -u +%s)
 RUN_ARGS=-backend memory
 CWD:=$(shell pwd)
+GRPC_PYTHON_PLUGIN_PATH=$(shell which grpc_python_plugin)
+PYTHON_CLIENT_PATH="clients/python/tensorio_models"
 
 default: fmt build
 
@@ -39,6 +41,11 @@ api/flea.pb.gw.go: api/flea.proto api/repository.proto
 
 api/flea.swagger.json: api/flea.proto  api/repository.proto
 	cd api && protoc -I . flea.proto --swagger_out=logtostderr=true:. --proto_path=$(GOPATH)/src --proto_path=$(GOPATH)/pkg/mod --proto_path=$(GRPC_GATEWAY_PROTO_DIR)
+
+grpc-stub-python:
+	protoc --plugin=protoc-gen-grpc_python=$(GRPC_PYTHON_PLUGIN_PATH) -I api/ --proto_path=${GOPATH}/src --proto_path=$(GOPATH)/pkg/mod --proto_path=$(GRPC_GATEWAY_PROTO_DIR) api/*.proto --python_out $(PYTHON_CLIENT_PATH) --grpc_python_out $(PYTHON_CLIENT_PATH)
+	find $(PYTHON_CLIENT_PATH) -type f -name "*.py" | xargs sed -i.bak 's/^import repository_pb2/from \. import repository_pb2/g'
+	find $(PYTHON_CLIENT_PATH) -type f -name "*.py" | xargs sed -i.bak 's/^import flea_pb2/from \. import flea_pb2/g'
 
 build: api/repository.pb.go api/repository.pb.gw.go api/repository.swagger.json api/flea.pb.go api/flea.pb.gw.go api/flea.swagger.json
 	go test ./... -cover

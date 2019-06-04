@@ -22,6 +22,27 @@ go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 go install github.com/golang/protobuf/protoc-gen-go
 ```
 
+### Client libraries
+
+#### Python
+
+Message and gRPC files can be generated directly into [`clients/python`](./clients/python) using:
+```
+make grpc-stub-python
+```
+
+NOTE: This requires you to have the `grpc_python_plugin` on your `$PATH`. One way to do this is to
+build `grpc_python_plugin` from source:
+```
+git clone --recursive https://github.com/grpc/grpc
+cd grpc && make plugins
+# assuming /usr/local/bin is on your $PATH
+sudo mv bins/opt/grpc_python_plugin /usr/local/bin
+```
+
+See https://github.com/grpc/grpc/issues/15675 for more details.
+
+
 ## Running server
 
 To bring up memory backends, just do `make run-flea` for FLEA and `make run-models` for Repo/Models.
