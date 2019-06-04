@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.39.0
-	github.com/fsouza/fake-gcs-server v1.7.1
+	github.com/fsouza/fake-gcs-server v1.8.0
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
