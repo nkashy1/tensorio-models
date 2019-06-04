@@ -1,4 +1,5 @@
 {{- if .Values.repository }}
+{{- if .Values.repository.release }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -68,4 +69,5 @@ spec:
           secret:
             secretName: {{ .Values.repository.deployment.serviceAccount.secret }}
         {{- end }}
+{{- end }}
 {{- end }}

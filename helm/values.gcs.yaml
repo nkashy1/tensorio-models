@@ -6,6 +6,7 @@
 namespace: default
 
 repository:
+  release: True
   deployment:
     replicas: 1
     repository: docai/tensorio-models
@@ -24,6 +25,7 @@ repository:
     restPort: 7317
     hostname: tensorio-models.default
 flea:
+  release: True
   deployment:
     replicas: 1
     repository: docai/flea

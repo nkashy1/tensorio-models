@@ -1,4 +1,5 @@
 {{- if .Values.aggregator }}
+{{- if .Values.aggregator.release }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -37,4 +38,5 @@ spec:
         - name: sacred
           secret:
             secretName: {{ .Values.aggregator.serviceAccount.secret }}
+{{- end }}
 {{- end }}

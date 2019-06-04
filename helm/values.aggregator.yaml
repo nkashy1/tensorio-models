@@ -9,6 +9,7 @@ checkSecrets:
         displayName: sacred-json
 
 aggregator:
+  release: True
   repository: docai/flea-aggregator
   tag: latest
   aggregationId: 790fbe4a-57b3-43cc-af84-fdfd517a9792

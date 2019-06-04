@@ -1,4 +1,5 @@
 {{- if .Values.flea }}
+{{- if .Values.flea.release }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -88,4 +89,5 @@ spec:
           secret:
             secretName: {{ .Values.flea.deployment.serviceAccount.secret }}
         {{- end }}
+{{- end }}
 {{- end }}

@@ -1,4 +1,6 @@
 {{- if .Values.flea }}
+{{- if .Values.flea.release }}
+
 ---
 apiVersion: v1
 kind: Service
@@ -43,4 +45,5 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "tensorio-models.name" . }}-flea
     app.kubernetes.io/instance: {{ .Release.Name }}-flea
+{{- end }}
 {{- end }}
