@@ -1,0 +1,14 @@
+version: '3'
+services:
+  aggregator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "evaluator"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/etc/access/sacred.json
+      - EVALUATION_CKPT_PATH=${EVALUATION_CKPT_PATH}
+      - EVALUATION_DATASET_FILE_LIST=${EVALUATION_DATASET_PATH}
+      - EVALUATION_OUTPUT_PATH=${EVALUATION_OUTPUT_PATH}
+    volumes:
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/etc/access/sacred.json

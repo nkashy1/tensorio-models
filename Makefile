@@ -18,11 +18,22 @@ docker-models:
 docker-flea:
 	docker build -t docai/tensorio-flea -f dockerfiles/Dockerfile.flea .
 
+docker-eval:
+	docker build -t docai/tensorio-eval -f evaluator/Dockerfile .
+
 run-models: docker-models
 	docker run -v $(CWD)/common/fixtures/AuthTokens.txt:/tmp/AuthTokens.txt -e AUTH_TOKENS_FILE=/tmp/AuthTokens.txt -p 8080:8080 -p 8081:8081 docai/tensorio-models ${RUN_ARGS}
 
 run-flea: docker-flea
 	docker run -v $(CWD)/common/fixtures/AuthTokens.txt:/tmp/AuthTokens.txt -e MODELS_URI=http://example.com:8081/v1/repository -e AUTH_TOKENS_FILE=/tmp/AuthTokens.txt -p 8082:8082 -p 8083:8083 docai/tensorio-flea ${RUN_ARGS}
+
+run-eval: docker-eval
+	docker run -e GOOGLE_APPLICATION_CREDENTIALS=$(GOOGLE_APPLICATION_CREDENTIALS) \
+		   -e EVALUATION_CKPT_PATH=$(EVALUATION_CKPT_PATH) \
+		   -e EVALUATION_0CLASS_NPY=$(EVALUATION_0CLASS_NPY) \
+		   -e EVALUATION_1CLASS_NPY=$(EVALUATION_1CLASS_NPY) \
+		   -e EVALUATION_OUTPUT_JSON=$(EVALUATION_OUTPUT_JSON) \
+		   docai/tensorio-eval
 
 api/repository.pb.go: api/repository.proto
 	cd api && protoc -I . repository.proto --go_out=plugins=grpc:. --proto_path=${GOPATH}/src --proto_path=$(GOPATH)/pkg/mod --proto_path=$(GRPC_GATEWAY_PROTO_DIR)
