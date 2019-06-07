@@ -13,7 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/net v0.0.0-20190420063019-afa5a82059c6 // indirect
-	google.golang.org/api v0.5.0
+	google.golang.org/api v0.6.0
 	google.golang.org/genproto v0.0.0-20190508193815-b515fa19cec8
 	google.golang.org/grpc v1.21.1
 	gopkg.in/yaml.v2 v2.2.1 // indirect
