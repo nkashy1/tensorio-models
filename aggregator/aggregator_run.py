@@ -11,11 +11,11 @@ def create_aggregator_argument_parser():
         '--aggregation-type',
         type=str,
         required=True,
-        choices=['cma', 'wcma'], # TODO: read from aggregator function dict
+        choices=['CumulativeMovingAverage', 'WeightedCumulativeMovingAverage'], # TODO: read from aggregator function dict
         help=(
             'Type of running aggregation to be performed.',
-            '   cma: cumulative moving average',
-            '   wcma: weighted cumulative moving average'
+            '   CumulativeMovingAverage',
+            '   WeightedCumulativeMovingAverage'
         )
     )
     parser.add_argument(
@@ -25,10 +25,41 @@ def create_aggregator_argument_parser():
         help='Single column csv/tsv/txt containing checkpoint directory paths to aggregate.'
     )
     parser.add_argument(
+        '--resource-path',
+        type=str,
+        required=True,
+        help='Resouce path to be used to fetch the right model metadata from FLEA and tensorio-models.'
+    )
+    parser.add_argument(
         '--output-path',
         type=str,
         required=True,
         help='Output (GCS) path to save aggregated model.'
+    )
+    parser.add_argument(
+        '--output-resource-path',
+        type=str,
+        required=True,
+        help='TensorIO output resource path, should mostly match resource path.'
+    )
+    parser.add_argument(
+        '--export-type',
+        type=str,
+        required=True,
+        choices=['checkpoint', 'saved_model', 'bundle'],
+        help='Export output type: (ckpt, pb, bundle)'
+    )
+    parser.add_argument(
+        '--repository',
+        type=str,
+        required=True,
+        help='REPOSITORY to query base model from tensorio-models repository'
+    )
+    parser.add_argument(
+        '--token',
+        type=str,
+        required=True,
+        help='Tensorio-models repository Authorization token.'
     )
     parser.add_argument(
         '--debug',
@@ -45,14 +76,17 @@ def parse_ckpt_paths_file(ckpt_filelist):
         return df[0].tolist()
 
 
-# python aggregator_run.py \
-#   --aggregation-type cma \
-#   --ckpt-paths-file ./sample-ckpts-filelist.txt \
-#   --output-path gs://doc-ai-models/aggregator-tests/aggregated-cma-test
 if __name__ == '__main__':
     aggregator_argument_parser = create_aggregator_argument_parser()
     aggregator_args = aggregator_argument_parser.parse_args()
     ckpt_filelist = parse_ckpt_paths_file(aggregator_args.ckpt_paths_file)
-    agrgtr = aggregator.Aggregator(aggregator_args.aggregation_type, debug=aggregator_args.debug)
+    agrgtr = aggregator.Aggregator(
+        aggregator_args.resource_path,
+        aggregator_args.output_resource_path,
+        aggregator_args.repository,
+        aggregator_args.token,
+        aggregator_args.export_type,
+        aggregator_args.aggregation_type
+    )
     agrgtr.aggregate(ckpt_filelist, aggregator_args.output_path)
 

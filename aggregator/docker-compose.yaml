@@ -5,11 +5,19 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: "aggregator"
+    tmpfs:
+      - /tmp
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/etc/access/sacred.json
       - AGGREGATION_CKPTS_FILELIST=/ckpts-filelist.txt
-      - AGGREGATION_TYPE=${AGGREGATION_TYPE:-cma}
+      - AGGREGATION_TYPE=${AGGREGATION_TYPE:-CumulativeMovingAverage}
       - AGGREGATION_OUTPUT_PATH=${AGGREGATION_OUTPUT_PATH}
+      - AGGREGATION_RESOURCE_PATH=${AGGREGATION_RESOURCE_PATH}
+      - AGGREGATION_OUTPUT_RESOURCE_PATH=${AGGREGATION_OUTPUT_RESOURCE_PATH}
+      - REPOSITORY=${REPOSITORY}
+      - TENSORIO_MODELS_TOKEN=${TENSORIO_MODELS_TOKEN}
+      - REPOSITORY_API_KEY=${REPOSITORY_API_KEY}
+      - AGGREGATION_EXPORT_TYPE=${AGGREGATION_EXPORT_TYPE:-bundle}
     volumes:
       - ${GOOGLE_APPLICATION_CREDENTIALS}:/etc/access/sacred.json
       - ${AGGREGATION_CKPTS_FILELIST}:/ckpts-filelist.txt
